@@ -134,7 +134,7 @@ class UIScene extends Phaser.Scene {
     }
     
     createNewGameButton() {
-        const button = this.add.container(70, 25);
+        const button = this.add.container(70, 70);
         
         // 背景
         const bg = this.add.rectangle(0, 0, 120, 35, 0x4CAF50, 1)
@@ -155,7 +155,7 @@ class UIScene extends Phaser.Scene {
     }
     
     createMenuButton() {
-        const button = this.add.container(70, 70);
+        const button = this.add.container(70, 110);
         
         // 背景
         const bg = this.add.rectangle(0, 0, 120, 35, 0x2196F3, 1)
