@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マインスイーパー (Phaser 3)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+
+    <!-- 右クリックメニューを抑制 -->
+    <script>
+        document.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+            return false;
+        }, false);
+    </script>    
+    <!-- Phaser 3 CDNを読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+</head>
+<body>
+    <div id="game-container"></div>
+    
+    <!-- モジュール -->
+    <script src="src/config.js"></script>
+    
+    <!-- ゲームオブジェクト -->
+    <script src="src/objects/Cell.js"></script>
+    <script src="src/objects/special/MineCell.js"></script>
+    <script src="src/objects/special/WallCell.js"></script>
+    <script src="src/objects/special/TreasureCell.js"></script>
+    <script src="src/objects/special/StairsCell.js"></script>
+    <script src="src/objects/Board.js"></script>
+    
+    <!-- シーン -->
+    <script src="src/scenes/BootScene.js"></script>
+    <script src="src/scenes/MenuScene.js"></script>
+    <script src="src/scenes/GameScene.js"></script>
+    <script src="src/scenes/UIScene.js"></script>
+    
+    <!-- ユーティリティ -->
+    <script src="src/utils/GameConfig.js"></script>
+    
+    <!-- メインファイル -->
+    <script src="main.js"></script>
+</body>
+</html>

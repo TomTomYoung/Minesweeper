@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マインスイーパ（お宝と階段セル付き）</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 10px;
+        }
+        .info-item {
+            background-color: #ddd;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(10, 30px);
+            grid-template-rows: repeat(10, 30px);
+            gap: 2px;
+            background-color: #bdbdbd;
+            border: 3px solid #7b7b7b;
+            padding: 5px;
+        }
+        .cell {
+            width: 30px;
+            height: 30px;
+            background-color: #c0c0c0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            border: 2px outset #ececec;
+        }
+        .cell.revealed {
+            background-color: #e0e0e0;
+            border: 1px solid #a9a9a9;
+        }
+        .cell.flagged {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .cell.mine {
+            background-color: #ff0000;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="black" stroke="black" stroke-width="2"><circle cx="12" cy="12" r="7"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .cell.wall {
+            background-color: #6b6b6b;
+            border-color: #444444;
+            border-style: solid;
+        }
+        .cell.revealed.wall {
+            background-color: #8a8a8a;
+            border: 1px solid #555555;
+        }
+        .cell.treasure {
+            background-color: #ffd700;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="gold" stroke="darkgoldenrod" stroke-width="1"><rect x="6" y="11" width="12" height="8" rx="1"></rect><path d="M8 11V7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4"></path><circle cx="12" cy="16" r="2" fill="darkgoldenrod"></circle></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .cell.stairs {
+            background-color: #9370db;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="purple" stroke="white" stroke-width="1"><path d="M3 18h4v-4h4v-4h4V6h6"></path><path d="M3 18v-7"></path></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .cell.num-1 { color: blue; }
+        .cell.num-2 { color: green; }
+        .cell.num-3 { color: red; }
+        .cell.num-4 { color: darkblue; }
+        .cell.num-5 { color: darkred; }
+        .cell.num-6 { color: teal; }
+        .cell.num-7 { color: black; }
+        .cell.num-8 { color: gray; }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .difficulty {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .message {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            height: 25px;
+        }
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .legend-icon {
+            width: 20px;
+            height: 20px;
+        }
+        .legend-icon.mine {
+            background-color: #ff0000;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="black" stroke="black" stroke-width="2"><circle cx="12" cy="12" r="7"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .legend-icon.wall {
+            background-color: #6b6b6b;
+            border: 1px solid #444444;
+        }
+        .legend-icon.treasure {
+            background-color: #ffd700;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="gold" stroke="darkgoldenrod" stroke-width="1"><rect x="6" y="11" width="12" height="8" rx="1"></rect><path d="M8 11V7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4"></path><circle cx="12" cy="16" r="2" fill="darkgoldenrod"></circle></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .legend-icon.stairs {
+            background-color: #9370db;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="purple" stroke="white" stroke-width="1"><path d="M3 18h4v-4h4v-4h4V6h6"></path><path d="M3 18v-7"></path></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .config-panel {
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            width: 90%;
+            max-width: 500px;
+        }
+        .config-panel textarea {
+            width: 100%;
+            height: 120px;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+        .config-panel button {
+            margin-right: 10px;
+        }
+        .config-toggle {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>マインスイーパ (お宝と階段セル付き)</h1>
+    
+    <div class="difficulty">
+        <button id="easy-btn">初級 (9x9)</button>
+        <button id="medium-btn">中級 (16x16)</button>
+        <button id="hard-btn">上級 (16x30)</button>
+        <button id="custom-btn">カスタム</button>
+    </div>
+    
+    <div class="config-toggle">
+        <button id="toggle-config">設定パネルを表示</button>
+    </div>
+    
+    <div id="config-panel" class="config-panel" style="display: none;">
+        <h3>ゲーム設定 (JSON形式)</h3>
+        <textarea id="config-json">
+{
+    "rows": 9,
+    "cols": 9,
+    "mines": 10,
+    "wallClusters": 3,
+    "totalWalls": 15,
+    "treasures": 3,
+    "stairs": 1,
+    "wallsCountInCalculation": true,
+    "autoRevealWallCluster": false,
+    "treasurePoints": 100    
+}
+        </textarea>
+        <button id="apply-config">設定を適用</button>
+        <button id="reset-config">リセット</button>
+    </div>
+    
+    <div class="controls">
+        <button id="new-game-btn">新しいゲーム</button>
+    </div>
+    
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-icon mine"></div>
+            <span>地雷</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-icon wall"></div>
+            <span>壁面</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-icon treasure"></div>
+            <span>お宝</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-icon stairs"></div>
+            <span>階段</span>
+        </div>
+    </div>
+    
+    <div class="game-info">
+        <div class="info-item">🚩 残り: <span id="flags-left">10</span></div>
+        <div class="info-item">⏱️ 時間: <span id="timer">0</span></div>
+        <div class="info-item">💎 得点: <span id="score">0</span></div>
+        <div class="info-item">🏆 総得点: <span id="total-score">0</span></div>
+    </div>
+    
+    <div id="game-board"></div>
+    
+    <div class="message" id="message"></div>
+    
+    <script>
+        // デフォルト設定
+        const DEFAULT_CONFIG = {
+            rows: 9,
+            cols: 9,
+            mines: 10,
+            wallClusters: 3,
+            totalWalls: 15,
+            treasures: 3,
+            stairs: 1,
+            wallsCountInCalculation: true,
+            autoRevealWallCluster: false,
+            treasurePoints: 100
+        };
+        
+        // ゲームの状態
+        let gameConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+        let gameState = {
+            board: [],
+            rows: 9,
+            cols: 9,
+            mines: 10,
+            wallClusters: 3,
+            totalWalls: 15,
+            treasures: 3,
+            stairs: 1,
+            wallsCountInCalculation: true,
+            flagsLeft: 10,
+            revealedCells: 0,
+            timer: 0,
+            timerInterval: null,
+            isGameOver: false,
+            isFirstClick: true,
+            wallClusterMap: {},
+            score: 0,
+            totalScore: 0,
+            level: 1,
+            treasurePoints: 100
+        };
+
+        // DOM要素
+        const gameBoard = document.getElementById('game-board');
+        const flagsLeftDisplay = document.getElementById('flags-left');
+        const timerDisplay = document.getElementById('timer');
+        const wallClustersDisplay = document.getElementById('wall-clusters');
+        const scoreDisplay = document.getElementById('score');
+        const totalScoreDisplay = document.getElementById('total-score');
+        const messageDisplay = document.getElementById('message');
+        const newGameBtn = document.getElementById('new-game-btn');
+        const easyBtn = document.getElementById('easy-btn');
+        const mediumBtn = document.getElementById('medium-btn');
+        const hardBtn = document.getElementById('hard-btn');
+        const customBtn = document.getElementById('custom-btn');
+        const toggleConfigBtn = document.getElementById('toggle-config');
+        const configPanel = document.getElementById('config-panel');
+        const configJson = document.getElementById('config-json');
+        const applyConfigBtn = document.getElementById('apply-config');
+        const resetConfigBtn = document.getElementById('reset-config');
+        
+        // 設定パネルの表示/非表示
+        toggleConfigBtn.addEventListener('click', () => {
+            if (configPanel.style.display === 'none') {
+                configPanel.style.display = 'block';
+                toggleConfigBtn.textContent = '設定パネルを隠す';
+            } else {
+                configPanel.style.display = 'none';
+                toggleConfigBtn.textContent = '設定パネルを表示';
+            }
+        });
+        
+        // 設定の適用
+        applyConfigBtn.addEventListener('click', () => {
+            try {
+                const newConfig = JSON.parse(configJson.value);
+                
+                // 基本的なバリデーション
+                if (newConfig.rows < 5 || newConfig.cols < 5) {
+                    alert('行数と列数は最低5以上である必要があります');
+                    return;
+                }
+                
+                if (newConfig.mines < 1) {
+                    alert('地雷の数は1以上である必要があります');
+                    return;
+                }
+                
+                if (newConfig.wallClusters < 0 || newConfig.totalWalls < 0) {
+                    alert('壁面クラスター数と総壁面数は0以上である必要があります');
+                    return;
+                }
+                
+                if (newConfig.treasures < 0) {
+                    alert('お宝の数は0以上である必要があります');
+                    return;
+                }
+                
+                if (newConfig.stairs < 0) {
+                    alert('階段の数は0以上である必要があります');
+                    return;
+                }
+                
+                const totalCells = newConfig.rows * newConfig.cols;
+                const totalSpecialCells = newConfig.mines + newConfig.totalWalls + newConfig.treasures + newConfig.stairs;
+                
+                if (totalSpecialCells >= totalCells - 9) {
+                    alert('地雷、壁面、お宝、階段の合計がセル数から最初のクリック領域(9セル)を引いた数より少ない必要があります');
+                    return;
+                }
+                
+                // 設定を適用
+                gameConfig = newConfig;
+                initializeGame(gameConfig);
+            } catch (e) {
+                alert('JSONの形式が正しくありません: ' + e.message);
+            }
+        });
+        
+        // 設定のリセット
+        resetConfigBtn.addEventListener('click', () => {
+            configJson.value = JSON.stringify(DEFAULT_CONFIG, null, 4);
+        });
+
+        // イベントリスナー
+        newGameBtn.addEventListener('click', () => {
+            initializeGame(gameConfig);
+        });
+
+        easyBtn.addEventListener('click', () => {
+            gameConfig = {
+                rows: 9,
+                cols: 9,
+                mines: 10,
+                wallClusters: 3,
+                totalWalls: 10,
+                treasures: 3,
+                stairs: 1,
+                wallsCountInCalculation: gameConfig.wallsCountInCalculation,
+                autoRevealWallCluster: gameConfig.autoRevealWallCluster,
+                treasurePoints: 100
+            };
+            
+            configJson.value = JSON.stringify(gameConfig, null, 4);
+            initializeGame(gameConfig);
+        });
+
+        mediumBtn.addEventListener('click', () => {
+            gameConfig = {
+                rows: 16,
+                cols: 16,
+                mines: 40,
+                wallClusters: 5,
+                totalWalls: 25,
+                treasures: 5,
+                stairs: 1,
+                wallsCountInCalculation: gameConfig.wallsCountInCalculation,
+                autoRevealWallCluster: gameConfig.autoRevealWallCluster,
+                treasurePoints: 100
+            };
+            
+            configJson.value = JSON.stringify(gameConfig, null, 4);
+            initializeGame(gameConfig);
+        });
+
+        hardBtn.addEventListener('click', () => {
+            gameConfig = {
+                rows: 16,
+                cols: 30,
+                mines: 99,
+                wallClusters: 8,
+                totalWalls: 40,
+                treasures: 8,
+                stairs: 2,
+                wallsCountInCalculation: gameConfig.wallsCountInCalculation,
+                autoRevealWallCluster: gameConfig.autoRevealWallCluster,
+                treasurePoints: 100
+            };
+            
+            configJson.value = JSON.stringify(gameConfig, null, 4);
+            initializeGame(gameConfig);
+        });
+        
+        customBtn.addEventListener('click', () => {
+            configPanel.style.display = 'block';
+            toggleConfigBtn.textContent = '設定パネルを隠す';
+        });
+
+        // ゲームの初期化
+        function initializeGame(config, keepScore = false) {
+            // タイマーをリセット
+            clearInterval(gameState.timerInterval);
+            
+            // 総得点を保持
+            const prevTotalScore = gameState.totalScore;
+            const prevLevel = gameState.level;
+            
+            // ゲーム状態の初期化
+            gameState = {
+                board: [],
+                rows: config.rows,
+                cols: config.cols,
+                mines: config.mines,
+                wallClusters: config.wallClusters,
+                totalWalls: config.totalWalls,
+                treasures: config.treasures,
+                stairs: config.stairs,
+                wallsCountInCalculation: config.wallsCountInCalculation,
+                autoRevealWallCluster: (config.autoRevealWallCluster !== undefined) ? config.autoRevealWallCluster : false,
+                treasurePoints: (config.treasurePoints !== undefined) ? config.treasurePoints : 100,
+                flagsLeft: config.mines,
+                revealedCells: 0,
+                timer: 0,
+                timerInterval: null,
+                isGameOver: false,
+                isFirstClick: true,
+                wallClusterMap: {},
+                score: 0,
+                totalScore: keepScore ? prevTotalScore : 0,
+                level: keepScore ? prevLevel + 1 : 1
+            };
+
+            // UI更新
+            flagsLeftDisplay.textContent = gameState.flagsLeft;
+            timerDisplay.textContent = '0';
+            scoreDisplay.textContent = '0';
+            totalScoreDisplay.textContent = gameState.totalScore;
+            messageDisplay.textContent = '';
+            
+            if (keepScore) {
+                messageDisplay.textContent = `レベル ${gameState.level} スタート！`;
+                messageDisplay.style.color = 'blue';
+                
+                // レベルに応じて難易度を上げる（オプション）
+                if (gameState.level > 1) {
+                    // 地雷を少し増やす
+                    gameState.mines = Math.min(Math.floor(gameState.mines * 1.2), Math.floor(gameState.rows * gameState.cols * 0.3));
+                    gameState.flagsLeft = gameState.mines;
+                    
+                    // お宝の価値を上げる
+                    gameState.treasurePoints = Math.floor(gameState.treasurePoints * 1.5);
+                }
+            }
+
+            // ボードの作成
+            createBoard();
+        }
+
+        // ボードの作成
+        function createBoard() {
+            // ボードのグリッドスタイル更新
+            gameBoard.style.gridTemplateColumns = `repeat(${gameState.cols}, 30px)`;
+            gameBoard.style.gridTemplateRows = `repeat(${gameState.rows}, 30px)`;
+            
+            // ボードをクリア
+            gameBoard.innerHTML = '';
+            
+            // 2次元配列の初期化
+            gameState.board = Array(gameState.rows).fill().map(() => 
+                Array(gameState.cols).fill().map(() => ({
+                    isMine: false,
+                    isWall: false,
+                    isTreasure: false,
+                    isStairs: false,
+                    isRevealed: false,
+                    isFlagged: false,
+                    neighborMines: 0,
+                    wallClusterId: null
+                }))
+            );
+
+            // セルを作成
+            for (let i = 0; i < gameState.rows; i++) {
+                for (let j = 0; j < gameState.cols; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    
+                    // 左クリックイベント（セルを開く）
+                    cell.addEventListener('click', function(e) {
+                        if (gameState.isGameOver) return;
+                        
+                        const row = parseInt(this.dataset.row);
+                        const col = parseInt(this.dataset.col);
+                        
+                        // 最初のクリック時に地雷、壁、お宝、階段を配置
+                        if (gameState.isFirstClick) {
+                            placeWallClusters(row, col);
+                            placeMines(row, col);
+                            placeTreasuresAndStairs(row, col);
+                            gameState.isFirstClick = false;
+                            
+                            // タイマー開始
+                            gameState.timerInterval = setInterval(() => {
+                                gameState.timer++;
+                                timerDisplay.textContent = gameState.timer;
+                            }, 1000);
+                        }
+                        
+                        // 既に開かれたセルで特別な処理
+                        if (gameState.board[row][col].isRevealed) {
+                            // 階段セルの場合、次のレベルへ
+                            if (gameState.board[row][col].isStairs) {
+                                nextLevel();
+                                return;
+                            }
+                        }
+                        
+                        // 壁をクリックした場合は、そのクラスター全体を開く
+                        if (gameState.board[row][col].isWall) {
+                            revealWallCluster(row, col);
+                        } else {
+                            revealCell(row, col);
+                        }
+                    });
+                    
+                    // 右クリックイベント（旗を立てる）
+                    cell.addEventListener('contextmenu', function(e) {
+                        e.preventDefault();
+                        if (gameState.isGameOver) return;
+                        
+                        const row = parseInt(this.dataset.row);
+                        const col = parseInt(this.dataset.col);
+                        toggleFlag(row, col);
+                    });
+                    
+                    gameBoard.appendChild(cell);
+                }
+            }
+        }
+
+        // 壁面クラスターの配置
+        function placeWallClusters(firstRow, firstCol) {
+            // 安全エリアの定義（最初のクリック周辺）
+            const safeZone = [];
+            for (let i = Math.max(0, firstRow - 1); i <= Math.min(gameState.rows - 1, firstRow + 1); i++) {
+                for (let j = Math.max(0, firstCol - 1); j <= Math.min(gameState.cols - 1, firstCol + 1); j++) {
+                    safeZone.push(`${i},${j}`);
+                }
+            }
+            
+            // 壁面クラスターの初期化
+            gameState.wallClusterMap = {};
+            
+            // 壁面クラスターの数が0の場合は終了
+            if (gameState.wallClusters <= 0 || gameState.totalWalls <= 0) {
+                return;
+            }
+            
+            let wallsPlaced = 0;
+            let clustersCreated = 0;
+            
+            // 各クラスターの壁面数の計算
+            const wallsPerCluster = Math.floor(gameState.totalWalls / gameState.wallClusters);
+            let remainingWalls = gameState.totalWalls % gameState.wallClusters;
+            
+            // 各クラスターを配置
+            while (clustersCreated < gameState.wallClusters && wallsPlaced < gameState.totalWalls) {
+                // このクラスターに配置する壁面数
+                let wallsForThisCluster = wallsPerCluster;
+                if (remainingWalls > 0) {
+                    wallsForThisCluster++;
+                    remainingWalls--;
+                }
+                
+                // クラスターの開始位置をランダムに選択
+                let startRow, startCol;
+                let attempts = 0;
+                const maxAttempts = 100;
+                
+                do {
+                    startRow = Math.floor(Math.random() * gameState.rows);
+                    startCol = Math.floor(Math.random() * gameState.cols);
+                    attempts++;
+                } while ((safeZone.includes(`${startRow},${startCol}`) || 
+                        gameState.board[startRow][startCol].isWall) && attempts < maxAttempts);
+                
+                if (attempts >= maxAttempts) continue; // 適切な開始位置が見つからない場合はスキップ
+                
+                // 新しいクラスターID
+                const clusterId = clustersCreated + 1;
+                gameState.wallClusterMap[clusterId] = [];
+                
+                // クラスターの作成
+                const placedInThisCluster = placeWallCluster(startRow, startCol, clusterId, wallsForThisCluster, safeZone);
+                
+                if (placedInThisCluster > 0) {
+                    wallsPlaced += placedInThisCluster;
+                    clustersCreated++;
+                }
+            }
+            
+            // 壁面をUI上で更新
+            for (let i = 0; i < gameState.rows; i++) {
+                for (let j = 0; j < gameState.cols; j++) {
+                    if (gameState.board[i][j].isWall) {
+                        updateCellUI(i, j);
+                    }
+                }
+            }
+        }
+        
+        // 1つの壁面クラスターを配置
+        function placeWallCluster(startRow, startCol, clusterId, wallsToPlace, safeZone) {
+            const queue = [[startRow, startCol]];
+            let wallsPlaced = 0;
+            
+            // 最初のセルを壁に設定
+            gameState.board[startRow][startCol].isWall = true;
+            gameState.board[startRow][startCol].wallClusterId = clusterId;
+            gameState.wallClusterMap[clusterId].push([startRow, startCol]);
+            wallsPlaced++;
+            
+
+            // BFSで壁面を拡張
+            while (queue.length > 0 && wallsPlaced < wallsToPlace) {
+                const [row, col] = queue.shift();
+                
+                // 隣接するセルをチェック
+                const neighbors = [];
+                
+                // 上下左右のセルのみ（斜めは含まない）
+                const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+                
+                for (const [dr, dc] of directions) {
+                    const newRow = row + dr;
+                    const newCol = col + dc;
+                    
+                    // ボード内であるか確認
+                    if (newRow >= 0 && newRow < gameState.rows && 
+                        newCol >= 0 && newCol < gameState.cols) {
+                        
+                        // 壁ではなく、安全地帯でもない場合
+                        if (!gameState.board[newRow][newCol].isWall && 
+                            !safeZone.includes(`${newRow},${newCol}`)) {
+                            neighbors.push([newRow, newCol]);
+                        }
+                    }
+                }
+                
+                // ランダムに並べ替え
+                shuffleArray(neighbors);
+                
+                // 壁を追加
+                for (const [newRow, newCol] of neighbors) {
+                    if (wallsPlaced >= wallsToPlace) break;
+                    
+                    gameState.board[newRow][newCol].isWall = true;
+                    gameState.board[newRow][newCol].wallClusterId = clusterId;
+                    gameState.wallClusterMap[clusterId].push([newRow, newCol]);
+                    queue.push([newRow, newCol]);
+                    wallsPlaced++;
+                }
+            }
+            
+            return wallsPlaced;
+        }
+
+        // 地雷の配置
+        function placeMines(firstRow, firstCol) {
+            let minesPlaced = 0;
+            
+            // 安全エリアの定義（最初のクリック周辺）
+            const safeZone = [];
+            for (let i = Math.max(0, firstRow - 1); i <= Math.min(gameState.rows - 1, firstRow + 1); i++) {
+                for (let j = Math.max(0, firstCol - 1); j <= Math.min(gameState.cols - 1, firstCol + 1); j++) {
+                    safeZone.push(`${i},${j}`);
+                }
+            }
+            
+            while (minesPlaced < gameState.mines) {
+                const row = Math.floor(Math.random() * gameState.rows);
+                const col = Math.floor(Math.random() * gameState.cols);
+                
+                // 安全エリア以外で、まだ地雷が配置されていない場所と壁でない場所に配置
+                if (!safeZone.includes(`${row},${col}`) && !gameState.board[row][col].isMine && !gameState.board[row][col].isWall) {
+                    gameState.board[row][col].isMine = true;
+                    minesPlaced++;
+                }
+            }
+            
+            // 隣接する地雷の数を計算
+            for (let i = 0; i < gameState.rows; i++) {
+                for (let j = 0; j < gameState.cols; j++) {
+                    if (!gameState.board[i][j].isMine && !gameState.board[i][j].isWall) {
+                        gameState.board[i][j].neighborMines = countNeighborMines(i, j);
+                    }
+                }
+            }
+        }
+
+        // お宝と階段の配置
+        function placeTreasuresAndStairs(firstRow, firstCol) {
+            // 安全エリアの定義（最初のクリック周辺）
+            const safeZone = [];
+            for (let i = Math.max(0, firstRow - 1); i <= Math.min(gameState.rows - 1, firstRow + 1); i++) {
+                for (let j = Math.max(0, firstCol - 1); j <= Math.min(gameState.cols - 1, firstCol + 1); j++) {
+                    safeZone.push(`${i},${j}`);
+                }
+            }
+            
+            // お宝と階段は地雷や壁に隣接しないよう配置
+            const availableCells = [];
+            
+            // 全セルを確認
+            for (let i = 0; i < gameState.rows; i++) {
+                for (let j = 0; j < gameState.cols; j++) {
+                    // 安全地帯、地雷、壁でなければ
+                    if (!safeZone.includes(`${i},${j}`) && 
+                        !gameState.board[i][j].isMine && 
+                        !gameState.board[i][j].isWall) {
+                        
+                        // 周囲8マスに地雷や壁がないかチェック
+                        let isSafe = true;
+                        
+                        // そして数字にも重ならない（隣接地雷数が0のセルのみを選ぶ）
+                        if (gameState.board[i][j].neighborMines > 0) {
+                            isSafe = false;
+                        }
+                        
+                        // 隣接する壁もチェック
+                        if (isSafe) {
+                            for (let di = -1; di <= 1 && isSafe; di++) {
+                                for (let dj = -1; dj <= 1 && isSafe; dj++) {
+                                    if (di === 0 && dj === 0) continue;
+                                    
+                                    const ni = i + di;
+                                    const nj = j + dj;
+                                    
+                                    if (ni >= 0 && ni < gameState.rows && nj >= 0 && nj < gameState.cols) {
+                                        if (gameState.board[ni][nj].isMine || gameState.board[ni][nj].isWall) {
+                                            isSafe = false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (isSafe) {
+                            availableCells.push([i, j]);
+                        }
+                    }
+                }
+            }
+            
+            // 利用可能なセルをシャッフル
+            shuffleArray(availableCells);
+            
+            // お宝の配置
+            let treasuresPlaced = 0;
+            for (let i = 0; i < Math.min(gameState.treasures, availableCells.length); i++) {
+                const [row, col] = availableCells[i];
+                gameState.board[row][col].isTreasure = true;
+                treasuresPlaced++;
+            }
+            
+            // 階段の配置（お宝の後に残りの利用可能セルから）
+            let stairsPlaced = 0;
+            for (let i = treasuresPlaced; i < Math.min(treasuresPlaced + gameState.stairs, availableCells.length); i++) {
+                const [row, col] = availableCells[i];
+                gameState.board[row][col].isStairs = true;
+                stairsPlaced++;
+            }
+            
+            console.log(`${treasuresPlaced}個のお宝と${stairsPlaced}個の階段を配置しました`);
+        }
+
+        // 隣接する地雷の数を数える（設定に応じて壁も数える）
+        function countNeighborMines(row, col) {
+            let count = 0;
+            
+            for (let i = Math.max(0, row - 1); i <= Math.min(gameState.rows - 1, row + 1); i++) {
+                for (let j = Math.max(0, col - 1); j <= Math.min(gameState.cols - 1, col + 1); j++) {
+                    if (i === row && j === col) continue;
+                    
+                    if (gameState.board[i][j].isMine) {
+                        count++;
+                    } else if (gameState.wallsCountInCalculation && gameState.board[i][j].isWall) {
+                        count++;
+                    }
+                }
+            }
+            
+            return count;
+        }
+        
+        // 壁面クラスター全体を開く
+        function revealWallCluster(row, col) {
+            const cell = gameState.board[row][col];
+            
+            // 壁でない場合は通常セルの処理へ
+            if (!cell.isWall) {
+                revealCell(row, col);
+                return;
+            }
+            
+            // オプションが有効（自動オープン）なら、全クラスターを一斉に開く
+            if (gameState.autoRevealWallCluster) {
+                const clusterId = cell.wallClusterId;
+                if (clusterId && gameState.wallClusterMap[clusterId]) {
+                    for (const [wallRow, wallCol] of gameState.wallClusterMap[clusterId]) {
+                        const wallCell = gameState.board[wallRow][wallCol];
+                        if (!wallCell.isRevealed) {
+                            wallCell.isRevealed = true;
+                            updateCellUI(wallRow, wallCol);
+                        }
+                    }
+                }
+            } else {
+                // 手動モードの場合
+                if (!cell.isRevealed) {
+                    // 初回クリックでそのセルのみを開く
+                    cell.isRevealed = true;
+                    updateCellUI(row, col);
+                } else {
+                    // すでに開かれているセルをクリックした場合、
+                    // ４近傍（上下左右）の同じクラスター内の未開示壁セルのみを開く
+                    const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+                    const clusterId = cell.wallClusterId;
+                    for (const [dr, dc] of directions) {
+                        const newRow = row + dr;
+                        const newCol = col + dc;
+                        if (newRow >= 0 && newRow < gameState.rows && newCol >= 0 && newCol < gameState.cols) {
+                            const neighbor = gameState.board[newRow][newCol];
+                            if (neighbor.isWall && neighbor.wallClusterId === clusterId && !neighbor.isRevealed) {
+                                neighbor.isRevealed = true;
+                                updateCellUI(newRow, newCol);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // 勝利条件のチェック
+            checkWinCondition();
+        }
+
+        // セルを開く
+        // function revealCell(row, col) {
+        //     const cell = gameState.board[row][col];
+            
+        //     // 既に開かれているか、旗が立っている場合は何もしない
+        //     if (cell.isRevealed || cell.isFlagged) return;
+            
+        //     // 壁の場合は壁面クラスターを開く
+        //     if (cell.isWall) {
+        //         revealWallCluster(row, col);
+        //         return;
+        //     }
+            
+        //     // お宝の場合は得点を加算
+        //     if (cell.isTreasure) {
+        //         gameState.score += gameState.treasurePoints;
+        //         gameState.totalScore += gameState.treasurePoints;
+        //         scoreDisplay.textContent = gameState.score;
+        //         totalScoreDisplay.textContent = gameState.totalScore;
+                
+        //         messageDisplay.textContent = `お宝を見つけました！ +${gameState.treasurePoints}点`;
+        //         messageDisplay.style.color = 'gold';
+                
+        //         // メッセージを数秒後に消す
+        //         setTimeout(() => {
+        //             if (!gameState.isGameOver) {
+        //                 messageDisplay.textContent = '';
+        //             }
+        //         }, 2000);
+        //     }
+            
+        //     // 幅優先探索（BFS）による自動オープン処理
+        //     const queue = [];
+        //     queue.push([row, col]);
+            
+        //     while (queue.length > 0) {
+        //         const [r, c] = queue.shift();
+        //         const currentCell = gameState.board[r][c];
+                
+        //         // すでに開かれているか旗が立っているならスキップ
+        //         if (currentCell.isRevealed || currentCell.isFlagged) continue;
+                
+        //         // 万が一、BFS中に壁セルが混入した場合は除外
+        //         if (currentCell.isWall) continue;
+                
+        //         currentCell.isRevealed = true;
+        //         gameState.revealedCells++;
+        //         updateCellUI(r, c);
+                
+        //         // 地雷を踏んだ場合はゲームオーバー
+        //         if (currentCell.isMine) {
+        //             gameOver(false);
+        //             return;
+        //         }
+                
+        //         // 周囲８方向のうち、数字が0なら隣接セルを展開（※非壁セルのみ）
+        //         if (currentCell.neighborMines === 0 && !currentCell.isTreasure && !currentCell.isStairs) {
+        //             for (let i = Math.max(0, r - 1); i <= Math.min(gameState.rows - 1, r + 1); i++) {
+        //                 for (let j = Math.max(0, c - 1); j <= Math.min(gameState.cols - 1, c + 1); j++) {
+        //                     if (i === r && j === c) continue;
+        //                     const neighbor = gameState.board[i][j];
+        //                     if (!neighbor.isRevealed && !neighbor.isFlagged && !neighbor.isWall) {
+        //                         queue.push([i, j]);
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+            
+        //     checkWinCondition();
+        // }
+
+        // セルを開く
+        function revealCell(row, col) {
+            const cell = gameState.board[row][col];
+            
+            // 既に開かれているか、旗が立っている場合は何もしない
+            if (cell.isRevealed || cell.isFlagged) return;
+            
+            // 壁の場合は壁面クラスターを開く
+            if (cell.isWall) {
+                revealWallCluster(row, col);
+                return;
+            }
+            
+            // セルを開く前のお宝状態を記録
+            const wasTreasure = cell.isTreasure;
+            
+            // 幅優先探索（BFS）による自動オープン処理
+            const queue = [];
+            queue.push([row, col]);
+            
+            while (queue.length > 0) {
+                const [r, c] = queue.shift();
+                const currentCell = gameState.board[r][c];
+                
+                // すでに開かれているか旗が立っているならスキップ
+                if (currentCell.isRevealed || currentCell.isFlagged) continue;
+                
+                // 万が一、BFS中に壁セルが混入した場合は除外
+                if (currentCell.isWall) continue;
+                
+                currentCell.isRevealed = true;
+                gameState.revealedCells++;
+                updateCellUI(r, c);
+                
+                // 地雷を踏んだ場合はゲームオーバー
+                if (currentCell.isMine) {
+                    gameOver(false);
+                    return;
+                }
+                
+                // お宝を見つけた場合は得点を加算
+                if (currentCell.isTreasure) {
+                    gameState.score += gameState.treasurePoints;
+                    gameState.totalScore += gameState.treasurePoints;
+                    scoreDisplay.textContent = gameState.score;
+                    totalScoreDisplay.textContent = gameState.totalScore;
+                    
+                    messageDisplay.textContent = `お宝を見つけました！ +${gameState.treasurePoints}点`;
+                    messageDisplay.style.color = 'gold';
+                    
+                    // メッセージを数秒後に消す
+                    setTimeout(() => {
+                        if (!gameState.isGameOver) {
+                            messageDisplay.textContent = '';
+                        }
+                    }, 2000);
+                }
+                
+                // 周囲８方向のうち、数字が0なら隣接セルを展開（※非壁セルのみ）
+                // お宝と階段は自動展開しない
+                if (currentCell.neighborMines === 0 && !wasTreasure && !currentCell.isStairs) {
+                    for (let i = Math.max(0, r - 1); i <= Math.min(gameState.rows - 1, r + 1); i++) {
+                        for (let j = Math.max(0, c - 1); j <= Math.min(gameState.cols - 1, c + 1); j++) {
+                            if (i === r && j === c) continue;
+                            const neighbor = gameState.board[i][j];
+                            if (!neighbor.isRevealed && !neighbor.isFlagged && !neighbor.isWall) {
+                                queue.push([i, j]);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            checkWinCondition();
+        }
+
+        // 旗を切り替える
+        function toggleFlag(row, col) {
+            const cell = gameState.board[row][col];
+
+            // すでに開かれているか壁の場合は何もしない
+            if (cell.isRevealed || cell.isWall) return;
+
+            if (cell.isFlagged) {
+                // 旗を取り除く
+                cell.isFlagged = false;
+                gameState.flagsLeft++;
+            } else {
+                // 旗がすべて使われている場合は何もしない
+                if (gameState.flagsLeft <= 0) return;
+                
+                // 旗を立てる
+                cell.isFlagged = true;
+                gameState.flagsLeft--;
+            }
+
+            // UIを更新
+            updateCellUI(row, col);
+            flagsLeftDisplay.textContent = gameState.flagsLeft;
+
+            // 勝利条件をチェック
+            checkWinCondition();
+        }
+
+        // 旗を切り替える
+        function toggleFlag(row, col) {
+            const cell = gameState.board[row][col];
+
+            // すでに開かれているか壁の場合は何もしない
+            if (cell.isRevealed || cell.isWall) return;
+
+            if (cell.isFlagged) {
+                // 旗を取り除く
+                cell.isFlagged = false;
+                gameState.flagsLeft++;
+            } else {
+                // 旗がすべて使われている場合は何もしない
+                if (gameState.flagsLeft <= 0) return;
+                
+                // 旗を立てる
+                cell.isFlagged = true;
+                gameState.flagsLeft--;
+            }
+
+            // UIを更新
+            updateCellUI(row, col);
+            flagsLeftDisplay.textContent = gameState.flagsLeft;
+
+            // 勝利条件をチェック
+            checkWinCondition();
+        }
+
+        // セルのUIを更新
+        function updateCellUI(row, col) {
+            const cell = gameState.board[row][col];
+            const cellElement = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+
+            // クラスをリセット
+            cellElement.className = 'cell';
+            cellElement.textContent = '';
+
+            if (cell.isRevealed) {
+                cellElement.classList.add('revealed');
+                
+                if (cell.isWall) {
+                    cellElement.classList.add('wall');
+                } else if (cell.isMine) {
+                    cellElement.classList.add('mine');
+                } else if (cell.isTreasure) {
+                    cellElement.classList.add('treasure');
+                } else if (cell.isStairs) {
+                    cellElement.classList.add('stairs');
+                } else if (cell.neighborMines > 0) {
+                    cellElement.classList.add(`num-${cell.neighborMines}`);
+                    cellElement.textContent = cell.neighborMines;
+                }
+            } else if (cell.isFlagged) {
+                cellElement.classList.add('flagged');
+            } else if (cell.isWall) {
+                cellElement.classList.add('cell');
+            }
+        }
+
+        // すべての地雷を表示
+        function revealAllMines() {
+            for (let i = 0; i < gameState.rows; i++) {
+                for (let j = 0; j < gameState.cols; j++) {
+                    if (gameState.board[i][j].isMine) {
+                        gameState.board[i][j].isRevealed = true;
+                        updateCellUI(i, j);
+                    }
+                }
+            }
+        }
+        
+        // 次のレベルへ進む
+        function nextLevel() {
+            messageDisplay.textContent = '階段を見つけました！次のレベルへ…';
+            messageDisplay.style.color = 'purple';
+            
+            // 少し待ってから次のレベルを開始
+            setTimeout(() => {
+                // 現在のスコアを総スコアに加算（既にお宝分は加算済みなので不要）
+                // gameState.totalScore += gameState.score;
+                
+                // 新しいゲームを開始（スコアを引き継ぐ）
+                initializeGame(gameConfig, true);
+            }, 1500);
+        }
+
+        // 勝利条件をチェック
+        function checkWinCondition() {
+            const totalCells = gameState.rows * gameState.cols;
+            const nonMineCells = totalCells - gameState.mines;
+            const wallCells = getTotalWallCells();
+            
+            let revealedNonWallCells = 0;
+            
+            // 実際に開かれたセルをカウント（壁を除く）
+            for (let i = 0; i < gameState.rows; i++) {
+                for (let j = 0; j < gameState.cols; j++) {
+                    if (gameState.board[i][j].isRevealed && !gameState.board[i][j].isWall) {
+                        revealedNonWallCells++;
+                    }
+                }
+            }
+            
+            // すべての非地雷＆非壁セルが開かれているか
+            if (revealedNonWallCells === nonMineCells - wallCells) {
+                gameOver(true);
+            }
+        }
+        
+        // 壁セルの総数を取得
+        function getTotalWallCells() {
+            let count = 0;
+            for (let i = 0; i < gameState.rows; i++) {
+                for (let j = 0; j < gameState.cols; j++) {
+                    if (gameState.board[i][j].isWall) {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+
+        // ゲーム終了
+        function gameOver(isWin) {
+            gameState.isGameOver = true;
+            clearInterval(gameState.timerInterval);
+            
+            if (isWin) {
+                // 残りの得点をボーナスとして加算
+                const timeBonus = Math.max(500 - gameState.timer, 0);
+                const flagBonus = gameState.flagsLeft * 10;
+                const totalBonus = timeBonus + flagBonus;
+                
+                gameState.score += totalBonus;
+                gameState.totalScore += totalBonus;
+                
+                scoreDisplay.textContent = gameState.score;
+                totalScoreDisplay.textContent = gameState.totalScore;
+                
+                messageDisplay.textContent = `勝利！おめでとうございます！ ボーナス: +${totalBonus}点`;
+                messageDisplay.style.color = 'green';
+            } else {
+                revealAllMines();
+                messageDisplay.textContent = 'ゲームオーバー！';
+                messageDisplay.style.color = 'red';
+            }
+        }
+        
+        // 配列をランダムに並べ替える
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // 初期化
+        initializeGame(gameConfig);
+
+    </script>
+</body>
+</html>
