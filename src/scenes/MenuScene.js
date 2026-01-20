@@ -354,8 +354,8 @@ class MenuScene extends Phaser.Scene {
         const bg = this.add.rectangle(0, 0, width, height, color, 1)
             .setInteractive()
             .on('pointerdown', callback)
-            .on('pointerover', () => bg.setFillColor(this.lightenColor(color, 20)))
-            .on('pointerout', () => bg.setFillColor(color));
+            .on('pointerover', () => bg.setFillStyle(this.lightenColor(color, 20)))
+            .on('pointerout', () => bg.setFillStyle(color));
 
         // テキスト
         const buttonText = this.add.text(0, 0, text, GAME_CONFIG.TEXT_STYLES.BUTTON)

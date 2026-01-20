@@ -25,6 +25,11 @@ class GameScene extends Phaser.Scene {
                 duration: 3000
             });
         }
+        // 他のシーンからのイベントをリッスン
+        this.game.events.on('zoomUpdate', this.setZoom, this);
+
+        // カメラ操作の設定
+        this.setupCameraEvents();
     }
 
     update(time, delta) {
@@ -86,8 +91,8 @@ class GameScene extends Phaser.Scene {
         // Board クラスのインスタンスを作成
         this.board = new Board(
             this,
-            boardX + 5,
-            boardY + 5,
+            boardX,
+            boardY,
             rows,
             cols,
             cellSize
@@ -287,6 +292,29 @@ class GameScene extends Phaser.Scene {
                 this.sound.play('explosion');
             }
         }
+    }
+
+    // ズーム値を設定
+    setZoom(value) {
+        this.cameras.main.setZoom(value);
+    }
+
+    // カメラ操作（パン）の設定
+    setupCameraEvents() {
+        // ドラッグ移動
+        this.input.on('pointermove', (pointer) => {
+            if (!pointer.isDown) return;
+
+            // 左クリックでも右クリックでもドラッグ可能にする
+            // マインスイーパーの操作と被らないように、一定距離以上動いた場合のみドラッグとみなすなどの制御も考えられるが
+            // シンプルに「ドラッグ＝カメラ移動」とする（クリック判定はpointerupで行われるため）
+            // ただし、Game Object (Cell) 上でのドラッグは Cell 側で stopPropagation される可能性があるか？
+            // Phaserのイベント伝播仕様による。
+            // ここでは、カメラの scrollX/Y を更新する。
+
+            this.cameras.main.scrollX -= (pointer.x - pointer.prevPosition.x) / this.cameras.main.zoom;
+            this.cameras.main.scrollY -= (pointer.y - pointer.prevPosition.y) / this.cameras.main.zoom;
+        });
     }
 
     // ゲームの再スタート
