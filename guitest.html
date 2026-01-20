@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GUI & Coordinate Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #333;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-container {
+            box-shadow: 0 0 10px #000;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+</head>
+
+<body>
+    <div id="game-container"></div>
+    <script>
+        class TestScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'TestScene' });
+            }
+
+            create() {
+                // --- 1. Coordinate Grid ---
+                this.add.grid(400, 300, 800, 600, 50, 50, 0x000000).setAltFillStyle(0x0a0a0a).setOutlineStyle(0x222222);
+                this.add.text(10, 10, 'GUI Logic Test Environment', { font: '16px monospace', fill: '#0f0' });
+
+                this.infoText = this.add.text(10, 40, '', { font: '14px monospace', fill: '#fff', backgroundColor: '#0008' });
+
+                // --- 2. Origin & HitArea Visualizer ---
+                this.createTestObject(100, 100, 0.5, 0.5, 'Origin Center (Default)');
+                this.createTestObject(250, 100, 0.5, 0, 'Origin Top-Center (Vertical Bar)');
+                this.createTestObject(400, 100, 0, 0.5, 'Origin Left-Center (Horizontal Bar)');
+
+                // --- 3. Scrollbar Logic Simulation ---
+                this.createScrollSimulation();
+
+                // --- 4. Global Input Debug ---
+                this.input.on('pointermove', (pointer) => {
+                    this.updateInfo(pointer);
+                });
+            }
+
+            createTestObject(x, y, ox, oy, label) {
+                const size = 60;
+                const rect = this.add.rectangle(x, y, size, size, 0x66ccff, 0.5)
+                    .setOrigin(ox, oy)
+                    .setInteractive({ draggable: true });
+
+                // Pivot point marker
+                this.add.rectangle(x, y, 4, 4, 0xff0000).setOrigin(0.5);
+
+                // Label
+                this.add.text(x, y + 50, label, { fontSize: '10px', fill: '#aaa' }).setOrigin(0.5);
+
+                // Debug Box
+                this.input.enableDebug(rect, 0xffff00);
+
+                // Drag
+                rect.on('drag', (pointer, dragX, dragY) => {
+                    rect.x = dragX;
+                    rect.y = dragY;
+                });
+            }
+
+            createScrollSimulation() {
+                // Track
+                const trackX = 600;
+                const trackY = 100; // Top
+                const trackH = 400;
+                const width = 20;
+
+                const track = this.add.rectangle(trackX, trackY + trackH / 2, width, trackH, 0x444444)
+                    .setInteractive();
+
+                // Thumb (Simulating logic)
+                const thumbH = 100;
+                const thumb = this.add.rectangle(trackX, trackY, width, thumbH, 0x888888)
+                    .setOrigin(0.5, 0) // IMPORTANT: Top-Center
+                    .setInteractive({ draggable: true });
+
+                // ** HIT AREA FIX LOGIC **
+                // When resizing, we noticed hitArea offset issues.
+                // Let's verify if setOrigin(0.5, 0) naturally handles the Default HitArea correctly.
+                // Default HitArea is (0,0,w,h) relative to Top-Left of the object.
+                // For Origin(0.5, 0):
+                // Visual Top-Left is (x - w/2, y).
+                // Object Local Space (0,0) corresponds to the Origin (x, y).
+                // Wait, Phaser Local Space depends on texture?
+                // Shape object: origin impacts rendering offset.
+                // HitArea is checked against `(pointerX - x) + displayOriginX`.
+
+                this.input.enableDebug(thumb, 0x00ff00);
+
+                // Constraint Logic
+                thumb.on('drag', (pointer, dragX, dragY) => {
+                    // Constrain
+                    const minY = trackY;
+                    const maxY = trackY + trackH - thumbH;
+
+                    // Log Input
+                    console.log(`Input DragY: ${dragY.toFixed(1)}`);
+
+                    const clampedY = Phaser.Math.Clamp(dragY, minY, maxY);
+                    thumb.y = clampedY;
+
+                    const ratio = (clampedY - minY) / (maxY - minY);
+                    this.ratioText.setText(`Ratio: ${ratio.toFixed(3)}`);
+                });
+
+                this.ratioText = this.add.text(trackX + 20, trackY, 'Ratio: 0.000', { font: '12px monospace' });
+            }
+
+            updateInfo(pointer) {
+                this.infoText.setText(
+                    `Pointer: (${pointer.x.toFixed(1)}, ${pointer.y.toFixed(1)})\n` +
+                    `World:   (${pointer.worldX.toFixed(1)}, ${pointer.worldY.toFixed(1)})`
+                );
+            }
+        }
+
+        const config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            backgroundColor: '#111',
+            parent: 'game-container',
+            scene: TestScene,
+            physics: { default: false }
+        };
+
+        const game = new Phaser.Game(config);
+    </script>
+</body>
+
+</html>

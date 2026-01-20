@@ -8,8 +8,31 @@ class UIScene extends Phaser.Scene {
         // UIの初期化
         this.initializeUI();
 
+        // リサイズイベントの登録
+        this.scale.on('resize', this.handleResize, this);
+
         // イベントリスナーの設定
         this.setupEventListeners();
+    }
+
+    handleResize(gameSize, baseSize, displaySize, resolution) {
+        // カメラのサイズ更新はPhaserが自動で行うが、念のため確認
+        this.cameras.main.setViewport(0, 0, gameSize.width, gameSize.height);
+
+        // UIの再構築
+        // 既存のUIをクリア
+        if (this.uiContainer) {
+            this.uiContainer.removeAll(true);
+        }
+
+        // 以前の状態を保持（必要であれば）
+        const oldZoom = this.currentZoom || 1.0;
+
+        // 再作成
+        this.initializeUI();
+
+        // ズーム状態の復元 (Sliderの位置などを更新するため)
+        this.updateZoom(0); // Delta 0 で更新すれば現在値で再描画される
     }
 
     initializeUI() {
@@ -302,7 +325,38 @@ class UIScene extends Phaser.Scene {
             .setInteractive();
 
         const thumbV = this.add.rectangle(width - barSize / 2, topY + 20, barSize, 40, 0x666666, 0.8)
+            .setOrigin(0.5, 0) // Origin Top-Center
             .setInteractive({ draggable: true });
+
+        // Input Blocking Logic for V
+        const blockInput = () => this.game.events.emit('blockInput');
+        const unblockInput = () => this.game.events.emit('unblockInput');
+
+        barV.on('pointerdown', (pointer) => {
+            console.log('[UIScene] BarV PointerDown');
+            blockInput();
+        });
+        barV.on('pointerup', unblockInput);
+        barV.on('pointerupoutside', unblockInput);
+
+        thumbV.on('pointerdown', (pointer, localX, localY, event) => {
+            console.log('[UIScene] ThumbV PointerDown');
+            event.stopPropagation(); // Trackクリックとの干渉防止
+            blockInput();
+            thumbV.setFillStyle(0x444444, 0.8);
+        });
+
+        // Debug
+        this.input.enableDebug(thumbV);
+        this.input.enableDebug(barV);
+        thumbV.on('pointerup', () => {
+            unblockInput();
+            thumbV.setFillStyle(0x666666, 0.8);
+        });
+        thumbV.on('pointerupoutside', () => {
+            unblockInput();
+            thumbV.setFillStyle(0x666666, 0.8);
+        });
 
         this.scrollBars.v = { track: barV, thumb: thumbV, start: topY, size: vHeight };
 
@@ -315,7 +369,27 @@ class UIScene extends Phaser.Scene {
             .setInteractive();
 
         const thumbH = this.add.rectangle(40, hY, 40, barSize, 0x666666, 0.8)
+            .setOrigin(0, 0.5) // Origin Left-Center
             .setInteractive({ draggable: true });
+
+        // Input Blocking Logic for H
+        barH.on('pointerdown', blockInput);
+        barH.on('pointerup', unblockInput);
+        barH.on('pointerupoutside', unblockInput);
+
+        thumbH.on('pointerdown', (pointer, localX, localY, event) => {
+            event.stopPropagation();
+            blockInput();
+            thumbH.setFillStyle(0x444444, 0.8);
+        });
+        thumbH.on('pointerup', () => {
+            unblockInput();
+            thumbH.setFillStyle(0x666666, 0.8);
+        });
+        thumbH.on('pointerupoutside', () => {
+            unblockInput();
+            thumbH.setFillStyle(0x666666, 0.8);
+        });
 
         this.scrollBars.h = { track: barH, thumb: thumbH, start: 0, size: hWidth };
 
@@ -358,56 +432,69 @@ class UIScene extends Phaser.Scene {
         });
 
         // --- ドラッグイベント ---
+        // dragstart/end での blockInput は pointerdown/up でカバーされるが、念のため残すか、削除でよい。
+        // pointerdown で既に block されており、dragstart で重複して送っても害はないが、
+        // 色変更ロジックが重複すると面倒なので、pointerdown側に寄せた。
         thumbV.on('dragstart', () => {
             this.isDraggingV = true;
-            thumbV.setFillStyle(0x444444, 0.8); // Visual Feedback
         });
         thumbV.on('dragend', () => {
             this.isDraggingV = false;
-            thumbV.setFillStyle(0x666666, 0.8);
         });
 
         thumbV.on('drag', (pointer, dragX, dragY) => {
             const track = this.scrollBars.v;
-            // 範囲制限
-            const minY = track.start + track.thumb.height / 2;
-            const maxY = track.start + track.size - track.thumb.height / 2;
-            const clampedY = Phaser.Math.Clamp(dragY, minY, maxY);
+            // 範囲制限 (Origin Topのため、YはTop座標)
+            const thumbSize = track.thumb.height;
+            const minY = track.start;
+            const maxY = track.start + track.size - thumbSize;
 
-            thumbV.y = clampedY;
+            const rawDragY = dragY;
+            dragY = Phaser.Math.Clamp(dragY, minY, maxY);
+            const clampedY = dragY;
+
+            thumbV.y = dragY;
 
             // 割合計算 (0.0 - 1.0)
             const available = (maxY - minY);
+            let ratio = 0;
             if (available > 0) {
-                const ratio = (clampedY - minY) / available;
-                this.game.events.emit('scrollRequest', { axis: 'vertical', value: ratio });
+                ratio = (dragY - minY) / available;
             }
+
+            console.log(`[UIScene] DragV: Pointer=${pointer.y.toFixed(1)} In=${rawDragY.toFixed(1)} Clamped=${clampedY.toFixed(1)} Range=[${minY.toFixed(1)}, ${maxY.toFixed(1)}] Ratio=${ratio.toFixed(4)}`);
+            this.game.events.emit('scrollRequest', { axis: 'vertical', value: ratio });
         });
 
         thumbH.on('dragstart', () => {
             this.isDraggingH = true;
-            thumbH.setFillStyle(0x444444, 0.8);
         });
         thumbH.on('dragend', () => {
             this.isDraggingH = false;
-            thumbH.setFillStyle(0x666666, 0.8);
         });
 
         thumbH.on('drag', (pointer, dragX, dragY) => {
             const track = this.scrollBars.h;
-            // 範囲制限
-            const minX = track.start + track.thumb.width / 2;
-            const maxX = track.start + track.size - track.thumb.width / 2;
-            const clampedX = Phaser.Math.Clamp(dragX, minX, maxX);
+            // 範囲制限 (Origin Leftのため、XはLeft座標)
+            const thumbSize = track.thumb.width;
+            const minX = track.start;
+            const maxX = track.start + track.size - thumbSize;
 
-            thumbH.x = clampedX;
+            const rawDragX = dragX;
+            dragX = Phaser.Math.Clamp(dragX, minX, maxX);
+            const clampedX = dragX;
+
+            thumbH.x = dragX;
 
             // 割合計算
             const available = (maxX - minX);
+            let ratio = 0;
             if (available > 0) {
-                const ratio = (clampedX - minX) / available;
-                this.game.events.emit('scrollRequest', { axis: 'horizontal', value: ratio });
+                ratio = (dragX - minX) / available;
             }
+
+            console.log(`[UIScene] DragH: Pointer=${pointer.x.toFixed(1)} In=${rawDragX.toFixed(1)} Clamped=${clampedX.toFixed(1)} Range=[${minX.toFixed(1)}, ${maxX.toFixed(1)}] Ratio=${ratio.toFixed(4)}`);
+            this.game.events.emit('scrollRequest', { axis: 'horizontal', value: ratio });
         });
     }
 
@@ -439,14 +526,19 @@ class UIScene extends Phaser.Scene {
             trackV.thumb.height = thumbSize;
             trackV.thumb.setSize(trackV.track.width, thumbSize);
             if (trackV.thumb.input) {
-                trackV.thumb.input.hitArea.width = trackV.track.width;
-                trackV.thumb.input.hitArea.height = thumbSize;
+                // Rectangle.setTo(x, y, width, height)
+                trackV.thumb.input.hitArea.setTo(
+                    -trackV.track.width / 2,
+                    0, // Origin Topなので0
+                    trackV.track.width,
+                    thumbSize
+                );
             }
 
             // 位置計算 (ドラッグ中はViewからの更新を無視)
             if (!this.isDraggingV) {
-                const minY = trackV.start + thumbSize / 2;
-                const maxY = trackV.start + trackV.size - thumbSize / 2;
+                const minY = trackV.start;
+                const maxY = trackV.start + trackV.size - thumbSize;
                 // data.v.ratio (0.0 - 1.0) をUI座標にマップ
                 trackV.thumb.y = minY + (maxY - minY) * data.v.ratio;
             }
@@ -471,12 +563,19 @@ class UIScene extends Phaser.Scene {
             if (trackH.thumb.input) {
                 trackH.thumb.input.hitArea.width = thumbSize;
                 trackH.thumb.input.hitArea.height = trackH.track.height;
+                // HitAreaの中心を維持
+                trackH.thumb.input.hitArea.setTo(
+                    0, // Origin Leftなので0
+                    -trackH.track.height / 2,
+                    thumbSize,
+                    trackH.track.height
+                );
             }
 
             // 位置計算
             if (!this.isDraggingH) {
-                const minX = trackH.start + thumbSize / 2;
-                const maxX = trackH.start + trackH.size - thumbSize / 2;
+                const minX = trackH.start;
+                const maxX = trackH.start + trackH.size - thumbSize;
                 trackH.thumb.x = minX + (maxX - minX) * data.h.ratio;
             }
         } else {

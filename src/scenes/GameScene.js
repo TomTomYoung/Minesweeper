@@ -11,6 +11,9 @@ class GameScene extends Phaser.Scene {
         // スクロールコーディネーターの初期化
         this.scrollCoordinator = new ScrollCoordinator();
 
+        // カメラコントローラーの初期化
+        this.cameraController = new CameraController(this, this.cameras.main, this.scrollCoordinator);
+
         // ゲームボードの作成
         this.createGameBoard(this.session.config.rows, this.session.config.cols, this.session.config.cellSize);
 
@@ -31,9 +34,14 @@ class GameScene extends Phaser.Scene {
         // 他のシーンからのイベントをリッスン
         this.game.events.on('zoomUpdate', this.setZoom, this);
         this.game.events.on('scrollRequest', this.handleScrollRequest, this);
+        this.game.events.on('blockInput', () => { this.cameraController.setLock(true); });
+        this.game.events.on('unblockInput', () => { this.cameraController.setLock(false); });
 
-        // カメラ操作の設定
-        this.setupCameraEvents();
+        // Controllerからのイベント
+        this.events.on('cameraMoved', () => this.updateScrollInfo());
+
+        // カメラ操作の設定 (背景ゾーン作成と割り当て)
+        this.setupCameraInputZone();
 
         // 初期スクロール情報の送信
         this.time.delayedCall(100, () => this.updateScrollInfo());
@@ -314,22 +322,24 @@ class GameScene extends Phaser.Scene {
 
     // ズーム値を設定
     setZoom(value) {
-        this.cameras.main.setZoom(value);
-        this.updateScrollInfo();
+        this.cameraController.setZoom(value);
+        // updateScrollInfoは cameraMoved イベント経由で呼ばれる
     }
 
-    // カメラ操作（パン）の設定
-    setupCameraEvents() {
-        // ドラッグ移動
-        this.input.on('pointermove', (pointer) => {
-            if (!pointer.isDown) return;
+    // カメラ操作用の入力ゾーン設定
+    setupCameraInputZone() {
+        const width = this.cameras.main.width;
+        const height = this.cameras.main.height;
 
-            // 左クリックでも右クリックでもドラッグ可能にする
-            this.cameras.main.scrollX -= (pointer.x - pointer.prevPosition.x) / this.cameras.main.zoom;
-            this.cameras.main.scrollY -= (pointer.y - pointer.prevPosition.y) / this.cameras.main.zoom;
+        // 画面全体を覆う透明なゾーンを最背面に配置
+        // Origin(0)で左上基準。ScrollFactor(0)でカメラ移動してもついてくる（＝画面固定）
+        this.backgroundZone = this.add.zone(0, 0, width, height)
+            .setOrigin(0)
+            .setScrollFactor(0)
+            .setInteractive()
+            .setDepth(-9999);
 
-            this.updateScrollInfo();
-        });
+        this.cameraController.setupPanInput(this.backgroundZone);
     }
 
     // スクロールバーからの操作を処理
@@ -379,17 +389,31 @@ class GameScene extends Phaser.Scene {
         const viewportW = this.cameras.main.width / this.cameras.main.zoom;
         const viewportH = this.cameras.main.height / this.cameras.main.zoom;
 
-        // クランプ処理（行き過ぎ防止） - Coordinatorには任せずGameSceneの責任とする（Coordinatorは純粋計算のみ）
+        // クランプ処理（行き過ぎ防止） - Coordinatorには任せずGameSceneの責任とする
+        if (this.debugMode) console.groupCollapsed('GameScene: Clamp Trace');
+        if (this.debugMode) console.log(`[Pre-Clamp] Scroll: ${this.cameras.main.scrollX.toFixed(1)}, ${this.cameras.main.scrollY.toFixed(1)}`);
+
         // 垂直
         if (bounds.height > viewportH) {
             const maxScrollY = bounds.top + bounds.height - viewportH;
+            const oldY = this.cameras.main.scrollY;
             this.cameras.main.scrollY = Phaser.Math.Clamp(this.cameras.main.scrollY, bounds.top, maxScrollY);
+            if (this.debugMode && oldY !== this.cameras.main.scrollY) {
+                console.log(`[Clamp V] ${oldY.toFixed(1)} -> ${this.cameras.main.scrollY.toFixed(1)} (Range: ${bounds.top} ~ ${maxScrollY})`);
+            }
         }
         // 水平
         if (bounds.width > viewportW) {
             const maxScrollX = bounds.left + bounds.width - viewportW;
+            const oldX = this.cameras.main.scrollX;
             this.cameras.main.scrollX = Phaser.Math.Clamp(this.cameras.main.scrollX, bounds.left, maxScrollX);
+            if (this.debugMode && oldX !== this.cameras.main.scrollX) {
+                console.log(`[Clamp H] ${oldX.toFixed(1)} -> ${this.cameras.main.scrollX.toFixed(1)} (Range: ${bounds.left} ~ ${maxScrollX})`);
+            }
         }
+
+        if (this.debugMode) console.log(`[Post-Clamp] Scroll: ${this.cameras.main.scrollX.toFixed(1)}, ${this.cameras.main.scrollY.toFixed(1)}`);
+        if (this.debugMode) console.groupEnd();
 
         // UI用データの計算を委譲
         const syncData = this.scrollCoordinator.calculateUISyncData(this.cameras.main, bounds);

@@ -21,10 +21,10 @@ class ScrollCoordinator {
         };
 
         if (this.debug) {
-            console.group('ScrollCoordinator');
-            console.log(`View(W/H): ${worldViewW.toFixed(1)} / ${worldViewH.toFixed(1)} | Zoom: ${camera.zoom}`);
-            console.log(`Bounds(T/L/W/H): ${contentBounds.top}, ${contentBounds.left} / ${contentBounds.width} x ${contentBounds.height}`);
-            console.log(`Camera(X/Y): ${camera.scrollX.toFixed(1)}, ${camera.scrollY.toFixed(1)}`);
+            console.log(`[SC] === World -> UI Trace ===`);
+            console.log(`[SC] 1. Env: Zoom:${camera.zoom}, View:${camera.width}x${camera.height}`);
+            console.log(`[SC] 2. World: View:${worldViewW.toFixed(1)}x${worldViewH.toFixed(1)}, Bounds:${contentBounds.width}x${contentBounds.height} (@${contentBounds.left},${contentBounds.top})`);
+            console.log(`[SC] 3. Camera: (${camera.scrollX.toFixed(1)}, ${camera.scrollY.toFixed(1)})`);
         }
 
         // --- 垂直 (Vertical) ---
@@ -44,7 +44,11 @@ class ScrollCoordinator {
             // clampしておくことで、バウンス時などの異常値を防ぐ
             result.v.ratio = Phaser.Math.Clamp(currentScroll / maxScroll, 0, 1);
 
-            if (this.debug) console.log(`[V] current:${currentScroll.toFixed(1)} max:${maxScroll.toFixed(1)} ratio:${result.v.ratio.toFixed(3)}`);
+            if (this.debug) {
+                console.log(`[SC] 4. Vertical: Max=${maxScroll.toFixed(1)}, Rel=${currentScroll.toFixed(1)}, Ratio=${result.v.ratio.toFixed(4)}`);
+            }
+        } else {
+            if (this.debug) console.log(`[SC] 4. Vertical: Not scrollable`);
         }
 
         // --- 水平 (Horizontal) ---
@@ -57,10 +61,12 @@ class ScrollCoordinator {
 
             result.h.ratio = Phaser.Math.Clamp(currentScroll / maxScroll, 0, 1);
 
-            if (this.debug) console.log(`[H] current:${currentScroll.toFixed(1)} max:${maxScroll.toFixed(1)} ratio:${result.h.ratio.toFixed(3)}`);
+            if (this.debug) {
+                console.log(`[SC] 5. Horizontal: Max=${maxScroll.toFixed(1)}, Rel=${currentScroll.toFixed(1)}, Ratio=${result.h.ratio.toFixed(4)}`);
+            }
+        } else {
+            if (this.debug) console.log(`[SC] 5. Horizontal: Not scrollable`);
         }
-
-        if (this.debug) console.groupEnd();
 
         return result;
     }
@@ -74,27 +80,41 @@ class ScrollCoordinator {
      * @returns {number} 目標とする camera.scrollX または scrollY
      */
     calculateCameraPosition(ratio, axis, camera, contentBounds) {
+        if (this.debug) console.log(`[SC] === UI(${axis}) -> World Trace ===`);
+
         const worldViewW = camera.width / camera.zoom;
         const worldViewH = camera.height / camera.zoom;
+        let result = 0;
 
         if (axis === 'vertical') {
             const maxScroll = contentBounds.height - worldViewH;
-            if (maxScroll <= 0) return contentBounds.top; // スクロール不要ならTopに合わせる（または現在地維持）
+            if (maxScroll <= 0) {
+                result = contentBounds.top; // スクロール不要ならTopに合わせる（または現在地維持）
+            } else {
+                // ratio から 相対スクロール量を復元
+                const targetRelScroll = maxScroll * Phaser.Math.Clamp(ratio, 0, 1);
 
-            // ratio から 相対スクロール量を復元
-            const targetRelScroll = maxScroll * Phaser.Math.Clamp(ratio, 0, 1);
+                // 絶対座標に変換
+                result = contentBounds.top + targetRelScroll;
 
-            // 絶対座標に変換
-            return contentBounds.top + targetRelScroll;
-
+                if (this.debug) {
+                    console.log(`[SC-V] InRatio:${ratio.toFixed(4)}, MaxScroll:${maxScroll.toFixed(1)}, TargetRel:${targetRelScroll.toFixed(1)} -> Abs:${result.toFixed(1)}`);
+                }
+            }
         } else if (axis === 'horizontal') {
             const maxScroll = contentBounds.width - worldViewW;
-            if (maxScroll <= 0) return contentBounds.left;
+            if (maxScroll <= 0) {
+                result = contentBounds.left;
+            } else {
+                const targetRelScroll = maxScroll * Phaser.Math.Clamp(ratio, 0, 1);
+                result = contentBounds.left + targetRelScroll;
 
-            const targetRelScroll = maxScroll * Phaser.Math.Clamp(ratio, 0, 1);
-            return contentBounds.left + targetRelScroll;
+                if (this.debug) {
+                    console.log(`[SC-H] InRatio:${ratio.toFixed(4)}, MaxScroll:${maxScroll.toFixed(1)}, TargetRel:${targetRelScroll.toFixed(1)} -> Abs:${result.toFixed(1)}`);
+                }
+            }
         }
 
-        return 0;
+        return result;
     }
 }
