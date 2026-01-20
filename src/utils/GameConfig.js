@@ -1,20 +1,51 @@
-// GameConfig.js - ゲーム設定を管理するクラス
+/**
+ * @fileoverview GameConfig.js
+ * 
+ * Game Logic Configuration Manager.
+ * 
+ * This class manages the configuration settings for the Minesweeper game logic,
+ * including difficulty levels (easy, medium, hard) and their specific parameters
+ * such as grid size, mine count, and special cell generation rules.
+ * 
+ * Usages:
+ * - Instantiated in global scope (or GameData) to hold current game settings.
+ * - Used by GameSession and BoardGenerator to determine board layout and rules.
+ */
+
 class GameConfig {
+    /**
+     * @constructor
+     * Initializes default configurations for 'easy', 'medium', and 'hard'.
+     */
     constructor() {
-        // デフォルト設定
+        /**
+         * Default configuration templates.
+         * @type {Object.<string, Object>}
+         */
         this.defaultConfigs = {
             easy: {
+                /** @type {number} Number of rows in the grid */
                 rows: 9,
+                /** @type {number} Number of columns in the grid */
                 cols: 9,
+                /** @type {number} Total number of mines */
                 mines: 10,
+                /** @type {number} Number of wall clusters to generate */
                 wallClusters: 3,
+                /** @type {number} Total number of wall cells */
                 totalWalls: 10,
+                /** @type {number} Number of treasure cells */
                 treasures: 3,
+                /** @type {number} Number of stairs cells (for level transition) */
                 stairs: 1,
+                /** @type {boolean} Whether wall cells count towards neighbor mine numbers */
                 wallsCountInCalculation: true,
+                /** @type {boolean} Whether clicking a wall reveals the entire cluster */
                 autoRevealWallCluster: false,
+                /** @type {number} Score points awarded for finding a treasure */
                 treasurePoints: 100,
-                cellSize: 40 // Phaserでのセルのピクセルサイズ
+                /** @type {number} Pixel size of a cell (View parameter) */
+                cellSize: 40
             },
             medium: {
                 rows: 16,
@@ -43,46 +74,69 @@ class GameConfig {
                 cellSize: 30
             }
         };
-        
-        // 現在のゲーム設定
+
+        /**
+         * The currently active configuration.
+         * @type {Object}
+         */
         this.currentConfig = { ...this.defaultConfigs.easy };
     }
-    
-    // 難易度に基づいて設定を取得
+
+    /**
+     * Retrieves a copy of the configuration for a specific difficulty.
+     * 
+     * @param {string} [difficulty='easy'] - The difficulty key ('easy', 'medium', 'hard').
+     * @returns {Object} A copy of the configuration object.
+     */
     getConfig(difficulty = 'easy') {
         if (this.defaultConfigs[difficulty]) {
             return { ...this.defaultConfigs[difficulty] };
         }
         return { ...this.defaultConfigs.easy };
     }
-    
-    // 設定を更新
+
+    /**
+     * Updates the current configuration with partial new settings.
+     * 
+     * @param {Object} newConfig - Partial configuration object to merge.
+     * @returns {Object} The updated current configuration.
+     */
     updateConfig(newConfig) {
         this.currentConfig = { ...this.currentConfig, ...newConfig };
         return this.currentConfig;
     }
-    
-    // 現在の設定を取得
+
+    /**
+     * Returns a copy of the current configuration.
+     * 
+     * @returns {Object} A copy of the current configuration.
+     */
     getCurrentConfig() {
         return { ...this.currentConfig };
     }
-    
-    // レベルに応じて難易度を調整
+
+    /**
+     * Adjusts the current configuration based on the game level.
+     * Increases difficulty (mines, treasure points) as levels progress.
+     * 
+     * @param {number} level - The current game level (1-based).
+     * @returns {Object} A new configuration object adjusted for the level.
+     */
     adjustForLevel(level) {
         if (level <= 1) return this.currentConfig;
-        
+
         const adjustedConfig = { ...this.currentConfig };
-        
-        // 地雷を少し増やす（最大でセル数の30%まで）
+
+        // Slightly increase mines (up to 30% of total cells)
         const totalCells = adjustedConfig.rows * adjustedConfig.cols;
         adjustedConfig.mines = Math.min(
             Math.floor(adjustedConfig.mines * (1 + 0.1 * (level - 1))),
             Math.floor(totalCells * 0.3)
         );
-        
-        // お宝の価値を上げる
+
+        // Increase treasure value
         adjustedConfig.treasurePoints = Math.floor(adjustedConfig.treasurePoints * (1.0 + 0.2 * (level - 1)));
-        
+
         return adjustedConfig;
     }
 }

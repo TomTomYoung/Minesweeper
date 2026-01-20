@@ -1,0 +1,246 @@
+/**
+ * @fileoverview BoardModel.js
+ * 
+ * Game Board State Model.
+ * 
+ * This class encapsulates the state and logic of the Minesweeper board.
+ * It manages the grid of cells, handles cell revealing logic (including recursion),
+ * manages flags, and provides state queries (e.g., neighbor mine counts).
+ * 
+ * It is a pure logic class and does not directly interact with the Phaser UI.
+ * Start/End of game states are reported back via return values.
+ * 
+ * Input:
+ * - Initialized board data array (from BoardGenerator).
+ * 
+ * Output:
+ * - Result objects containing events ('GAME_OVER', 'TREASURE', etc.) and state updates.
+ */
+
+class BoardModel {
+    /**
+     * @param {Array<Array<Object>>} boardData - BoardGeneratorで生成されたボードデータ
+     */
+    constructor(boardData) {
+        this.board = boardData;
+        this.rows = boardData.length;
+        this.cols = boardData[0].length;
+    }
+
+    /**
+     * 指定されたセルを取得
+     */
+    getCell(row, col) {
+        if (row >= 0 && row < this.rows && col >= 0 && col < this.cols) {
+            return this.board[row][col];
+        }
+        return null;
+    }
+
+    /**
+     * 旗の切り替え
+     * @param {number} row 
+     * @param {number} col 
+     * @param {number} flagsLeft - 残りの旗の数
+     * @returns {Object} 結果 { success: boolean, flagsDelta: number }
+     */
+    toggleFlag(row, col, flagsLeft) {
+        const cell = this.board[row][col];
+
+        if (cell.isRevealed || cell.isWall) {
+            return { success: false, flagsDelta: 0 };
+        }
+
+        if (cell.isFlagged) {
+            cell.isFlagged = false;
+            return { success: true, flagsDelta: 1 };
+        } else {
+            if (flagsLeft <= 0) {
+                return { success: false, flagsDelta: 0 };
+            }
+            cell.isFlagged = true;
+            return { success: true, flagsDelta: -1 };
+        }
+    }
+
+    /**
+     * セルを開く
+     * @param {number} row 
+     * @param {number} col 
+     * @param {Object} options - オプション
+     * @param {boolean} options.autoRevealWallCluster - 壁クラスターの一括オープン有無
+     * @returns {Object} 結果レポート { events: Array<string>, scoreInfo: Array<Object> }
+     */
+    reveal(row, col, options = {}) {
+        const result = {
+            events: [], // 'GAME_OVER', 'WIN', etc.
+            scoreEvents: [] // { type: 'TREASURE', points: 100 }
+        };
+
+        const cell = this.board[row][col];
+
+        // 既に開かれているか、旗が立っている場合は何もしない
+        if (cell.isRevealed || cell.isFlagged) return result;
+
+        // 壁の場合は壁面クラスターを開く
+        if (cell.isWall) {
+            this.revealWallCluster(row, col, options.autoRevealWallCluster);
+            return result;
+        }
+
+        // セルを開く前のお宝状態を記録
+        const wasTreasure = cell.isTreasure;
+        const wasStairs = cell.isStairs;
+
+        // 幅優先探索（BFS）による自動オープン処理
+        const queue = [[row, col]];
+
+        while (queue.length > 0) {
+            const [r, c] = queue.shift();
+            const currentCell = this.board[r][c];
+
+            // すでに開かれているか旗が立っているならスキップ
+            if (currentCell.isRevealed || currentCell.isFlagged) continue;
+
+            // 万が一、BFS中に壁セルが混入した場合は除外
+            if (currentCell.isWall) continue;
+
+            currentCell.isRevealed = true;
+
+            // 地雷を踏んだ場合
+            if (currentCell.isMine) {
+                result.events.push('GAME_OVER');
+                return result; // 即時終了
+            }
+
+            // お宝を見つけた場合
+            if (currentCell.isTreasure) {
+                result.scoreEvents.push({ type: 'TREASURE' });
+            }
+
+            // 階段の場合
+            if (currentCell.isStairs) {
+                // ここではイベントを記録せず、UI側でcell状態を見て判断でも良いが、わかりやすくイベント追加
+                // ただしBFSは続く
+            }
+
+            // 周囲８方向のうち、数字が0なら隣接セルを展開（※非壁セルのみ）
+            // お宝と階段は自動展開しない
+            if (currentCell.neighborMines === 0 && !wasTreasure && !wasStairs && !currentCell.isTreasure && !currentCell.isStairs) {
+                for (let i = Math.max(0, r - 1); i <= Math.min(this.rows - 1, r + 1); i++) {
+                    for (let j = Math.max(0, c - 1); j <= Math.min(this.cols - 1, c + 1); j++) {
+                        if (i === r && j === c) continue;
+                        const neighbor = this.board[i][j];
+                        if (!neighbor.isRevealed && !neighbor.isFlagged && !neighbor.isWall) {
+                            queue.push([i, j]);
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 開かれたセルの周囲を展開 (ダブルクリック/数字クリック機能)
+     */
+    expandRevealedNumberCell(row, col) {
+        const cell = this.board[row][col];
+        const result = { events: [], scoreEvents: [] };
+
+        // 開かれた数字セルのみ処理
+        if (!cell.isRevealed || cell.neighborMines === 0) return result;
+
+        // 周囲の旗の数をカウント
+        let flagCount = 0;
+        const neighbors = [];
+
+        for (let i = Math.max(0, row - 1); i <= Math.min(this.rows - 1, row + 1); i++) {
+            for (let j = Math.max(0, col - 1); j <= Math.min(this.cols - 1, col + 1); j++) {
+                if (i === row && j === col) continue;
+
+                const neighbor = this.board[i][j];
+                if (neighbor.isFlagged) {
+                    flagCount++;
+                } else if (!neighbor.isRevealed && !neighbor.isWall) {
+                    neighbors.push([i, j]);
+                }
+            }
+        }
+
+        // 周囲の旗の数が隣接地雷数と一致する場合、残りの未開示セルを開く
+        if (flagCount === cell.neighborMines) {
+            for (const [r, c] of neighbors) {
+                const subResult = this.reveal(r, c);
+                // 結果をマージ
+                result.events.push(...subResult.events);
+                result.scoreEvents.push(...subResult.scoreEvents);
+                if (subResult.events.includes('GAME_OVER')) break;
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 壁面クラスター全体を開く
+     * @param {number} row 
+     * @param {number} col 
+     * @param {boolean} autoReveal - 自動オープンの設定
+     */
+    revealWallCluster(row, col, autoReveal) {
+        const cell = this.board[row][col];
+        if (!cell.isWall) return; // 壁でない場合は何もしない
+
+        const clusterId = cell.wallClusterId;
+
+        if (autoReveal) {
+            // クラスターIDが同じ壁を一斉に開く
+            // 注: wallClusterMapを持っていないので全探索する必要がある。
+            // 効率化のためmapを渡すか、Generatorで作ったものを保持するのが良いが、
+            // ここではシンプルに全探索する (サイズが大きくないので許容範囲)
+            if (clusterId) {
+                for (let i = 0; i < this.rows; i++) {
+                    for (let j = 0; j < this.cols; j++) {
+                        const target = this.board[i][j];
+                        if (target.isWall && target.wallClusterId === clusterId && !target.isRevealed) {
+                            target.isRevealed = true;
+                        }
+                    }
+                }
+            }
+        } else {
+            // 手動モード
+            if (!cell.isRevealed) {
+                cell.isRevealed = true;
+            } else {
+                // すでに開かれているセルをクリックした場合、4近傍を開く
+                const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+                for (const [dr, dc] of directions) {
+                    const newRow = row + dr;
+                    const newCol = col + dc;
+                    if (newRow >= 0 && newRow < this.rows && newCol >= 0 && newCol < this.cols) {
+                        const neighbor = this.board[newRow][newCol];
+                        if (neighbor.isWall && neighbor.wallClusterId === clusterId && !neighbor.isRevealed) {
+                            neighbor.isRevealed = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 全ての地雷を表示 (ゲームオーバー時など)
+     */
+    revealAllMines() {
+        for (let i = 0; i < this.rows; i++) {
+            for (let j = 0; j < this.cols; j++) {
+                if (this.board[i][j].isMine) {
+                    this.board[i][j].isRevealed = true;
+                }
+            }
+        }
+    }
+}

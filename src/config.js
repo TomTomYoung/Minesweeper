@@ -1,9 +1,18 @@
-// config.js - ゲームの定数と設定値
+/**
+ * @fileoverview config.js
+ * 
+ * Game View Configuration Constants.
+ * 
+ * This file contains constant definitions mainly used for UI and Rendering,
+ * such as colors, fonts, and game dimensions.
+ * 
+ * For Game Logic configuration (rules, difficulty), see src/utils/GameConfig.js.
+ */
 const GAME_CONFIG = {
     // ゲームサイズ
     WIDTH: 800,
     HEIGHT: 600,
-    
+
     // セル関連
     CELL_COLORS: {
         DEFAULT: 0xc0c0c0,
@@ -13,7 +22,7 @@ const GAME_CONFIG = {
         TREASURE: 0xffd700,
         STAIRS: 0x9370db
     },
-    
+
     // 数字の色
     NUMBER_COLORS: [
         null,           // 0: 表示なし
@@ -26,7 +35,7 @@ const GAME_CONFIG = {
         0x000000,       // 7: 黒
         0x808080        // 8: グレー
     ],
-    
+
     // テキストスタイル
     TEXT_STYLES: {
         UI: {
