@@ -52,62 +52,125 @@ class UIScene extends Phaser.Scene {
         const height = this.cameras.main.height;
 
         // --- 1. Top Panel (Info) ---
-        // Situated at top. Height approx 50.
-        // Position: Center X, 25 Y.
         this.infoPanel = new InfoPanel(this, width / 2, 25, width);
         this.mainContainer.add(this.infoPanel);
 
         // --- 2. Control Panel ---
-        // Situated at bottom. Height 60.
-        // Position: Center X, Bottom - 30.
         const panelHeight = 60;
         const panelY = height - panelHeight / 2;
         this.controlPanel = new ControlPanel(this, width / 2, panelY, width);
-        // Sync initial zoom state if exists, otherwise ControlPanel defaults to 1.0
-        if (this.currentZoom) {
-            this.controlPanel.updateZoom(this.currentZoom);
-        }
         this.mainContainer.add(this.controlPanel);
 
+        // --- 2.5 RexUI Zoom Slider ---
+        // Above Control Panel
+        this.createZoomSlider(width, height);
+
+
         // --- 3. Message Panel ---
-        // Above Control Panel.
         const messageY = height - 80;
         this.messagePanel = new MessagePanel(this, width / 2, messageY);
         this.mainContainer.add(this.messagePanel);
 
-        // --- 4. Scroll Bars ---
-        this.scrollBars = {};
-        const barSize = 16;
+        // --- 4. RexUI Scroll Bars ---
+        this.createScrollBars(width, height);
+    }
 
-        // V Bar
-        // Right edge. Top 50 to Bottom 60.
-        const topY = 50;
-        const bottomY = height - 60;
-        const vHeight = bottomY - topY;
-        const vX = width - barSize / 2;
-        const vY = topY + vHeight / 2; // Center of the V-track area
+    createScrollBars(width, height) {
+        // Vertical ScrollBar
+        const vX = width - 10;
+        const vY = height / 2;
+        const vHeight = height - 120; // Margin for top/bottom panels
 
-        this.scrollBars.v = new ScrollBar(this, vX, vY, barSize, vHeight, 'vertical');
-        this.mainContainer.add(this.scrollBars.v);
+        this.scrollBarV = this.rexUI.add.scrollBar({
+            x: vX,
+            y: vY,
+            width: 20,
+            height: vHeight,
+            orientation: 'vertical',
+            background: this.rexUI.add.roundRectangle(0, 0, 0, 0, 0, 0x222222),
+            track: this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x444444),
+            thumb: this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x888888),
+            value: 0,
+        })
+            .layout()
+            .on('valuechange', (newValue) => {
+                this.game.events.emit('scrollRequest', { axis: 'vertical', value: newValue });
+            });
 
-        // H Bar
-        // Bottom edge (above control panel). Left 0 to Right Width.
-        const hY = height - 60 - barSize / 2;
-        const hWidth = width;
-        const hX = width / 2; // Center of H-track
+        // This component is added to scene automatically by RexUI.
+        // We track it to hide/show or destroy.
+        this.scrollBarV.setVisible(false);
 
-        this.scrollBars.h = new ScrollBar(this, hX, hY, hWidth, barSize, 'horizontal');
-        this.mainContainer.add(this.scrollBars.h);
+        // Horizontal ScrollBar
+        const hX = width / 2;
+        const hY = height - 70; // Above control panel
+        const hWidth = width - 40;
 
-        // Hide initially
-        this.scrollBars.v.setVisible(false);
-        this.scrollBars.h.setVisible(false);
+        this.scrollBarH = this.rexUI.add.scrollBar({
+            x: hX,
+            y: hY,
+            width: hWidth,
+            height: 20,
+            orientation: 'horizontal',
+            background: this.rexUI.add.roundRectangle(0, 0, 0, 0, 0, 0x222222),
+            track: this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x444444),
+            thumb: this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x888888),
+            value: 0,
+        })
+            .layout()
+            .on('valuechange', (newValue) => {
+                this.game.events.emit('scrollRequest', { axis: 'horizontal', value: newValue });
+            });
+
+        this.scrollBarH.setVisible(false);
+    }
+
+    createZoomSlider(width, height) {
+        const sliderX = width / 2;
+        const sliderY = height - 90; // Above message panel
+        const sliderWidth = 200;
+
+        this.zoomSlider = this.rexUI.add.slider({
+            x: sliderX,
+            y: sliderY,
+            width: sliderWidth,
+            height: 20,
+            orientation: 'horizontal',
+            track: this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x444444),
+            thumb: this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x888888),
+            value: this.currentZoom ? (this.currentZoom - 0.5) / 1.5 : 0.33, // Map 1.0 to slider
+            input: 'drag',
+        })
+            .layout()
+            .on('valuechange', (newValue) => {
+                // Map 0-1 to 0.5-2.0
+                const zoom = 0.5 + newValue * 1.5;
+                this.setZoom(zoom);
+            });
+
+        // Add label
+        this.add.text(sliderX - sliderWidth / 2 - 40, sliderY, 'Zoom', { fontSize: '16px' }).setOrigin(0.5);
     }
 
     updateScrollBars(data) {
-        if (!this.scrollBars) return;
-        this.scrollBars.v.updateState(data.v);
-        this.scrollBars.h.updateState(data.h);
+        if (!this.scrollBarV || !this.scrollBarH) return;
+
+        // data: { v: { visible, ratio, sizeRatio }, h: { visible, ratio, sizeRatio } }
+
+        // Vertical
+        this.scrollBarV.setVisible(data.v.visible);
+        if (data.v.visible) {
+            this.scrollBarV.setValue(data.v.ratio);
+            // RexUI ScrollBar doesn't have explicit thumb size ratio setter easily accessible in config style?
+            // Actually it calculates thumb size based on 'displayValue' logic if configured, but here we treat it as 0-1 slider.
+            // For simple scrollbar, just value mapping is enough.
+        }
+
+        // Horizontal
+        this.scrollBarH.setVisible(data.h.visible);
+        if (data.h.visible) {
+            this.scrollBarH.setValue(data.h.ratio);
+        }
     }
 
     setupEventListeners() {
@@ -115,21 +178,13 @@ class UIScene extends Phaser.Scene {
         this.game.events.on('showMessage', (data) => this.messagePanel.showMessage(data), this);
         this.game.events.on('updateScroll', this.updateScrollBars, this);
 
-        // Zoom event from GameScene (external update)
         this.game.events.on('zoomUpdate', (value) => {
             this.currentZoom = value;
             if (this.controlPanel) {
-                // Prevent cyclic loop if event came from ControlPanel?
-                // ControlPanel calls this.setZoom -> emits zoomUpdate? No.
-                // ControlPanel calls setZoom -> scene.setZoom -> game.events.emit('zoomUpdate').
-                // So yes, loop possible if ControlPanel.updateZoom re-calls setZoom.
-                // ControlPanel.updateZoom just updates visual. SAFE.
                 this.controlPanel.updateZoom(value);
             }
         }, this);
     }
-
-    // --- Actions Delegated from Components ---
 
     restartGame() {
         this.scene.get('GameScene').restartGame();
@@ -142,7 +197,6 @@ class UIScene extends Phaser.Scene {
     }
 
     setZoom(value) {
-        // Emit to GameScene
         this.game.events.emit('zoomUpdate', value);
         this.currentZoom = value;
     }
