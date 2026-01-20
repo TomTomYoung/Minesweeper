@@ -37,6 +37,17 @@ class GameScene extends Phaser.Scene {
 
         // 初期スクロール情報の送信
         this.time.delayedCall(100, () => this.updateScrollInfo());
+
+        // --- デバッグ機能 ---
+        this.debugMode = true; // 初期状態で有効化（不要ならfalseへ）
+        this.debugGraphics = this.add.graphics();
+        this.debugGraphics.setDepth(9999);
+        this.input.keyboard.on('keydown-D', () => {
+            this.debugMode = !this.debugMode;
+            this.debugGraphics.clear();
+            console.log('Debug Mode:', this.debugMode);
+            this.updateScrollInfo();
+        });
     }
 
     update(time, delta) {
@@ -347,6 +358,24 @@ class GameScene extends Phaser.Scene {
 
         // Bounds計算
         const bounds = this.getScrollBounds();
+
+        // --- Visual Debug Draw ---
+        if (this.debugMode && this.debugGraphics) {
+            this.debugGraphics.clear();
+            // Content Bounds (Red)
+            this.debugGraphics.lineStyle(2, 0xff0000);
+            this.debugGraphics.strokeRect(bounds.left, bounds.top, bounds.width, bounds.height);
+
+            // Camera Viewport (Green)
+            const cam = this.cameras.main;
+            const viewX = cam.scrollX;
+            const viewY = cam.scrollY;
+            const viewW = cam.width / cam.zoom;
+            const viewH = cam.height / cam.zoom;
+
+            this.debugGraphics.lineStyle(2, 0x00ff00);
+            this.debugGraphics.strokeRect(viewX, viewY, viewW, viewH);
+        }
         const viewportW = this.cameras.main.width / this.cameras.main.zoom;
         const viewportH = this.cameras.main.height / this.cameras.main.zoom;
 

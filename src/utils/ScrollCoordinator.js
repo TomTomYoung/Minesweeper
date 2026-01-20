@@ -1,6 +1,6 @@
 class ScrollCoordinator {
     constructor() {
-        this.debug = false; // 必要に応じてtrueに
+        this.debug = true; // デバッグ有効化
     }
 
     /**
@@ -20,6 +20,13 @@ class ScrollCoordinator {
             v: { visible: false, ratio: 0, sizeRatio: 1 }
         };
 
+        if (this.debug) {
+            console.group('ScrollCoordinator');
+            console.log(`View(W/H): ${worldViewW.toFixed(1)} / ${worldViewH.toFixed(1)} | Zoom: ${camera.zoom}`);
+            console.log(`Bounds(T/L/W/H): ${contentBounds.top}, ${contentBounds.left} / ${contentBounds.width} x ${contentBounds.height}`);
+            console.log(`Camera(X/Y): ${camera.scrollX.toFixed(1)}, ${camera.scrollY.toFixed(1)}`);
+        }
+
         // --- 垂直 (Vertical) ---
         if (contentBounds.height > worldViewH) {
             result.v.visible = true;
@@ -37,7 +44,7 @@ class ScrollCoordinator {
             // clampしておくことで、バウンス時などの異常値を防ぐ
             result.v.ratio = Phaser.Math.Clamp(currentScroll / maxScroll, 0, 1);
 
-            if (this.debug) console.log(`[Scroll V] scroll:${currentScroll.toFixed(1)} max:${maxScroll.toFixed(1)} ratio:${result.v.ratio.toFixed(3)}`);
+            if (this.debug) console.log(`[V] current:${currentScroll.toFixed(1)} max:${maxScroll.toFixed(1)} ratio:${result.v.ratio.toFixed(3)}`);
         }
 
         // --- 水平 (Horizontal) ---
@@ -50,8 +57,10 @@ class ScrollCoordinator {
 
             result.h.ratio = Phaser.Math.Clamp(currentScroll / maxScroll, 0, 1);
 
-            if (this.debug) console.log(`[Scroll H] scroll:${currentScroll.toFixed(1)} max:${maxScroll.toFixed(1)} ratio:${result.h.ratio.toFixed(3)}`);
+            if (this.debug) console.log(`[H] current:${currentScroll.toFixed(1)} max:${maxScroll.toFixed(1)} ratio:${result.h.ratio.toFixed(3)}`);
         }
+
+        if (this.debug) console.groupEnd();
 
         return result;
     }
