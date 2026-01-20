@@ -139,4 +139,28 @@ class GameConfig {
 
         return adjustedConfig;
     }
+
+    /**
+     * Applies mode-specific overrides to the configuration.
+     * @param {Object} config - The base configuration.
+     * @param {string} mode - The game mode ('RPG' or 'STANDARD').
+     * @returns {Object} The config with mode settings applied.
+     */
+    static applyMode(config, mode) {
+        const newConfig = { ...config };
+        if (mode === 'STANDARD') {
+            newConfig.wallClusters = 0;
+            newConfig.totalWalls = 0;
+            newConfig.treasures = 0;
+            newConfig.stairs = 0;
+            newConfig.wallsCountInCalculation = false;
+            newConfig.autoRevealWallCluster = false;
+        }
+        return newConfig;
+    }
 }
+
+GameConfig.MODES = {
+    RPG: 'RPG',
+    STANDARD: 'STANDARD'
+};
