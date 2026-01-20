@@ -48,28 +48,56 @@ class MenuScene extends Phaser.Scene {
         }).setOrigin(1, 0.5);
 
         // RPGモードボタン
-        this.btnRPG = this.createButton(
+        this.btnRPG = this.createModeButton(
             width / 2,
             y,
-            120,
-            30,
             'RPGモード',
-            0xFF9800, // Orange
-            () => this.setMode(GameConfig.MODES.RPG)
+            GameConfig.MODES.RPG
         );
 
         // 通常モードボタン
-        this.btnStandard = this.createButton(
+        this.btnStandard = this.createModeButton(
             width / 2 + 140,
             y,
-            120,
-            30,
             '通常モード',
-            0x9E9E9E, // Grey (inactive initially)
-            () => this.setMode(GameConfig.MODES.STANDARD)
+            GameConfig.MODES.STANDARD
         );
 
         this.updateModeUI();
+    }
+
+    createModeButton(x, y, text, mode) {
+        const width = 120;
+        const height = 30;
+
+        const container = this.add.container(x, y);
+
+        // 背景
+        const bg = this.add.rectangle(0, 0, width, height, 0x9E9E9E, 1)
+            .setInteractive();
+
+        // テキスト
+        const buttonText = this.add.text(0, 0, text, GAME_CONFIG.TEXT_STYLES.BUTTON)
+            .setOrigin(0.5);
+
+        container.add([bg, buttonText]);
+
+        // イベント
+        bg.on('pointerdown', () => this.setMode(mode));
+        bg.on('pointerover', () => {
+            // ホバー時は少し明るく（選択状態に関わらず）
+            const baseColor = (this.currentMode === mode) ? 0xFF9800 : 0x9E9E9E;
+            bg.setFillStyle(this.lightenColor(baseColor, 20));
+        });
+        bg.on('pointerout', () => {
+            // 離したら現在の状態の色に戻す
+            const baseColor = (this.currentMode === mode) ? 0xFF9800 : 0x9E9E9E;
+            bg.setFillStyle(baseColor);
+        });
+
+        container.bg = bg; // 参照用に保存
+
+        return container;
     }
 
     setMode(mode) {
@@ -78,23 +106,29 @@ class MenuScene extends Phaser.Scene {
     }
 
     updateModeUI() {
-        // ボタンの色を更新して現在選択中のモードを示す
+        if (!this.btnRPG || !this.btnStandard) return;
+
         const activeColor = 0xFF9800;
         const inactiveColor = 0x9E9E9E;
 
-        // ボタンの背景（矩形）を取得して色を変更
-        // createButtonの構造: Container[Rectangle, Text]
-        const rpgBg = this.btnRPG.getAt(0);
-        const stdBg = this.btnStandard.getAt(0);
-
+        // RPGボタン更新
+        const rpgBg = this.btnRPG.bg;
         if (this.currentMode === GameConfig.MODES.RPG) {
             rpgBg.setFillStyle(activeColor);
-            stdBg.setFillStyle(inactiveColor);
         } else {
             rpgBg.setFillStyle(inactiveColor);
+        }
+
+        // 通常ボタン更新
+        const stdBg = this.btnStandard.bg;
+        if (this.currentMode === GameConfig.MODES.STANDARD) {
             stdBg.setFillStyle(activeColor);
+        } else {
+            stdBg.setFillStyle(inactiveColor);
         }
     }
+
+
 
     // 難易度選択ボタンを作成
     createDifficultyButtons() {

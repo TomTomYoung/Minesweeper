@@ -6,7 +6,7 @@ class UIScene extends Phaser.Scene {
 
     create() {
         // UIの初期化
-        this.createUI();
+        this.initializeUI();
 
         // イベントリスナーの設定
         this.setupEventListeners();
@@ -24,6 +24,8 @@ class UIScene extends Phaser.Scene {
 
         // メッセージパネル
         this.createMessagePanel();
+        // スクロールバー
+        this.createScrollBars();
     }
 
     // 下部コントロールパネルの作成
@@ -41,8 +43,8 @@ class UIScene extends Phaser.Scene {
         // ボタンの作成（パネル内に配置）
         this.createButtons(panelY);
 
-        // ズームコントロールの作成
-        this.createZoomControls(width / 2, panelY);
+        // ズームコントロールの作成 (右側)
+        this.createZoomControls(width - 200, panelY);
     }
 
     // ボタンの作成
@@ -279,6 +281,208 @@ class UIScene extends Phaser.Scene {
             sliderBg,
             this.sliderKnob
         ]);
+
+    }
+
+    // スクロールバーの作成
+    createScrollBars() {
+        this.scrollBars = {};
+
+        const width = this.cameras.main.width;
+        const height = this.cameras.main.height;
+        const barSize = 16; // 押しやすくするために太くする
+
+        // --- 垂直スクロールバー (BarV) ---
+        // (右端, topPanel下 ~ controlPanel上)
+        const topY = 50; // topPanelHeight
+        const bottomY = height - 60; // controlPanelHeight
+        const vHeight = bottomY - topY;
+
+        const barV = this.add.rectangle(width - barSize / 2, topY + vHeight / 2, barSize, vHeight, 0xaaaaaa, 0.3)
+            .setInteractive();
+
+        const thumbV = this.add.rectangle(width - barSize / 2, topY + 20, barSize, 40, 0x666666, 0.8)
+            .setInteractive({ draggable: true });
+
+        this.scrollBars.v = { track: barV, thumb: thumbV, start: topY, size: vHeight };
+
+        // --- 水平スクロールバー (BarH) ---
+        // (左端 ~ 右端, controlPanelの上)
+        const hY = height - 60 - barSize / 2;
+        const hWidth = width; // フル幅
+
+        const barH = this.add.rectangle(hWidth / 2, hY, hWidth, barSize, 0xaaaaaa, 0.3)
+            .setInteractive();
+
+        const thumbH = this.add.rectangle(40, hY, 40, barSize, 0x666666, 0.8)
+            .setInteractive({ draggable: true });
+
+        this.scrollBars.h = { track: barH, thumb: thumbH, start: 0, size: hWidth };
+
+        this.uiContainer.add([barV, thumbV, barH, thumbH]);
+
+        // 初期状態は非表示
+        this.toggleScrollBars(false, false);
+
+        // ドラッグ状態フラグ
+        this.isDraggingV = false;
+        this.isDraggingH = false;
+
+        // --- トラッククリックイベント (ジャンプ) ---
+        barV.on('pointerdown', (pointer) => {
+            const track = this.scrollBars.v;
+            // クリック位置から比率を計算
+            const localY = pointer.y; // World Y since UI scene
+            const minY = track.start;
+            const maxY = track.start + track.size;
+
+            // 範囲内チェック
+            if (localY >= minY && localY <= maxY) {
+                // thumbの中心をここに移動させるイメージ
+                // ただし正確には thumb.height/2 を考慮すべきだが簡易実装
+                const ratio = (localY - minY) / track.size;
+                this.game.events.emit('scrollRequest', { axis: 'vertical', value: ratio });
+            }
+        });
+
+        barH.on('pointerdown', (pointer) => {
+            const track = this.scrollBars.h;
+            const localX = pointer.x;
+            const minX = track.start;
+            const maxX = track.start + track.size;
+
+            if (localX >= minX && localX <= maxX) {
+                const ratio = (localX - minX) / track.size;
+                this.game.events.emit('scrollRequest', { axis: 'horizontal', value: ratio });
+            }
+        });
+
+        // --- ドラッグイベント ---
+        thumbV.on('dragstart', () => {
+            this.isDraggingV = true;
+            thumbV.setFillStyle(0x444444, 0.8); // Visual Feedback
+        });
+        thumbV.on('dragend', () => {
+            this.isDraggingV = false;
+            thumbV.setFillStyle(0x666666, 0.8);
+        });
+
+        thumbV.on('drag', (pointer, dragX, dragY) => {
+            const track = this.scrollBars.v;
+            // 範囲制限
+            const minY = track.start + track.thumb.height / 2;
+            const maxY = track.start + track.size - track.thumb.height / 2;
+            const clampedY = Phaser.Math.Clamp(dragY, minY, maxY);
+
+            thumbV.y = clampedY;
+
+            // 割合計算 (0.0 - 1.0)
+            const available = (maxY - minY);
+            if (available > 0) {
+                const ratio = (clampedY - minY) / available;
+                this.game.events.emit('scrollRequest', { axis: 'vertical', value: ratio });
+            }
+        });
+
+        thumbH.on('dragstart', () => {
+            this.isDraggingH = true;
+            thumbH.setFillStyle(0x444444, 0.8);
+        });
+        thumbH.on('dragend', () => {
+            this.isDraggingH = false;
+            thumbH.setFillStyle(0x666666, 0.8);
+        });
+
+        thumbH.on('drag', (pointer, dragX, dragY) => {
+            const track = this.scrollBars.h;
+            // 範囲制限
+            const minX = track.start + track.thumb.width / 2;
+            const maxX = track.start + track.size - track.thumb.width / 2;
+            const clampedX = Phaser.Math.Clamp(dragX, minX, maxX);
+
+            thumbH.x = clampedX;
+
+            // 割合計算
+            const available = (maxX - minX);
+            if (available > 0) {
+                const ratio = (clampedX - minX) / available;
+                this.game.events.emit('scrollRequest', { axis: 'horizontal', value: ratio });
+            }
+        });
+    }
+
+    // スクロールバーの表示切り替え
+    toggleScrollBars(showV, showH) {
+        if (!this.scrollBars) return;
+        this.scrollBars.v.track.setVisible(showV);
+        this.scrollBars.v.thumb.setVisible(showV);
+        this.scrollBars.h.track.setVisible(showH);
+        this.scrollBars.h.thumb.setVisible(showH);
+    }
+
+    // スクロールバー更新（GameSceneからのイベントで呼ばれる）
+    updateScrollBars(data) {
+        if (!this.scrollBars) return;
+
+        // data: { h, v } calculated by ScrollCoordinator
+
+        // --- 垂直 (Vertical) ---
+        const trackV = this.scrollBars.v;
+        if (data.v.visible) {
+            this.toggleScrollBars(true, this.scrollBars.h.track.visible);
+
+            // サイズ計算
+            let thumbSize = data.v.sizeRatio * trackV.size;
+            thumbSize = Phaser.Math.Clamp(thumbSize, 20, trackV.size);
+
+            // Visual Update
+            trackV.thumb.height = thumbSize;
+            trackV.thumb.setSize(trackV.track.width, thumbSize);
+            if (trackV.thumb.input) {
+                trackV.thumb.input.hitArea.width = trackV.track.width;
+                trackV.thumb.input.hitArea.height = thumbSize;
+            }
+
+            // 位置計算 (ドラッグ中はViewからの更新を無視)
+            if (!this.isDraggingV) {
+                const minY = trackV.start + thumbSize / 2;
+                const maxY = trackV.start + trackV.size - thumbSize / 2;
+                // data.v.ratio (0.0 - 1.0) をUI座標にマップ
+                trackV.thumb.y = minY + (maxY - minY) * data.v.ratio;
+            }
+        } else {
+            trackV.track.setVisible(false);
+            trackV.thumb.setVisible(false);
+        }
+
+        // --- 水平 (Horizontal) ---
+        const trackH = this.scrollBars.h;
+        if (data.h.visible) {
+            this.scrollBars.h.track.setVisible(true);
+            this.scrollBars.h.thumb.setVisible(true);
+
+            // サイズ計算
+            let thumbSize = data.h.sizeRatio * trackH.size;
+            thumbSize = Phaser.Math.Clamp(thumbSize, 20, trackH.size);
+
+            // Visual Update
+            trackH.thumb.width = thumbSize;
+            trackH.thumb.setSize(thumbSize, trackH.track.height);
+            if (trackH.thumb.input) {
+                trackH.thumb.input.hitArea.width = thumbSize;
+                trackH.thumb.input.hitArea.height = trackH.track.height;
+            }
+
+            // 位置計算
+            if (!this.isDraggingH) {
+                const minX = trackH.start + thumbSize / 2;
+                const maxX = trackH.start + trackH.size - thumbSize / 2;
+                trackH.thumb.x = minX + (maxX - minX) * data.h.ratio;
+            }
+        } else {
+            trackH.track.setVisible(false);
+            trackH.thumb.setVisible(false);
+        }
     }
 
     // ズーム値を更新 (相対値)
@@ -303,6 +507,7 @@ class UIScene extends Phaser.Scene {
         // GameSceneからのイベントをリッスン
         this.game.events.on('updateUI', this.updateUI, this);
         this.game.events.on('showMessage', this.showMessage, this);
+        this.game.events.on('updateScroll', this.updateScrollBars, this);
     }
 
     // UI要素を更新

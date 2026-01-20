@@ -8,6 +8,9 @@ class GameScene extends Phaser.Scene {
         // ゲームセッションの初期化
         this.initGameSession();
 
+        // スクロールコーディネーターの初期化
+        this.scrollCoordinator = new ScrollCoordinator();
+
         // ゲームボードの作成
         this.createGameBoard(this.session.config.rows, this.session.config.cols, this.session.config.cellSize);
 
@@ -27,9 +30,13 @@ class GameScene extends Phaser.Scene {
         }
         // 他のシーンからのイベントをリッスン
         this.game.events.on('zoomUpdate', this.setZoom, this);
+        this.game.events.on('scrollRequest', this.handleScrollRequest, this);
 
         // カメラ操作の設定
         this.setupCameraEvents();
+
+        // 初期スクロール情報の送信
+        this.time.delayedCall(100, () => this.updateScrollInfo());
     }
 
     update(time, delta) {
@@ -297,6 +304,7 @@ class GameScene extends Phaser.Scene {
     // ズーム値を設定
     setZoom(value) {
         this.cameras.main.setZoom(value);
+        this.updateScrollInfo();
     }
 
     // カメラ操作（パン）の設定
@@ -306,15 +314,91 @@ class GameScene extends Phaser.Scene {
             if (!pointer.isDown) return;
 
             // 左クリックでも右クリックでもドラッグ可能にする
-            // マインスイーパーの操作と被らないように、一定距離以上動いた場合のみドラッグとみなすなどの制御も考えられるが
-            // シンプルに「ドラッグ＝カメラ移動」とする（クリック判定はpointerupで行われるため）
-            // ただし、Game Object (Cell) 上でのドラッグは Cell 側で stopPropagation される可能性があるか？
-            // Phaserのイベント伝播仕様による。
-            // ここでは、カメラの scrollX/Y を更新する。
-
             this.cameras.main.scrollX -= (pointer.x - pointer.prevPosition.x) / this.cameras.main.zoom;
             this.cameras.main.scrollY -= (pointer.y - pointer.prevPosition.y) / this.cameras.main.zoom;
+
+            this.updateScrollInfo();
         });
+    }
+
+    // スクロールバーからの操作を処理
+    handleScrollRequest(data) {
+        const bounds = this.getScrollBounds();
+
+        if (data.axis === 'vertical') {
+            const targetY = this.scrollCoordinator.calculateCameraPosition(data.value, 'vertical', this.cameras.main, bounds);
+            this.cameras.main.scrollY = targetY;
+        } else if (data.axis === 'horizontal') {
+            const targetX = this.scrollCoordinator.calculateCameraPosition(data.value, 'horizontal', this.cameras.main, bounds);
+            this.cameras.main.scrollX = targetX;
+        }
+        this.updateScrollInfo();
+    }
+
+    // スクロール情報の更新と送信
+    updateScrollInfo() {
+        if (!this.boardConfig && this.session && this.session.config) {
+            this.boardConfig = {
+                rows: this.session.config.rows,
+                cols: this.session.config.cols,
+                cellSize: this.session.config.cellSize
+            };
+        }
+
+        // Bounds計算
+        const bounds = this.getScrollBounds();
+        const viewportW = this.cameras.main.width / this.cameras.main.zoom;
+        const viewportH = this.cameras.main.height / this.cameras.main.zoom;
+
+        // クランプ処理（行き過ぎ防止） - Coordinatorには任せずGameSceneの責任とする（Coordinatorは純粋計算のみ）
+        // 垂直
+        if (bounds.height > viewportH) {
+            const maxScrollY = bounds.top + bounds.height - viewportH;
+            this.cameras.main.scrollY = Phaser.Math.Clamp(this.cameras.main.scrollY, bounds.top, maxScrollY);
+        }
+        // 水平
+        if (bounds.width > viewportW) {
+            const maxScrollX = bounds.left + bounds.width - viewportW;
+            this.cameras.main.scrollX = Phaser.Math.Clamp(this.cameras.main.scrollX, bounds.left, maxScrollX);
+        }
+
+        // UI用データの計算を委譲
+        const syncData = this.scrollCoordinator.calculateUISyncData(this.cameras.main, bounds);
+
+        this.game.events.emit('updateScroll', syncData);
+    }
+
+    // コンテンツの矩形範囲を取得
+    getScrollBounds() {
+        const padding = 50;
+        // ボードの位置情報が必要。GameSceneのcreateGameBoardで計算しているがプロパティ保存してない。
+        // 再計算するか、setup時に保存するか。
+        // createGameBoardで boardContainer.x/y は 0,0。
+        // board.x/y は createGameBoard で入れた boardX, boardY。
+
+        // 簡易的に再計算
+        const rows = this.session.config.rows;
+        const cols = this.session.config.cols;
+        const cellSize = this.session.config.cellSize;
+        const boardWidth = cols * cellSize;
+        const boardHeight = rows * cellSize;
+
+        // createGameBoardと同じロジック
+        // const boardX = (this.cameras.main.width - boardWidth) / 2;
+        // const boardY = 70;
+        // この boardX は初期位置。
+
+        // ボード本体の絶対座標範囲
+        // boardX が画面外（マイナス）の可能性もある。
+        const initialBoardX = (this.cameras.main.width - boardWidth) / 2;
+        const initialBoardY = 70;
+
+        return {
+            left: initialBoardX - padding,
+            top: initialBoardY - padding,
+            width: boardWidth + padding * 2,
+            height: boardHeight + padding * 2
+        };
     }
 
     // ゲームの再スタート
