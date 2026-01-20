@@ -134,6 +134,9 @@ class GameScene extends Phaser.Scene {
 
     // セルがクリックされたときの処理
     handleCellClick(cell) {
+        // カメラ操作中（Ctrl押下）は無視
+        if (this.input.activePointer.event.ctrlKey) return;
+
         const row = cell.boardRow;
         const col = cell.boardCol;
 
@@ -162,6 +165,9 @@ class GameScene extends Phaser.Scene {
 
     // 右クリック時の処理（旗を立てる）
     handleCellRightClick(cell) {
+        // カメラ操作中（Ctrl押下）は無視
+        if (this.input.activePointer.event.ctrlKey) return;
+
         const row = cell.boardRow;
         const col = cell.boardCol;
 

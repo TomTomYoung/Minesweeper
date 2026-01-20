@@ -4,6 +4,23 @@
 class UIScene extends Phaser.Scene {
     constructor() {
         super({ key: 'UIScene' });
+
+        // ループ防止・ドラッグ状態フラグ
+        this.isUpdatingFromGame = false;
+        this.isDraggingV = false;
+        this.isDraggingH = false;
+
+        // UI参照
+        this.mainContainer = null;
+        this.infoPanel = null;
+        this.messagePanel = null;
+        this.controlPanel = null;
+
+        this.zoomSlider = null;
+        this.currentZoom = 1.0;
+
+        this.scrollBarV = null;
+        this.scrollBarH = null;
     }
 
     create() {
@@ -24,59 +41,55 @@ class UIScene extends Phaser.Scene {
         this.mainContainer = this.add.container(0, 0);
 
         // --- 1. Top Panel (Info) ---
-        // 中央上部
         this.infoPanel = new InfoPanel(this, width / 2, 25, width);
         this.mainContainer.add(this.infoPanel);
 
         // --- 2. Message Panel ---
-        // Top Center (InfoPanelの下)
         const messageY = 80;
         this.messagePanel = new MessagePanel(this, width / 2, messageY);
         this.mainContainer.add(this.messagePanel);
 
         // --- 3. Zoom Slider ---
-        // Top Right (操作しやすい位置)
         this.createZoomSlider(width);
 
         // --- 4. Control Panel ---
-        // 画面下部
         const panelHeight = 60;
         const panelY = height - panelHeight / 2;
         this.controlPanel = new ControlPanel(this, width / 2, panelY, width);
         this.mainContainer.add(this.controlPanel);
 
         // --- 5. Scroll Bars ---
-        // 右端と下端 (ControlPanelの上)
         this.createScrollBars(width, height);
     }
 
     createZoomSlider(width) {
-        // 右上に配置
         const sliderX = width - 120;
         const sliderY = 80;
         const sliderWidth = 150;
 
-        // ラベル
-        this.add.text(sliderX - sliderWidth / 2 - 40, sliderY, 'Zoom', { fontSize: '16px', fill: '#ffffff' }).setOrigin(0.5);
+        this.add
+            .text(sliderX - sliderWidth / 2 - 40, sliderY, 'Zoom', {
+                fontSize: '16px',
+                fill: '#ffffff',
+            })
+            .setOrigin(0.5);
 
-        // RexUI Slider (現在のズームレベルを反映するには GameScene からの値が必要だが、初期値は適当に設定)
         this.currentZoom = 1.0;
 
-        this.zoomSlider = this.rexUI.add.slider({
-            x: sliderX,
-            y: sliderY,
-            width: sliderWidth,
-            height: 20,
-            orientation: 'horizontal',
-            track: this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x444444),
-            thumb: this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x888888),
-            value: 0.33, // (1.0 - 0.5) / 1.5 = 0.33 approx
-            input: 'drag',
-        })
+        this.zoomSlider = this.rexUI.add
+            .slider({
+                x: sliderX,
+                y: sliderY,
+                width: sliderWidth,
+                height: 20,
+                orientation: 'horizontal',
+                track: this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x444444),
+                thumb: this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x888888),
+                value: 0.33, // (1.0 - 0.5) / 1.5 = 0.33 approx
+                input: 'drag',
+            })
             .layout()
             .on('valuechange', (newValue) => {
-                // UI操作 -> ゲームへの反映
-                // フラグをチェックして、ゲーム側からの更新中にイベントループしないようにする
                 if (!this.isUpdatingFromGame) {
                     const zoom = 0.5 + newValue * 1.5; // Range: 0.5 ~ 2.0
                     this.setZoom(zoom);
@@ -90,49 +103,83 @@ class UIScene extends Phaser.Scene {
         const vY = height / 2;
         const vHeight = height - 120;
 
-        this.scrollBarV = this.rexUI.add.scrollBar({
-            x: vX,
-            y: vY,
-            width: 20,
-            height: vHeight,
-            orientation: 'vertical',
-            background: this.rexUI.add.roundRectangle(0, 0, 0, 0, 0, 0x222222),
-            track: this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x444444),
-            thumb: this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x888888),
-            value: 0,
-        })
-            .layout()
-            .on('valuechange', (newValue) => {
-                if (!this.isUpdatingFromGame) {
-                    this.game.events.emit('scrollRequest', { axis: 'vertical', value: newValue });
-                }
-            });
+        const vBarBg = this.rexUI.add.roundRectangle(0, 0, 0, 0, 0, 0x222222);
+        const vSliderTrack = this.rexUI.add.roundRectangle(0, 0, 0, 0, 0, 0x222222);
+        const vSliderThumb = this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x888888);
 
-        this.scrollBarV.setVisible(false);
+        this.scrollBarV = this.rexUI.add
+            .scrollBar({
+                x: vX,
+                y: vY,
+                width: 20,
+                height: vHeight,
+                orientation: 'vertical',
+                background: vBarBg,
+                slider: {
+                    track: vSliderTrack,
+                    thumb: vSliderThumb,
+                    input: 'drag',
+                },
+                value: 0,
+            })
+            .layout();
 
         // --- Horizontal ScrollBar (Bottom, above ControlPanel) ---
         const hX = width / 2;
         const hY = height - 70;
         const hWidth = width - 40;
 
-        this.scrollBarH = this.rexUI.add.scrollBar({
-            x: hX,
-            y: hY,
-            width: hWidth,
-            height: 20,
-            orientation: 'horizontal',
-            background: this.rexUI.add.roundRectangle(0, 0, 0, 0, 0, 0x222222),
-            track: this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x444444),
-            thumb: this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x888888),
-            value: 0,
-        })
-            .layout()
-            .on('valuechange', (newValue) => {
-                if (!this.isUpdatingFromGame) {
-                    this.game.events.emit('scrollRequest', { axis: 'horizontal', value: newValue });
-                }
-            });
+        const hBarBg = this.rexUI.add.roundRectangle(0, 0, 0, 0, 0, 0x222222);
+        const hSliderTrack = this.rexUI.add.roundRectangle(0, 0, 0, 0, 0, 0x222222);
+        const hSliderThumb = this.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x888888);
 
+        this.scrollBarH = this.rexUI.add
+            .scrollBar({
+                x: hX,
+                y: hY,
+                width: hWidth,
+                height: 20,
+                orientation: 'horizontal',
+                background: hBarBg,
+                slider: {
+                    track: hSliderTrack,
+                    thumb: hSliderThumb,
+                    input: 'drag',
+                },
+                value: 0,
+            })
+            .layout();
+
+        // ドラッグ中フラグ（RexUI ScrollBar 自体のイベントで管理）
+        this.scrollBarV.on('inputstart', () => {
+            this.isDraggingV = true;
+        });
+        this.scrollBarV.on('inputend', () => {
+            this.isDraggingV = false;
+        });
+
+        this.scrollBarH.on('inputstart', () => {
+            this.isDraggingH = true;
+        });
+        this.scrollBarH.on('inputend', () => {
+            this.isDraggingH = false;
+        });
+
+        // 値変更 -> GameScene へ通知
+        this.scrollBarV.on('valuechange', (newValue) => {
+            if (!this.isUpdatingFromGame) {
+                this.game.events.emit('scrollRequest', { axis: 'vertical', value: newValue });
+            }
+        });
+
+        this.scrollBarH.on('valuechange', (newValue) => {
+            if (!this.isUpdatingFromGame) {
+                this.game.events.emit('scrollRequest', { axis: 'horizontal', value: newValue });
+            }
+        });
+
+        // 初期は非表示
+        this.scrollBarV.setVisible(false);
         this.scrollBarH.setVisible(false);
     }
 
@@ -150,7 +197,7 @@ class UIScene extends Phaser.Scene {
 
         // メッセージ表示
         this.game.events.on('showMessage', (config) => {
-            this.messagePanel.showMessage(config.text, config.color, config.duration);
+            this.messagePanel.showMessage(config);
         });
     }
 
@@ -163,15 +210,15 @@ class UIScene extends Phaser.Scene {
     updateScrollBars(data) {
         if (!this.scrollBarV || !this.scrollBarH) return;
 
-        // ゲーム側からの更新中であることをフラグで示す
         this.isUpdatingFromGame = true;
 
         try {
             // Vertical
             if (data.v.visible) {
                 this.scrollBarV.setVisible(true);
-                this.scrollBarV.setValue(data.v.ratio);
-                // setValueは 'valuechange' イベントを発火するため、リスナー内で !isUpdatingFromGame チェックが必須
+                if (!this.isDraggingV) {
+                    this.scrollBarV.setValue(data.v.ratio);
+                }
             } else {
                 this.scrollBarV.setVisible(false);
             }
@@ -179,13 +226,13 @@ class UIScene extends Phaser.Scene {
             // Horizontal
             if (data.h.visible) {
                 this.scrollBarH.setVisible(true);
-                this.scrollBarH.setValue(data.h.ratio);
+                if (!this.isDraggingH) {
+                    this.scrollBarH.setValue(data.h.ratio);
+                }
             } else {
                 this.scrollBarH.setVisible(false);
             }
-
         } finally {
-            // 必ずフラグを戻す
             this.isUpdatingFromGame = false;
         }
     }
