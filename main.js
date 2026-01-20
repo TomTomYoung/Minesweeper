@@ -15,6 +15,13 @@ window.addEventListener('load', () => {
                 debug: false
             }
         },
+        plugins: {
+            scene: [{
+                key: 'rexUI',
+                plugin: rexuiplugin,
+                mapping: 'rexUI'
+            }]
+        },
         scale: {
             mode: Phaser.Scale.FIT,
             autoCenter: Phaser.Scale.CENTER_BOTH

@@ -66,6 +66,15 @@ class InfoPanel extends Phaser.GameObjects.Container {
         this.uiElements[key] = valueText;
     }
 
+    updateData(flagsLeft, timer) {
+        if (flagsLeft !== undefined && this.uiElements.flagsLeft) {
+            this.uiElements.flagsLeft.setText(flagsLeft.toString());
+        }
+        if (timer !== undefined && this.uiElements.timer) {
+            this.uiElements.timer.setText(timer.toString());
+        }
+    }
+
     updateUI(data) {
         if (data.flagsLeft !== undefined && this.uiElements.flagsLeft) {
             this.uiElements.flagsLeft.setText(data.flagsLeft.toString());

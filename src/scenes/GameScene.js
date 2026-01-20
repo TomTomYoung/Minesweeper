@@ -8,11 +8,8 @@ class GameScene extends Phaser.Scene {
         // ゲームセッションの初期化
         this.initGameSession();
 
-        // スクロールコーディネーターの初期化
-        this.scrollCoordinator = new ScrollCoordinator();
-
         // カメラコントローラーの初期化
-        this.cameraController = new CameraController(this, this.cameras.main, this.scrollCoordinator);
+        this.cameraController = new CameraController(this, this.cameras.main);
 
         // ゲームボードの作成
         this.createGameBoard(this.session.config.rows, this.session.config.cols, this.session.config.cellSize);
@@ -42,6 +39,7 @@ class GameScene extends Phaser.Scene {
 
         // カメラ操作の設定 (背景ゾーン作成と割り当て)
         this.setupCameraInputZone();
+        this.cameraController.setupZoomInput();
 
         // 初期スクロール情報の送信
         this.time.delayedCall(100, () => this.updateScrollInfo());
@@ -343,15 +341,29 @@ class GameScene extends Phaser.Scene {
     }
 
     // スクロールバーからの操作を処理
+    // スクロールバーからの操作を処理
     handleScrollRequest(data) {
         const bounds = this.getScrollBounds();
+        const cam = this.cameras.main;
+        const viewportW = cam.width / cam.zoom;
+        const viewportH = cam.height / cam.zoom;
 
         if (data.axis === 'vertical') {
-            const targetY = this.scrollCoordinator.calculateCameraPosition(data.value, 'vertical', this.cameras.main, bounds);
-            this.cameras.main.scrollY = targetY;
+            const maxScrollY = bounds.top + bounds.height - viewportH;
+            const minScrollY = bounds.top;
+
+            if (maxScrollY > minScrollY) {
+                // value (0-1) -> scrollY
+                cam.scrollY = minScrollY + data.value * (maxScrollY - minScrollY);
+            }
         } else if (data.axis === 'horizontal') {
-            const targetX = this.scrollCoordinator.calculateCameraPosition(data.value, 'horizontal', this.cameras.main, bounds);
-            this.cameras.main.scrollX = targetX;
+            const maxScrollX = bounds.left + bounds.width - viewportW;
+            const minScrollX = bounds.left;
+
+            if (maxScrollX > minScrollX) {
+                // value (0-1) -> scrollX
+                cam.scrollX = minScrollX + data.value * (maxScrollX - minScrollX);
+            }
         }
         this.updateScrollInfo();
     }
@@ -416,7 +428,39 @@ class GameScene extends Phaser.Scene {
         if (this.debugMode) console.groupEnd();
 
         // UI用データの計算を委譲
-        const syncData = this.scrollCoordinator.calculateUISyncData(this.cameras.main, bounds);
+        // UI用データの計算
+        // UI Synchronization: Calculate 0-1 ratio for ScrollBars
+        const cam = this.cameras.main;
+        const scrollX = cam.scrollX;
+        const scrollY = cam.scrollY;
+
+        let vRatio = 0;
+        let hRatio = 0;
+        let vVisible = false;
+        let hVisible = false;
+
+        // Vertical
+        const maxScrollY = bounds.top + bounds.height - viewportH;
+        if (maxScrollY > bounds.top) {
+            vRatio = (scrollY - bounds.top) / (maxScrollY - bounds.top);
+            vVisible = true;
+        }
+
+        // Horizontal
+        const maxScrollX = bounds.left + bounds.width - viewportW;
+        if (maxScrollX > bounds.left) {
+            hRatio = (scrollX - bounds.left) / (maxScrollX - bounds.left);
+            hVisible = true;
+        }
+
+        // Clamp ratios
+        vRatio = Phaser.Math.Clamp(vRatio, 0, 1);
+        hRatio = Phaser.Math.Clamp(hRatio, 0, 1);
+
+        const syncData = {
+            v: { visible: vVisible, ratio: vRatio },
+            h: { visible: hVisible, ratio: hRatio }
+        };
 
         this.game.events.emit('updateScroll', syncData);
     }

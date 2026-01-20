@@ -6,11 +6,6 @@ class ControlPanel extends Phaser.GameObjects.Container {
         this.width = width;
         this.height = 60;
 
-        // Zoom State
-        this.currentZoom = 1.0;
-        this.minZoom = 0.5;
-        this.maxZoom = 2.0;
-
         this.createElements();
     }
 
@@ -30,11 +25,7 @@ class ControlPanel extends Phaser.GameObjects.Container {
         this.createNewGameButton(leftBase + 80, 0);
         this.createMenuButton(leftBase + 210, 0);
 
-        // Zoom Controls (Right side)
-        // Original: width - 200.
-        // Relative X = (width - 200) - Width/2 = Width/2 - 200.
-        const rightBase = this.width / 2;
-        this.createZoomControls(rightBase - 200, 0);
+
     }
 
     createNewGameButton(x, y) {
@@ -75,93 +66,10 @@ class ControlPanel extends Phaser.GameObjects.Container {
         this.add(button);
     }
 
-    createZoomControls(x, y) {
-        const wrapper = this.scene.add.container(x, y);
-
-        // Label
-        const label = this.scene.add.text(-100, 0, 'Zoom:', {
-            fontSize: '16px',
-            fontFamily: 'Arial',
-            color: '#333'
-        }).setOrigin(1, 0.5);
-
-        // [-] Button
-        const minusBtn = this.scene.add.rectangle(-80, 0, 30, 30, 0xdddddd)
-            .setStrokeStyle(1, 0x999999)
-            .setInteractive()
-            .on('pointerdown', () => this.updateZoomDelta(-0.25))
-            .on('pointerover', () => minusBtn.setFillStyle(0xe0e0e0))
-            .on('pointerout', () => minusBtn.setFillStyle(0xdddddd));
-
-        const minusText = this.scene.add.text(-80, 0, '-', {
-            fontSize: '20px',
-            fontFamily: 'Arial',
-            color: '#333',
-            fontWeight: 'bold'
-        }).setOrigin(0.5);
-
-        // [+] Button
-        const plusBtn = this.scene.add.rectangle(80, 0, 30, 30, 0xdddddd)
-            .setStrokeStyle(1, 0x999999)
-            .setInteractive()
-            .on('pointerdown', () => this.updateZoomDelta(0.25))
-            .on('pointerover', () => plusBtn.setFillStyle(0xe0e0e0))
-            .on('pointerout', () => plusBtn.setFillStyle(0xdddddd));
-
-        const plusText = this.scene.add.text(80, 0, '+', {
-            fontSize: '20px',
-            fontFamily: 'Arial',
-            color: '#333',
-            fontWeight: 'bold'
-        }).setOrigin(0.5);
-
-        // Slider Bg
-        const sliderBg = this.scene.add.rectangle(0, 0, 100, 4, 0xcccccc);
-
-        // Slider Knob
-        this.sliderKnob = this.scene.add.circle(0, 0, 8, 0x2196F3)
-            .setStrokeStyle(2, 0xffffff)
-            .setInteractive({ draggable: true });
-
-        // Knob Drag
-        this.sliderKnob.on('drag', (pointer, dragX, dragY) => {
-            // Local dragX is relative to wrapper?
-            // Yes, wrapper is container.
-
-            const minX = -50;
-            const maxX = 50;
-            const clampedX = Phaser.Math.Clamp(dragX, minX, maxX);
-
-            this.sliderKnob.x = clampedX;
-
-            const progress = (clampedX - minX) / 100;
-            const newZoom = this.minZoom + (this.maxZoom - this.minZoom) * progress;
-
-            this.setZoom(newZoom);
-        });
-
-        wrapper.add([label, minusBtn, minusText, plusBtn, plusText, sliderBg, this.sliderKnob]);
-        this.add(wrapper);
-    }
-
-    updateZoomDelta(delta) {
-        const newZoom = Phaser.Math.Clamp(this.currentZoom + delta, this.minZoom, this.maxZoom);
-        this.updateZoom(newZoom);
-    }
-
-    updateZoom(value) { // Set absolute value
-        this.currentZoom = value;
-        this.setZoom(value);
-
-        // Update Knob position
-        const progress = (value - this.minZoom) / (this.maxZoom - this.minZoom);
-        if (this.sliderKnob) {
-            this.sliderKnob.x = -50 + (progress * 100);
-        }
-    }
-
-    setZoom(value) {
-        // Emit logic to UIScene/Game
-        this.scene.setZoom(value); // Delegate back to scene method
+    updateScore(score, totalScore) {
+        // Placeholder for score updates in ControlPanel if needed
+        // But InfoPanel handles it mostly.
+        // If ControlPanel has no score display, this method is unused or needs implementation.
+        // Based on previous code, it seems ControlPanel doesn't show score.
     }
 }
