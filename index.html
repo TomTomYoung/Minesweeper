@@ -48,9 +48,24 @@
     <script src="src/objects/Board.js"></script>
 
     <!-- UI Components -->
-    <script src="src/objects/ui/InfoPanel.js"></script>
-    <script src="src/objects/ui/ControlPanel.js"></script>
-    <script src="src/objects/ui/MessagePanel.js"></script>
+    <!-- UI Core -->
+    <script src="src/ui/events/UIEventBus.js"></script>
+    <script src="src/ui/state/UIState.js"></script>
+    <script src="src/ui/layout/UILayout.js"></script>
+
+    <!-- UI Components -->
+    <script src="src/ui/components/InfoPanel.js"></script>
+    <script src="src/ui/components/ControlPanel.js"></script>
+    <script src="src/ui/components/MessagePanel.js"></script>
+
+    <!-- UI Widgets -->
+    <script src="src/ui/widgets/ZoomSlider.js"></script>
+    <script src="src/ui/widgets/ScrollBarV.js"></script>
+    <script src="src/ui/widgets/ScrollBarH.js"></script>
+
+    <!-- UI Controllers -->
+    <script src="src/ui/controllers/ZoomController.js"></script>
+    <script src="src/ui/controllers/ScrollController.js"></script>
 
 
     <!-- ロジック -->
@@ -62,9 +77,18 @@
     <script src="src/scenes/BootScene.js"></script>
     <script src="src/scenes/MenuScene.js"></script>
 
+    <!-- Game Logic & Modules -->
     <script src="src/logic/CameraController.js"></script>
+
+    <script src="src/game/events/GameEventBus.js"></script>
+    <script src="src/game/managers/BoardManager.js"></script>
+    <script src="src/game/controllers/InputController.js"></script>
+    <script src="src/game/controllers/ScrollController.js"></script>
+    <script src="src/game/controllers/GameFlowController.js"></script>
+    <script src="src/game/debug/GameDebugger.js"></script>
+
     <script src="src/scenes/GameScene.js"></script>
-    <script src="src/scenes/UIScene.js"></script>
+    <script src="src/ui/UIScene.js"></script>
 
     <!-- ユーティリティ -->
     <script src="src/utils/GameConfig.js"></script>

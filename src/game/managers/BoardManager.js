@@ -1,0 +1,83 @@
+class BoardManager {
+    constructor(scene, eventBus) {
+        this.scene = scene;
+        this.eventBus = eventBus;
+        this.boardContainer = null;
+        this.board = null;
+    }
+
+    createGameBoard(rows, cols, cellSize) {
+        // Create Container
+        this.boardContainer = this.scene.add.container(0, 0);
+
+        // Calculate Position
+        const boardWidth = cols * cellSize;
+        const boardHeight = rows * cellSize;
+        const boardX = (this.scene.cameras.main.width - boardWidth) / 2;
+        const boardY = 70;
+
+        // Background
+        const boardBg = this.scene.add.rectangle(
+            boardX + boardWidth / 2,
+            boardY + boardHeight / 2,
+            boardWidth + 10,
+            boardHeight + 10,
+            0xbdbdbd
+        ).setStrokeStyle(3, 0x7b7b7b);
+        this.boardContainer.add(boardBg);
+
+        // Create Board Object
+        this.board = new Board(
+            this.scene,
+            boardX,
+            boardY,
+            rows,
+            cols,
+            cellSize
+        );
+
+        return this.board;
+    }
+
+    updateBoardUI(config, boardModel) {
+        if (!this.board) return;
+        for (let i = 0; i < config.rows; i++) {
+            for (let j = 0; j < config.cols; j++) {
+                this.board.updateCellUI(i, j, boardModel.getCell(i, j));
+            }
+        }
+    }
+
+    revealAllMines(boardModel) {
+        boardModel.revealAllMines();
+        // Since boardModel is modified, we just trigger UI update for all
+        // Or Board object might need specific method if optimized, but updateBoardUI is fine.
+        // Actually GameScene implementation called session.boardModel.revealAllMines() then updateBoardUI().
+        // BoardManager should receive the model to act upon? 
+        // Or just assume the caller (GameScene) updated the model?
+        // Let's passed the model to updateBoardUI.
+        // For revealAllMines, the logic is in model.
+    }
+
+    reconstructBoard(boardData) {
+        if (this.board) {
+            this.board.updateCellTypes(boardData);
+        }
+    }
+
+    // Helper for ScrollController to get bounds
+    getBoardDimensions(rows, cols, cellSize) {
+        // Need to replicate calculation or store it.
+        // let's store basics
+        const boardWidth = cols * cellSize;
+        const boardHeight = rows * cellSize;
+        // BoardX/Y logic is: (ScreenW - BoardW)/2, 70
+        // We need ScreenW... which is camera width.
+        const width = this.scene.cameras.main.width;
+
+        const boardX = (width - boardWidth) / 2;
+        const boardY = 70;
+
+        return { x: boardX, y: boardY, width: boardWidth, height: boardHeight };
+    }
+}
