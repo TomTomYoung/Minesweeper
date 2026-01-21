@@ -39,9 +39,10 @@ class GameScene extends Phaser.Scene {
         this.boardData = this.gameSession.boardData;
 
         // 5. Initialize Controllers
-        this.inputController = new InputController(this, this.eventBus);
+        // Pass BoardManager and Session to InputController so it can wire itself up
+        this.inputController = new InputController(this, this.eventBus, this.boardManager, this.gameSession);
 
-        this.scrollController = new ScrollController(this, this.eventBus, this.boardManager, this.cameraController);
+        this.scrollController = new GameScrollController(this, this.eventBus, this.boardManager, this.cameraController);
         this.scrollController.setSession(this.gameSession);
 
         this.gameFlowController = new GameFlowController(this, this.eventBus, this.gameSession);
@@ -90,33 +91,7 @@ class GameScene extends Phaser.Scene {
 
     setupHelpers() {
         // Board Interaction
-        const board = this.boardManager.board;
-        board.on('cellClicked', (cell) => {
-            const result = this.inputController.handleCellClick(cell, this.gameSession);
-            if (result) {
-                this.syncBoardData();
-                this.handleResult(result);
-            }
-        });
-
-        board.on('cellRightClicked', (cell) => {
-            const result = this.inputController.handleCellRightClick(cell, this.gameSession);
-            if (result) {
-                // Update specific cell UI
-                // Or BoardManager can handle? BoardManager.updateCellUI(row, col, cellModel)
-                // Need mapped model
-                const row = cell.boardRow;
-                const col = cell.boardCol;
-                // We can use BoardManager updateBoardUI or single cell update
-                // Since BoardManager wraps Board, let's look at BoardManager again.
-                // It has updateBoardUI. We can add updateCellUI there or just access board.
-                // For directness:
-                this.boardManager.board.updateCellUI(row, col, this.gameSession.boardModel.getCell(row, col));
-
-                this.updateUI();
-                this.handleResult(result); // Check Win
-            }
-        });
+        // Board Interaction is now handled by InputController internally
 
         // Global Events
         this.eventBus.onZoomUpdate((zoom) => {

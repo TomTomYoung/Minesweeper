@@ -77,7 +77,7 @@ class UIScene extends Phaser.Scene {
 
     initializeControllers() {
         this.zoomController = new ZoomController(this.state, this.eventBus, this.zoomSlider);
-        this.scrollController = new ScrollController(this.state, this.eventBus, this.scrollBarV, this.scrollBarH);
+        this.scrollController = new UIScrollController(this.state, this.eventBus, this.scrollBarV, this.scrollBarH);
     }
 
     setupEventListeners() {

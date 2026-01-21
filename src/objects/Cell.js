@@ -81,8 +81,8 @@ class Cell extends Phaser.GameObjects.Container {
             if (pointer.rightButtonDown()) return; // 右クリックの場合は処理しない
 
             // クリック効果音を再生
-            if (this.scene.sound.get('click')) {
-                this.scene.sound.play('click');
+            if (this.scene.audio) {
+                this.scene.audio.playSfx('click');
             }
 
             // カスタムイベントを発火
@@ -97,8 +97,8 @@ class Cell extends Phaser.GameObjects.Container {
                 //pointer.event.preventDefault();
 
                 // クリック効果音を再生
-                if (this.scene.sound.get('click')) {
-                    this.scene.sound.play('click');
+                if (this.scene.audio) {
+                    this.scene.audio.playSfx('click');
                 }
 
                 // カスタムイベントを発火

@@ -1,4 +1,4 @@
-class ScrollController {
+class UIScrollController {
     constructor(state, eventBus, scrollBarV, scrollBarH) {
         this.state = state;
         this.eventBus = eventBus;

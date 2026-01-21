@@ -1,4 +1,4 @@
-class ScrollController {
+class GameScrollController {
     constructor(scene, eventBus, boardManager, cameraController) {
         this.scene = scene;
         this.eventBus = eventBus;

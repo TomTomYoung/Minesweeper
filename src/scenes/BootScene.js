@@ -13,6 +13,15 @@ class BootScene extends Phaser.Scene {
     }
 
     create() {
+        console.log('BootScene started');
+        if (this.game.plugins.plugins.some(p => p.key === 'rexUI')) {
+            console.log('RexUI plugin found in plugin manager');
+        } else if (window.rexuiplugin) {
+            console.log('RexUI plugin found in window');
+        } else {
+            console.warn('RexUI plugin NOT found');
+        }
+
         // ゲーム設定の初期化
         this.game.gameData.gameConfig = new GameConfig();
 

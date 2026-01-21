@@ -38,23 +38,30 @@ class ModeSelector extends Phaser.GameObjects.Container {
         const width = 120;
         const height = 30;
 
-        // Background
-        const bg = this.scene.add.rectangle(x, y, width, height, 0x9E9E9E, 1)
+        // Create a dedicated container for the button
+        const btnContainer = this.scene.add.container(x, y);
+        btnContainer.mode = mode; // Store mode on the container
+
+        // Background (Relative to button container 0,0)
+        const bg = this.scene.add.rectangle(0, 0, width, height, 0x9E9E9E, 1)
             .setInteractive();
 
-        // Text
-        const buttonText = this.scene.add.text(x, y, text, {
+        // Text (Relative to button container 0,0)
+        // Correctly center text
+        const buttonText = this.scene.add.text(0, 0, text, {
             fontSize: '16px',
             fontFamily: 'Arial',
             color: '#fff'
         }).setOrigin(0.5);
 
+        // Add to button container
+        btnContainer.add([bg, buttonText]);
+        btnContainer.bg = bg; // Store ref for coloring
+
         // Interaction
         bg.on('pointerdown', () => this.setMode(mode));
 
-        // Store ref on bg for color updates (hacky but acts as container for state)
-        // Since we are adding bg to `this` (container), we can just store references to bg objects in class.
-        return { bg, text, mode };
+        return btnContainer;
     }
 
     setMode(mode) {
