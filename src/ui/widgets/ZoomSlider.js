@@ -1,3 +1,24 @@
+/**
+ * ZoomSlider.js
+ * 
+ * A wrapper class for RexUI Slider to handle Zoom functionality.
+ * 
+ * @class ZoomSlider
+ * 
+ * @specs Input (Constructor)
+ *  - scene: Phaser.Scene - The scene instance.
+ *  - config: object
+ *      - x, y: number - Position.
+ *      - width, height: number - Size.
+ * 
+ * @specs Output (Events)
+ *  - onValueChange(callback): Fired when slider value changes.
+ *      - callback(newValue): newValue is number (0.0 to 1.0).
+ * 
+ * @dependencies
+ *  - Phaser 3
+ *  - RexUI Plugin (scene.rexUI.add.slider, roundRectangle)
+ */
 class ZoomSlider {
     constructor(scene, config) {
         this.scene = scene;

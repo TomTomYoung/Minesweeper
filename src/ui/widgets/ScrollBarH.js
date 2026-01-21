@@ -1,3 +1,30 @@
+/**
+ * ScrollBarH.js
+ * 
+ * A wrapper class for RexUI Horizontal ScrollBar.
+ * 
+ * @class ScrollBarH
+ * 
+ * @specs Input (Constructor)
+ *  - scene: Phaser.Scene - The scene instance.
+ *  - config: object
+ *      - x, y: number - Position.
+ *      - width, height: number - Size.
+ * 
+ * @specs Output (Methods)
+ *  - setVisible(bool)
+ *  - setValue(0.0 ~ 1.0)
+ *  - setThumbSize(ratio: 0.0 ~ 1.0)
+ * 
+ * @specs Events
+ *  - onValueChange(cb)
+ *  - onInputStart(cb)
+ *  - onInputEnd(cb)
+ * 
+ * @dependencies
+ *  - Phaser 3
+ *  - RexUI Plugin
+ */
 class ScrollBarH {
     constructor(scene, config) {
         this.scene = scene;
