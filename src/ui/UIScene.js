@@ -55,17 +55,17 @@ class UIScene extends Phaser.Scene {
         // So we just instantiate them.
 
         // --- Components ---
-        const infoRect = this.layout.getInfoPanelRect(width);
+        const infoRect = this.layout.getInfoPanelRect(width, height);
         this.infoPanel = new InfoPanel(this, infoRect.x, infoRect.y, infoRect.width);
 
-        const msgPos = this.layout.getMessagePanelPosition(width);
+        const msgPos = this.layout.getMessagePanelPosition(width, height);
         this.messagePanel = new MessagePanel(this, msgPos.x, msgPos.y);
 
         const controlRect = this.layout.getControlPanelRect(width, height);
         this.controlPanel = new ControlPanel(this, controlRect.x, controlRect.y, controlRect.width);
 
         // --- Widgets ---
-        this.zoomSlider = new ZoomSlider(this, this.layout.getZoomSliderConfig(width));
+        this.zoomSlider = new ZoomSlider(this, this.layout.getZoomSliderConfig(width, height));
 
         this.scrollBarV = new ScrollBarV(this, this.layout.getScrollBarVConfig(width, height));
         this.scrollBarH = new ScrollBarH(this, this.layout.getScrollBarHConfig(width, height));
