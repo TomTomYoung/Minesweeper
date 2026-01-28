@@ -40,5 +40,15 @@ class GameDebugger {
 
         this.graphics.lineStyle(2, 0x00ff00);
         this.graphics.strokeRect(viewX, viewY, viewW, viewH);
+
+        // Zoom Center (MidPoint) - Cyan
+        this.graphics.fillStyle(0x00ffff, 1);
+        this.graphics.fillCircle(camera.midPoint.x, camera.midPoint.y, 10);
+
+        // Board Center - Magenta
+        const boardCX = bounds.left + bounds.width / 2;
+        const boardCY = bounds.top + bounds.height / 2;
+        this.graphics.fillStyle(0xff00ff, 1);
+        this.graphics.fillCircle(boardCX, boardCY, 10);
     }
 }

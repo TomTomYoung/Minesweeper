@@ -54,17 +54,15 @@ class GameScrollController {
         const bounds = this.getScrollBounds();
         const cam = this.scene.cameras.main;
 
-        // --- Use WorldView (Correct usage for Zoom) ---
-        // Note: camera.worldView はレンダリングサイクルで更新されるため、
-        // イベント発火直後(setZoom直後)だとまだ値が古い可能性がある。
-        // そのため、midPointとzoomから直接「あるべきworldView」を計算する。
+        // --- Use Correct Scroll Position ---
+        // Note: CameraControllerで setZoom 時に scrollX/Y が即座に更新されるようになったため、
+        // 直接プロパティを使用して問題ない。
 
         const viewportW = cam.width / cam.zoom;
         const viewportH = cam.height / cam.zoom;
 
-        // midPointはズームで変わらない（はず）なので、ここから左上を逆算
-        const currentScrollX = cam.midPoint.x - viewportW / 2;
-        const currentScrollY = cam.midPoint.y - viewportH / 2;
+        const currentScrollX = cam.scrollX;
+        const currentScrollY = cam.scrollY;
 
         // --- Clamp Logic (制限処理) ---
         // Viewportが見えている範囲がBoundsを超えている場合、補正する

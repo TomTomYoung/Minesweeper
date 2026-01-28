@@ -59,22 +59,29 @@ class CameraController {
         if (this.debug && !locked) console.log('[CameraController] Input Unlocked');
     }
 
-    setZoom(value) {
-        // 1. 現在の中心点（ワールド座標）を計算
-        const cam = this.camera;
-        const centerX = cam.scrollX + (cam.width / cam.zoom) / 2;
-        const centerY = cam.scrollY + (cam.height / cam.zoom) / 2;
+    setZoom(value, anchor = null) {
+        if (anchor) {
+            // Anchor-based zoom logic
+            const oldZoom = this.camera.zoom;
+            // Previous vector from Scroll(TL) to Anchor in World Units
+            const diffX = anchor.x - this.camera.scrollX;
+            const diffY = anchor.y - this.camera.scrollY;
 
-        // 2. ズーム適用
-        cam.setZoom(value);
+            // Apply new Zoom
+            this.camera.setZoom(value);
 
-        // 3. 中心点を維持するように scrollX/Y を再計算
-        // 新しいビューポートサイズ
-        const newViewportW = cam.width / value;
-        const newViewportH = cam.height / value;
+            // We want (Anchor - NewScroll) to be scaled such that screen position is invariant.
+            // ScreenPos = Diff * OldZoom
+            // NewScreenPos = NewDiff * NewZoom
+            // Diff * OldZoom = (Anchor - NewScroll) * NewZoom
+            // Anchor - NewScroll = Diff * (OldZoom / NewZoom)
 
-        cam.scrollX = centerX - newViewportW / 2;
-        cam.scrollY = centerY - newViewportH / 2;
+            const scale = oldZoom / value;
+            this.camera.scrollX = anchor.x - (diffX * scale);
+            this.camera.scrollY = anchor.y - (diffY * scale);
+        } else {
+            this.camera.setZoom(value);
+        }
 
         this.scene.events.emit('cameraMoved');
     }

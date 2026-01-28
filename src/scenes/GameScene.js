@@ -95,7 +95,15 @@ class GameScene extends Phaser.Scene {
 
         // Global Events
         this.eventBus.onZoomUpdate((zoom) => {
-            this.cameraController.setZoom(zoom);
+            // Calculate Board Center to use as Zoom Anchor
+            const { rows, cols, cellSize } = this.gameSession.config;
+            const dims = this.boardManager.getBoardDimensions(rows, cols, cellSize);
+            const center = {
+                x: dims.x + dims.width / 2,
+                y: dims.y + dims.height / 2
+            };
+
+            this.cameraController.setZoom(zoom, center);
         }, this);
 
         this.eventBus.onScrollRequest((data) => {
