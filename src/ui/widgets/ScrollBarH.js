@@ -64,15 +64,33 @@ class ScrollBarH {
         this.scrollBar.setValue(value);
     }
 
-    setThumbSize(ratio) {
+    /**
+     * Set thumb size and position with explicit pixel calculation
+     * @param {number} positionRatio - 0.0 ~ 1.0 (Position relative to track)
+     * @param {number} sizeRatio - 0.0 ~ 1.0 (Size relative to track)
+     */
+    updateThumb(positionRatio, sizeRatio) {
+        // 1. Calculate Thumb Size (Width) in Pixels
         const barWidth = this.scrollBar.width;
-        const thumbSize = Math.max(20, barWidth * ratio);
+        const thumbWidth = Math.max(20, barWidth * sizeRatio);
 
+        // 2. Apply Size
         const thumb = this.scrollBar.getElement('slider.thumb');
-        if (thumb && thumb.width !== thumbSize) {
-            thumb.width = thumbSize;
+        if (thumb && thumb.width !== thumbWidth) {
+            thumb.width = thumbWidth;
             this.scrollBar.layout();
         }
+
+        // 3. Calculate Thumb Position (X) in Pixels
+        const trackWidth = barWidth;
+        const scrollableRange = trackWidth - thumbWidth;
+        const pixelX = scrollableRange * positionRatio;
+
+        // Debug/Explain logic if needed
+        // console.log(`[ScrollBarH] Width: ${thumbWidth.toFixed(1)}px, Pos: ${pixelX.toFixed(1)}px`);
+
+        // 4. Update RexUI Value
+        this.scrollBar.setValue(positionRatio);
     }
 
     onInputStart(callback) {

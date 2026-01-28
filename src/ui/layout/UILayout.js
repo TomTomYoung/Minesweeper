@@ -59,16 +59,17 @@ const UILayout = {
         const footer = this.getControlPanelRect(canvasWidth, canvasHeight);
 
         // 利用可能領域の開始Yと終了Y
-        const startY = header.y + (header.height / 2) + this.CONFIG.MARGIN;
-        const endY = footer.y - (footer.height / 2) - this.CONFIG.MARGIN;
+        const startY = header.y + (header.height / 2);
+        const endY = footer.y - (footer.height / 2);
 
+        const barWidth = 20;
         const barHeight = endY - startY;
         const centerY = startY + barHeight / 2;
 
         return {
-            x: canvasWidth - 10,       // 右端から10px
+            x: canvasWidth - (barWidth / 2),       // 右端から10px
             y: centerY,                // 垂直中央
-            width: 20,                 // 幅20px
+            width: barWidth,                 // 幅20px
             height: barHeight          // 利用可能高さ
         };
     },
@@ -81,11 +82,14 @@ const UILayout = {
         // フッターの上端 - 余白
         const yPos = footer.y - (footer.height / 2) - 10;
 
+        const barWidth = canvasWidth - 20;
+        const barHeight = 20;
+
         return {
-            x: canvasWidth / 2,        // 水平中央
+            x: (canvasWidth / 2) - 10,        // 水平中央
             y: yPos,                   // 下端から70px相当
-            width: canvasWidth - 40,   // 横一杯から少し余白
-            height: 20                 // 高さ20px
+            width: barWidth,   // 横一杯から少し余白
+            height: barHeight                 // 高さ20px
         };
     }
 };

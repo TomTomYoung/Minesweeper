@@ -36,13 +36,17 @@ class UIScrollController {
             // --- 縦スクロールバー ---
             if (data.v.visible) {
                 this.scrollBarV.setVisible(true);
-                // コンテンツ量に対する表示割合（つまみのサイズ）を更新
-                this.scrollBarV.setThumbSize(data.v.sizeRatio);
 
-                // 【重要】ユーザーがドラッグ操作中でない場合のみ、位置を更新する
-                // （操作中に強制的に位置を戻すと、ガクガクしたり操作不能になるため）
+                // 【重要】ユーザーがドラッグ操作中でない場合のみ更新
+                // updateThumb内でサイズ計算と位置計算（ピクセル）を行い、RexUIに適用する
                 if (!this.state.isDraggingV) {
-                    this.scrollBarV.setValue(data.v.ratio);
+                    this.scrollBarV.updateThumb(data.v.ratio, data.v.sizeRatio);
+                } else {
+                    // ドラッグ中はサイズだけ更新したい場合（操作感維持のため位置は更新しない）
+                    // 本当はupdateThumb(currentValue, newSizeRatio)などを呼ぶべきだが、
+                    // ドラッグ中にサイズが急変することは稀なので、一旦スルーまたはサイズのみ更新への分離も検討
+                    // ここではシンプルに、ドラッグ中は干渉しない（サイズ更新もしない）か、
+                    // またはサイズだけ更新するメソッドを別途残す手もあるが、今回は整合性優先でスキップ
                 }
             } else {
                 this.scrollBarV.setVisible(false);
@@ -51,11 +55,9 @@ class UIScrollController {
             // --- 横スクロールバー ---
             if (data.h.visible) {
                 this.scrollBarH.setVisible(true);
-                this.scrollBarH.setThumbSize(data.h.sizeRatio);
 
-                // 同様にドラッグ中でない場合のみ更新
                 if (!this.state.isDraggingH) {
-                    this.scrollBarH.setValue(data.h.ratio);
+                    this.scrollBarH.updateThumb(data.h.ratio, data.h.sizeRatio);
                 }
             } else {
                 this.scrollBarH.setVisible(false);

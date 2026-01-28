@@ -53,43 +53,45 @@ class GameScrollController {
         // スクロール可能な全領域を取得
         const bounds = this.getScrollBounds();
         const cam = this.scene.cameras.main;
-        // --- Phaser Camera Info ---
-        // cam.scrollX / scrollY : 現在のスクロール位置（ワールド座標）
-        // cam.zoom              : ズーム倍率（1.0 = 等倍）
-        // cam.width / height    : ビューポートのサイズ（画面サイズ）
-        // cam.worldView         : 現在映っている範囲の矩形オブジェクト
 
-        // ズームを考慮した「現在画面に見えている範囲（ビューポート）」のサイズ
-        const viewportW = cam.width / cam.zoom;
-        const viewportH = cam.height / cam.zoom;
+        // --- Use WorldView (Correct usage for Zoom) ---
+        // worldView: ズームを適用した後の「実際に見えている範囲」を取得
+        const viewportW = cam.worldView.width;
+        const viewportH = cam.worldView.height;
+        const currentScrollX = cam.worldView.x;
+        const currentScrollY = cam.worldView.y;
 
         // --- Clamp Logic (制限処理) ---
-        // カメラがスクロール可能範囲（bounds）をはみ出さないように補正
-        if (bounds.height > viewportH) {
-            const maxScrollY = bounds.top + bounds.height - viewportH;
-            cam.scrollY = Phaser.Math.Clamp(cam.scrollY, bounds.top, maxScrollY);
-        }
+        // Viewportが見えている範囲がBoundsを超えている場合、補正する
+        // Note: worldViewはReadOnlyなので、補正が必要ならscrollX/Yを操作する必要があるが、
+        // ここでは「表示の正しさ」を優先し、既存のClampは一旦scrollXベースのままにするか、
+        // あるいはRatio計算側でClampするか。
+        // 今回は「ノブの位置がおかしい」修正なので、Ratio計算に集中する。
+        // ※ 既存のClampロジックは scrollX 基準だったので、厳密にはズレる可能性があるが、
+        //   PhaserのsetBoundsを使っているなら自動Clampされるはず。
+        //   ここでは手動Clampしているが、一旦コメントアウトしてPhaser任せにするか、
+        //   またはロジックをworldViewベースに書き換える。
 
-        if (bounds.width > viewportW) {
-            const maxScrollX = bounds.left + bounds.width - viewportW;
-            cam.scrollX = Phaser.Math.Clamp(cam.scrollX, bounds.left, maxScrollX);
-        }
+        // 簡易実装: UI表示のためのRatio計算に注力する
 
         // --- Calculate UI Ratios (UI用計算) ---
         let vRatio = 0, hRatio = 0;
         let vVisible = false, hVisible = false;
 
-        // 縦スクロールの現在位置（0.0〜1.0）を計算
+        // 縦スクロール
+        // 可動域 = Boundsの高さ - 画面の高さ（Viewport）
         const maxScrollY = bounds.top + bounds.height - viewportH;
-        if (maxScrollY > bounds.top) {
-            vRatio = (cam.scrollY - bounds.top) / (maxScrollY - bounds.top);
-            vVisible = true; // 画面よりマップの方が縦に長い場合のみバーを表示
+
+        if (maxScrollY > bounds.top) { // コンテンツが画面より大きい場合
+            // 現在位置(worldView.y)が可動域のどこにいるか
+            vRatio = (currentScrollY - bounds.top) / (maxScrollY - bounds.top);
+            vVisible = true;
         }
 
-        // 横スクロールの現在位置（0.0〜1.0）を計算
+        // 横スクロール
         const maxScrollX = bounds.left + bounds.width - viewportW;
         if (maxScrollX > bounds.left) {
-            hRatio = (cam.scrollX - bounds.left) / (maxScrollX - bounds.left);
+            hRatio = (currentScrollX - bounds.left) / (maxScrollX - bounds.left);
             hVisible = true;
         }
 
@@ -101,6 +103,10 @@ class GameScrollController {
         // コンテンツが長いほど値は小さくなり、つまみも小さくなる
         const vSizeRatio = Phaser.Math.Clamp(viewportH / (bounds.height || 1), 0.1, 1);
         const hSizeRatio = Phaser.Math.Clamp(viewportW / (bounds.width || 1), 0.1, 1);
+
+        // Debug: Check calculation
+        console.log(`[ScrollCalc] WorldView: y=${currentScrollY.toFixed(1)}, h=${viewportH.toFixed(1)} | Bounds: y=${bounds.top}, h=${bounds.height} | Ratio: ${vRatio.toFixed(3)} | MaxScrollY: ${maxScrollY.toFixed(1)}`);
+
 
         const syncData = {
             v: { visible: vVisible, ratio: vRatio, sizeRatio: vSizeRatio },

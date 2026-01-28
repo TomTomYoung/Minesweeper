@@ -64,16 +64,36 @@ class ScrollBarV {
         this.scrollBar.setValue(value);
     }
 
-    setThumbSize(ratio) {
-        // Calculate thumb size based on bar height and ratio
+    /**
+     * Set thumb size and position with explicit pixel calculation
+     * @param {number} positionRatio - 0.0 ~ 1.0 (Position relative to track)
+     * @param {number} sizeRatio - 0.0 ~ 1.0 (Size relative to track)
+     */
+    updateThumb(positionRatio, sizeRatio) {
+        // 1. Calculate Thumb Size (Height) in Pixels
         const barHeight = this.scrollBar.height;
-        const thumbSize = Math.max(20, barHeight * ratio);
+        const thumbHeight = Math.max(20, barHeight * sizeRatio);
 
+        // 2. Apply Size
         const thumb = this.scrollBar.getElement('slider.thumb');
-        if (thumb && thumb.height !== thumbSize) {
-            thumb.height = thumbSize;
-            this.scrollBar.layout();
+        if (thumb && thumb.height !== thumbHeight) {
+            thumb.height = thumbHeight;
+            this.scrollBar.layout(); // Refresh layout to apply size change
         }
+
+        // 3. Calculate Thumb Position (Y) in Pixels (for visualization/debug)
+        // Note: RexUI ScrollBar handles positioning via 'value' (0~1), 
+        // but the pixel logic is: Y = (TrackHeight - ThumbHeight) * value
+        const trackHeight = barHeight; // Assuming track fills bar
+        const scrollableRange = trackHeight - thumbHeight;
+        const pixelY = scrollableRange * positionRatio;
+
+        // Debug/Explain logic if needed (or just use it to understand what's happening)
+        // console.log(`[ScrollBarV] Height: ${thumbHeight.toFixed(1)}px, Pos: ${pixelY.toFixed(1)}px`);
+
+        // 4. Update RexUI Value
+        // We still use setValue to keep internal state consistent with drag behavior
+        this.scrollBar.setValue(positionRatio);
     }
 
     onInputStart(callback) {

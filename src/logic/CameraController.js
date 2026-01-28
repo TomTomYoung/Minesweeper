@@ -60,7 +60,22 @@ class CameraController {
     }
 
     setZoom(value) {
-        this.camera.setZoom(value);
+        // 1. 現在の中心点（ワールド座標）を計算
+        const cam = this.camera;
+        const centerX = cam.scrollX + (cam.width / cam.zoom) / 2;
+        const centerY = cam.scrollY + (cam.height / cam.zoom) / 2;
+
+        // 2. ズーム適用
+        cam.setZoom(value);
+
+        // 3. 中心点を維持するように scrollX/Y を再計算
+        // 新しいビューポートサイズ
+        const newViewportW = cam.width / value;
+        const newViewportH = cam.height / value;
+
+        cam.scrollX = centerX - newViewportW / 2;
+        cam.scrollY = centerY - newViewportH / 2;
+
         this.scene.events.emit('cameraMoved');
     }
 }
