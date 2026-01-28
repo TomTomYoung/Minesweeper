@@ -32,10 +32,11 @@ class GameDebugger {
         this.graphics.strokeRect(bounds.left, bounds.top, bounds.width, bounds.height);
 
         // Camera Viewport (Green)
-        const viewX = camera.scrollX;
-        const viewY = camera.scrollY;
-        const viewW = camera.width / camera.zoom;
-        const viewH = camera.height / camera.zoom;
+        // Camera Viewport (Green)
+        const viewX = camera.worldView.x;
+        const viewY = camera.worldView.y;
+        const viewW = camera.worldView.width;
+        const viewH = camera.worldView.height;
 
         this.graphics.lineStyle(2, 0x00ff00);
         this.graphics.strokeRect(viewX, viewY, viewW, viewH);
