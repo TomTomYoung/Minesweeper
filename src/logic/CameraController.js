@@ -39,8 +39,8 @@ class CameraController {
     setupZoomInput() {
         this.scene.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
             if (this.isLocked) return;
-            // Ctrlキー必須
-            if (!pointer.event.ctrlKey) return;
+            // Ctrlキー必須 -> 削除 (match guitest)
+            // if (!pointer.event.ctrlKey) return;
 
             // ズーム変更
             const zoomDelta = deltaY > 0 ? -0.1 : 0.1;
@@ -57,6 +57,27 @@ class CameraController {
         this.isLocked = locked;
         if (this.debug && locked) console.log('[CameraController] Input Locked');
         if (this.debug && !locked) console.log('[CameraController] Input Unlocked');
+    }
+
+    /**
+     * Applies the 'Guitest' transform formula to position the camera.
+     * ScreenPos = Pivot + (WorldOrigin + Pan - Pivot) * Zoom
+     * Corresponds to: Camera.scroll = Pivot * (1 - 1/Zoom) - Pan (assuming Origin=0)
+     * 
+     * @param {number} zoom - Zoom Level
+     * @param {Object} pivot - {x, y} Screen Coordinates of Focus Point
+     * @param {Object} pan - {x, y} Pan Offset (World Units)
+     */
+    updateCameraTransform(zoom, pivot, pan) {
+        this.camera.setZoom(zoom);
+
+        // Formula: Scroll = Pivot * (1 - 1/S) - Pan
+        // Note: This assumes World Origin (0,0) is the reference point for Pan.
+
+        this.camera.scrollX = pivot.x * (1 - 1 / zoom) - pan.x;
+        this.camera.scrollY = pivot.y * (1 - 1 / zoom) - pan.y;
+
+        this.scene.events.emit('cameraMoved');
     }
 
     setZoom(value, anchor = null) {

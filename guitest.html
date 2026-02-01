@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUI & Coordinate Test</title>
+    <title>Zoom Focus Test</title>
     <style>
         body {
             margin: 0;
@@ -29,103 +29,181 @@
         class TestScene extends Phaser.Scene {
             constructor() {
                 super({ key: 'TestScene' });
+                this.zoomLevel = 1.0;
+                this.scrollRatioY = 0.0;
+                this.panY = 0;
+
+                // Zoom Pivot (Screen Space)
+                this.pivotX = 400;
+                this.pivotY = 300;
             }
 
             create() {
-                // --- 1. Coordinate Grid ---
-                this.add.grid(400, 300, 800, 600, 50, 50, 0x000000).setAltFillStyle(0x0a0a0a).setOutlineStyle(0x222222);
-                this.add.text(10, 10, 'GUI Logic Test Environment', { font: '16px monospace', fill: '#0f0' });
+                // --- 1. World Content ---
+                this.worldContainer = this.add.container(400, 300);
 
-                this.infoText = this.add.text(10, 40, '', { font: '14px monospace', fill: '#fff', backgroundColor: '#0008' });
+                // Content
+                const grid = this.add.grid(0, 0, 1000, 1000, 50, 50, 0x000000)
+                    .setAltFillStyle(0x0a0a0a)
+                    .setOutlineStyle(0x222222);
+                this.worldContainer.add(grid);
 
-                // --- 2. Origin & HitArea Visualizer ---
-                this.createTestObject(100, 100, 0.5, 0.5, 'Origin Center (Default)');
-                this.createTestObject(250, 100, 0.5, 0, 'Origin Top-Center (Vertical Bar)');
-                this.createTestObject(400, 100, 0, 0.5, 'Origin Left-Center (Horizontal Bar)');
+                this.worldContainer.add(this.add.circle(0, 0, 10, 0xff0000));
+                this.worldContainer.add(this.add.text(0, -400, 'Top Edge', { fill: '#fff' }).setOrigin(0.5));
+                this.worldContainer.add(this.add.text(0, 400, 'Bottom Edge', { fill: '#fff' }).setOrigin(0.5));
+                this.worldContainer.add(this.add.text(-400, 0, 'Left Edge', { fill: '#fff' }).setOrigin(0.5));
+                this.worldContainer.add(this.add.text(400, 0, 'Right Edge', { fill: '#fff' }).setOrigin(0.5));
 
-                // --- 3. Scrollbar Logic Simulation ---
-                this.createScrollSimulation();
+                // --- 2. Information & Instructions ---
+                this.add.text(10, 10, 'Zoom Focus Test', { font: '16px monospace', fill: '#0f0' });
+                this.add.text(10, 25, 'Drag Red Crosshair to set Zoom Focus', { font: '12px monospace', fill: '#888' });
+                this.infoText = this.add.text(10, 50, '', { font: '14px monospace', fill: '#fff', backgroundColor: '#0008' });
 
-                // --- 4. Global Input Debug ---
+                // --- 3. Zoom Focus Marker (Pivot) ---
+                this.createFocusMarker();
+
+                // --- 4. Controls ---
+                this.createZoomControl();
+                this.createScrollControl();
+
+                // --- 5. Events ---
+                this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
+                    const newZoom = Phaser.Math.Clamp(this.zoomLevel - deltaY * 0.001, 0.5, 3.0);
+                    this.updateZoom(newZoom);
+                });
+
                 this.input.on('pointermove', (pointer) => {
                     this.updateInfo(pointer);
                 });
+
+                // Initial Update
+                this.updateTransform();
             }
 
-            createTestObject(x, y, ox, oy, label) {
-                const size = 60;
-                const rect = this.add.rectangle(x, y, size, size, 0x66ccff, 0.5)
-                    .setOrigin(ox, oy)
-                    .setInteractive({ draggable: true });
+            createFocusMarker() {
+                // Visual Marker for the Pivot Point
+                this.focusMarker = this.add.container(this.pivotX, this.pivotY);
 
-                // Pivot point marker
-                this.add.rectangle(x, y, 4, 4, 0xff0000).setOrigin(0.5);
+                const gfx = this.add.graphics();
+                gfx.lineStyle(2, 0xff0000, 1);
+                gfx.moveTo(-10, 0); gfx.lineTo(10, 0);
+                gfx.moveTo(0, -10); gfx.lineTo(0, 10);
+                gfx.strokePath();
 
-                // Label
-                this.add.text(x, y + 50, label, { fontSize: '10px', fill: '#aaa' }).setOrigin(0.5);
+                // Hit Area
+                const hit = this.add.rectangle(0, 0, 40, 40, 0xff0000, 0.01).setInteractive({ draggable: true });
 
-                // Debug Box
-                this.input.enableDebug(rect, 0xffff00);
+                this.focusMarker.add([gfx, hit]);
 
-                // Drag
-                rect.on('drag', (pointer, dragX, dragY) => {
-                    rect.x = dragX;
-                    rect.y = dragY;
+                hit.on('drag', (pointer, dragX, dragY) => {
+                    // Update marker position
+                    this.focusMarker.x = pointer.x;
+                    this.focusMarker.y = pointer.y;
+
+                    // Update Pivot State
+                    this.pivotX = pointer.x;
+                    this.pivotY = pointer.y;
+
+                    // Update World Transform immediately so we see the effect
+                    this.updateTransform();
                 });
             }
 
-            createScrollSimulation() {
-                // Track
-                const trackX = 600;
-                const trackY = 100; // Top
-                const trackH = 400;
+            updateZoom(value) {
+                this.zoomLevel = value;
+                this.zoomValueText.setText(`Zoom: ${this.zoomLevel.toFixed(2)}`);
+                this.updateTransform();
+            }
+
+            updateTransform() {
+                // To zoom around Pivot P:
+                // C_new = P + (C_orig - P) * Scale
+                const originX = 400;
+                const originY = 300;
+
+                this.worldContainer.setScale(this.zoomLevel);
+                // Apply PanY to the Origin component before scaling
+                this.worldContainer.x = this.pivotX + (originX - this.pivotX) * this.zoomLevel;
+                // Note: panY acts as an offset to the world origin
+                this.worldContainer.y = this.pivotY + (originY + this.panY - this.pivotY) * this.zoomLevel;
+            }
+
+            createZoomControl() {
+                const x = 700;
+                const y = 100;
                 const width = 20;
+                const height = 200;
 
-                const track = this.add.rectangle(trackX, trackY + trackH / 2, width, trackH, 0x444444)
-                    .setInteractive();
+                this.add.text(x, y - 20, 'Zoom', { fontSize: '12px', fill: '#aaa' }).setOrigin(0.5);
+                this.zoomValueText = this.add.text(x, y + height + 10, 'Zoom: 1.00', { fontSize: '12px', fill: '#fff' }).setOrigin(0.5);
 
-                // Thumb (Simulating logic)
-                const thumbH = 100;
-                const thumb = this.add.rectangle(trackX, trackY, width, thumbH, 0x888888)
-                    .setOrigin(0.5, 0) // IMPORTANT: Top-Center
-                    .setInteractive({ draggable: true });
+                this.add.rectangle(x, y + height / 2, width, height, 0x444444);
+                const thumb = this.add.rectangle(x, y + height / 2, width + 10, 20, 0x00ccff).setInteractive({ draggable: true });
 
-                // ** HIT AREA FIX LOGIC **
-                // When resizing, we noticed hitArea offset issues.
-                // Let's verify if setOrigin(0.5, 0) naturally handles the Default HitArea correctly.
-                // Default HitArea is (0,0,w,h) relative to Top-Left of the object.
-                // For Origin(0.5, 0):
-                // Visual Top-Left is (x - w/2, y).
-                // Object Local Space (0,0) corresponds to the Origin (x, y).
-                // Wait, Phaser Local Space depends on texture?
-                // Shape object: origin impacts rendering offset.
-                // HitArea is checked against `(pointerX - x) + displayOriginX`.
-
-                this.input.enableDebug(thumb, 0x00ff00);
-
-                // Constraint Logic
                 thumb.on('drag', (pointer, dragX, dragY) => {
-                    // Constrain
-                    const minY = trackY;
-                    const maxY = trackY + trackH - thumbH;
-
-                    // Log Input
-                    console.log(`Input DragY: ${dragY.toFixed(1)}`);
-
+                    const minY = y;
+                    const maxY = y + height;
                     const clampedY = Phaser.Math.Clamp(dragY, minY, maxY);
                     thumb.y = clampedY;
 
                     const ratio = (clampedY - minY) / (maxY - minY);
-                    this.ratioText.setText(`Ratio: ${ratio.toFixed(3)}`);
+                    const minZoom = 0.5;
+                    const maxZoom = 3.0;
+                    const zoom = maxZoom - ratio * (maxZoom - minZoom);
+                    this.updateZoom(zoom);
                 });
+            }
 
-                this.ratioText = this.add.text(trackX + 20, trackY, 'Ratio: 0.000', { font: '12px monospace' });
+            createScrollControl() {
+                const x = 750;
+                const y = 100;
+                const width = 20;
+                const height = 200;
+
+                // Label
+                this.add.text(x, y - 20, 'Scroll', { fontSize: '12px', fill: '#aaa' }).setOrigin(0.5);
+                this.scrollValueText = this.add.text(x, y + height + 10, 'ScrollY: 0.000', { fontSize: '12px', fill: '#fff' }).setOrigin(0.5);
+
+                // Track
+                this.add.rectangle(x, y + height / 2, width, height, 0x444444);
+
+                // Thumb
+                const thumb = this.add.rectangle(x, y + height / 2, width, 40, 0x888888).setInteractive({ draggable: true });
+
+                // Set initial thumb position based on scrollRatioY
+                const minY = y + 20;
+                const maxY = y + height - 20;
+                thumb.y = minY + this.scrollRatioY * (maxY - minY);
+
+                // Drag Logic
+                thumb.on('drag', (pointer, dragX, dragY) => {
+                    const clampedY = Phaser.Math.Clamp(dragY, minY, maxY);
+                    thumb.y = clampedY;
+
+                    const ratio = (clampedY - minY) / (maxY - minY);
+                    this.updateScroll(ratio);
+                });
+                this.updateScroll(this.scrollRatioY); // Initial update
+            }
+
+            updateScroll(ratio) {
+                this.scrollRatioY = ratio;
+                this.scrollValueText.setText(`ScrollY: ${this.scrollRatioY.toFixed(3)}`);
+
+                // Slider mapping: Map [0..1] to [-500..500] (for example)
+                const range = 1000;
+                this.panY = (ratio - 0.5) * range * -1;
+
+                this.updateTransform();
             }
 
             updateInfo(pointer) {
+                const localPoint = this.worldContainer.pointToContainer(pointer);
                 this.infoText.setText(
-                    `Pointer: (${pointer.x.toFixed(1)}, ${pointer.y.toFixed(1)})\n` +
-                    `World:   (${pointer.worldX.toFixed(1)}, ${pointer.worldY.toFixed(1)})`
+                    `Screen: (${pointer.x.toFixed(0)}, ${pointer.y.toFixed(0)})\n` +
+                    `World:  (${localPoint.x.toFixed(1)}, ${localPoint.y.toFixed(1)})\n` +
+                    `Zoom:   ${this.zoomLevel.toFixed(2)}\n` +
+                    `Pivot:  (${this.pivotX.toFixed(0)}, ${this.pivotY.toFixed(0)})`
                 );
             }
         }

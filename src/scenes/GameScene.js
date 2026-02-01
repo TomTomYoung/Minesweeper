@@ -16,6 +16,11 @@ class GameScene extends Phaser.Scene {
         // Data
         this.gameSession = null;
         this.boardData = null; // Sync with Session
+
+        // State for Guitest-style Camera Logic
+        this.cameraZoom = 1.0;
+        this.cameraPanX = 0;
+        this.cameraPanY = 0;
     }
 
     create() {
@@ -62,7 +67,8 @@ class GameScene extends Phaser.Scene {
 
         // Initial Scroll Send
         this.time.delayedCall(100, () => {
-            this.scrollController.updateScrollInfo();
+            // Force initial sync with defaults (Pan=0, Range=2000)
+            this.scrollController.syncToState(0, 0, 2000);
         });
     }
 
@@ -94,28 +100,41 @@ class GameScene extends Phaser.Scene {
         // Board Interaction is now handled by InputController internally
 
         // Global Events
+        // Global Events
         this.eventBus.onZoomUpdate((zoom) => {
-            // Calculate Board Center to use as Zoom Anchor
-            const { rows, cols, cellSize } = this.gameSession.config;
-            const dims = this.boardManager.getBoardDimensions(rows, cols, cellSize);
-            const center = {
-                x: dims.x + dims.width / 2,
-                y: dims.y + dims.height / 2
-            };
-
-            this.cameraController.setZoom(zoom, center);
+            this.cameraZoom = zoom;
+            this.updateCameraState();
         }, this);
 
         this.eventBus.onScrollRequest((data) => {
-            this.scrollController.handleScrollRequest(data);
+            // data: { axis: 'vertical', value: 0..1 }
+            // Map 0..1 to Pan Range
+            const range = 2000; // Large enough range as per guitest idea (or board based)
+
+            if (data.axis === 'vertical') {
+                // val=0.5 -> pan=0. val=0 -> pan=500? matches guitest: (0 - 0.5)*-1 = 0.5
+                // Guitest: (ratio - 0.5) * range * -1
+                // Ratio 0 (Top) -> +500 (Scroll Down/Content Down) -> PanY=+500
+                // Ratio 1 (Bottom) -> -500 (Content Up) -> PanY=-500
+                this.cameraPanY = (data.value - 0.5) * range * -1;
+            } else if (data.axis === 'horizontal') {
+                // Same logic for H
+                this.cameraPanX = (data.value - 0.5) * range * -1;
+            }
+
+            this.updateCameraState();
+
+            // Notify UI to update Thumb position (Sync)
+            // Use specific method to avoiding reading back from Camera (which is derived)
+            this.scrollController.syncToState(this.cameraPanX, this.cameraPanY, range);
         }, this);
 
-        this.eventBus.onCameraMoved(() => {
-            this.scrollController.updateScrollInfo();
-            // Debugger draw
-            const bounds = this.scrollController.getScrollBounds();
-            this.debugger.draw(bounds, this.cameras.main);
-        }, this);
+        // We no longer rely on 'cameraMoved' to drive the scrollbar because it's derived.
+        // Scrollbar drives Pan. Pan drives Camera.
+        // But if Camera moves by other means (e.g. initial setup?), we might need sync?
+        // For 'Guitest' spec, inputs are master.
+
+        // this.eventBus.onCameraMoved(...) -> Removed or reduced to Debugger only
 
         this.eventBus.onBlockInput(() => this.cameraController.setLock(true));
         this.eventBus.onUnblockInput(() => this.cameraController.setLock(false));
@@ -123,6 +142,45 @@ class GameScene extends Phaser.Scene {
         // Camera Input
         this.setupCameraInputZone();
         this.cameraController.setupZoomInput();
+
+        // Setup Focus Marker
+        this.createFocusMarker();
+    }
+
+    updateCameraState() {
+        if (!this.focusMarker) return;
+
+        const pivot = { x: this.focusMarker.x, y: this.focusMarker.y };
+        const pan = { x: this.cameraPanX, y: this.cameraPanY };
+
+        this.cameraController.updateCameraTransform(this.cameraZoom, pivot, pan);
+    }
+
+    createFocusMarker() {
+        // Default Position (Center)
+        const x = this.cameras.main.width / 2;
+        const y = this.cameras.main.height / 2;
+
+        this.focusMarker = this.add.container(x, y);
+        this.focusMarker.setScrollFactor(0); // Screen Space
+        this.focusMarker.setDepth(2000);     // Top Layer
+
+        const gfx = this.add.graphics();
+        gfx.lineStyle(2, 0xff0000, 1);
+        gfx.moveTo(-10, 0); gfx.lineTo(10, 0);
+        gfx.moveTo(0, -10); gfx.lineTo(0, 10);
+        gfx.strokePath();
+
+        const hit = this.add.rectangle(0, 0, 40, 40, 0xff0000, 0.01).setInteractive({ draggable: true });
+
+        this.focusMarker.add([gfx, hit]);
+
+        hit.on('drag', (pointer, dragX, dragY) => {
+            this.focusMarker.x = pointer.x;
+            this.focusMarker.y = pointer.y;
+            // Immediate update
+            this.updateCameraState();
+        });
     }
 
     setupCameraInputZone() {
@@ -135,7 +193,8 @@ class GameScene extends Phaser.Scene {
             .setInteractive()
             .setDepth(-9999);
 
-        this.cameraController.setupPanInput(this.backgroundZone);
+        // DISABLE PANNING as per spec
+        // this.cameraController.setupPanInput(this.backgroundZone);
     }
 
     syncBoardData() {
