@@ -113,6 +113,14 @@ class BoardModel {
                 return result; // 即時終了
             }
 
+            // エネミーを倒した場合
+            if (currentCell.isEnemy) {
+                result.events.push('ENEMY_DEFEATED');
+                // エネミーは数字を持たないが、周囲の数字には貢献している。
+                // 倒したからといって消えるわけではない（isRevealedになるだけ）。
+                // 自動展開はしない（通常の数字展開に任せる）。
+            }
+
             // お宝を見つけた場合
             if (currentCell.isTreasure) {
                 result.scoreEvents.push({ type: 'TREASURE' });
@@ -124,9 +132,16 @@ class BoardModel {
                 // ただしBFSは続く
             }
 
-            // 周囲８方向のうち、数字が0なら隣接セルを展開（※非壁セルのみ）
+            // 周囲８方向のうち、数字が0なら隣接セルを展開（※非壁セル・非エネミーのみ）
             // お宝と階段は自動展開しない
-            if (currentCell.neighborMines === 0 && !wasTreasure && !wasStairs && !currentCell.isTreasure && !currentCell.isStairs) {
+            // エネミーも自動展開の連鎖には含めない（クリックが必要だから？ それとも0の隣なら開いていい？）
+            // 仕様: "すべてのエネミーをクリックしなければならない" -> 自動で開くのはOK？
+            // 「クリック」という表現が「アクション」を指すなら、自動で開くのは微妙かも。
+            // しかし、0の隣なら安全確定なので開いて良いはず。
+            if (currentCell.neighborMines === 0 &&
+                !wasTreasure && !wasStairs &&
+                !currentCell.isTreasure && !currentCell.isStairs && !currentCell.isEnemy) {
+
                 for (let i = Math.max(0, r - 1); i <= Math.min(this.rows - 1, r + 1); i++) {
                     for (let j = Math.max(0, c - 1); j <= Math.min(this.cols - 1, c + 1); j++) {
                         if (i === r && j === c) continue;

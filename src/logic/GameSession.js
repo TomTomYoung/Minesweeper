@@ -32,11 +32,12 @@ class GameSession {
         // Score Manager
         this.scoreManager = new ScoreManager(currentScore, totalScore);
 
-        this.timer = 0;
         this.elapsedMS = 0;
         this.flagsLeft = config.mines;
         this.isGameOver = false;
         this.isFirstClick = true;
+        this.enemiesDefeated = 0;
+        this.totalEnemies = config.enemies || 0;
 
         this.boardModel = null;
         this.boardData = null;
@@ -64,6 +65,10 @@ class GameSession {
         this.flagsLeft = this.config.mines;
         this.isGameOver = false;
 
+        // Enemy Tracking
+        this.enemiesDefeated = 0;
+        this.totalEnemies = this.config.enemies || 0;
+
         return this.boardData;
     }
 
@@ -90,7 +95,14 @@ class GameSession {
 
         if (cell.isRevealed) {
             if (cell.isStairs) {
-                return { events: ['NEXT_LEVEL'] };
+                if (this.enemiesDefeated >= this.totalEnemies) {
+                    return { events: ['NEXT_LEVEL'] };
+                } else {
+                    // Optional: You could return an event to show a message "Enemies remaining!"
+                    // For now, just do nothing or maybe log it?
+                    console.log(`Cannot advance. Enemies defeated: ${this.enemiesDefeated}/${this.totalEnemies}`);
+                    return { events: [] };
+                }
             }
             if (!cell.isWall && !cell.isMine && !cell.isTreasure) {
                 return this.boardModel.expandRevealedNumberCell(row, col);
@@ -129,6 +141,13 @@ class GameSession {
                     this.scoreManager.addPoints(this.config.treasurePoints);
                 }
             }
+        }
+
+        if (result.events.includes('ENEMY_DEFEATED')) {
+            this.enemiesDefeated++;
+            console.log(`Enemy defeated! Total: ${this.enemiesDefeated}/${this.totalEnemies}`);
+            // Bonus points for enemy?
+            this.scoreManager.addPoints(50); // Arbitrary 50 points
         }
 
         if (!this.isGameOver) {

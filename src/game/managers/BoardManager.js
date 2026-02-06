@@ -62,6 +62,7 @@ class BoardManager {
     reconstructBoard(boardData) {
         if (this.board) {
             this.board.updateCellTypes(boardData);
+            this.board.drawEnemyDangerZones(boardData);
         }
     }
 

@@ -36,6 +36,8 @@ class GameConfig {
                 totalWalls: 10,
                 /** @type {number} Number of treasure cells */
                 treasures: 3,
+                /** @type {number} Number of enemies (must be defeated to advance) */
+                enemies: 2,
                 /** @type {number} Number of stairs cells (for level transition) */
                 stairs: 1,
                 /** @type {boolean} Whether wall cells count towards neighbor mine numbers */
@@ -54,6 +56,7 @@ class GameConfig {
                 wallClusters: 5,
                 totalWalls: 25,
                 treasures: 5,
+                enemies: 3,
                 stairs: 1,
                 wallsCountInCalculation: true,
                 autoRevealWallCluster: false,
@@ -67,6 +70,7 @@ class GameConfig {
                 wallClusters: 8,
                 totalWalls: 40,
                 treasures: 8,
+                enemies: 5,
                 stairs: 2,
                 wallsCountInCalculation: true,
                 autoRevealWallCluster: false,

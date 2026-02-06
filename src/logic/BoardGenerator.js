@@ -16,24 +16,21 @@ class BoardGenerator {
      * @returns {Array<Array<Object>>} Board data 2D array
      */
     static generate(config, firstClick) {
-        // 1. Initialize Empty Board
         const board = this.initBoardData(config.rows, config.cols);
-
-        // 2. Calculate Safe Zone
         const safeZone = this.getSafeZone(config.rows, config.cols, firstClick.row, firstClick.col);
 
-        // 3. Place Wall Clusters
-        WallPlacementStrategy.place(board, config, safeZone);
-
-        // 4. Place Mines
+        // 1. Place Mines (Pure Random)
         MinePlacementStrategy.place(board, config, safeZone);
 
-        // 5. Place Treasures and Stairs
+        // 2. Place Enemies (Bomb Cells)
+        EnemyPlacementStrategy.place(board, config, safeZone);
+
+        // 3. Place Treasures/Stairs (Find safe spots among mines/enemies)
         ItemPlacementStrategy.place(board, config, safeZone);
 
-        // 6. Calculate Neighbor Numbers
-        this.calculateNeighborMines(board, config.rows, config.cols, config.wallsCountInCalculation);
+        // Note: Walls are currently disabled in this pattern (RPG Mode Standard)
 
+        this.calculateNeighborMines(board, config.rows, config.cols, config.wallsCountInCalculation);
         return board;
     }
 
@@ -41,6 +38,7 @@ class BoardGenerator {
         return Array(rows).fill().map(() =>
             Array(cols).fill().map(() => ({
                 isMine: false,
+                isEnemy: false,
                 isWall: false,
                 isTreasure: false,
                 isStairs: false,
@@ -79,7 +77,7 @@ class BoardGenerator {
                 if (i === row && j === col) continue;
 
                 const cell = board[i][j];
-                if (cell.isMine) {
+                if (cell.isMine || cell.isEnemy) {
                     count++;
                 } else if (wallsCountInCalculation && cell.isWall) {
                     count++;
