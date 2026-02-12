@@ -4,118 +4,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>マインスイーパー (Phaser 3)</title>
+    <title>マインスイーパー (モード選択)</title>
     <style>
         body {
-            margin: 0;
-            padding: 0;
+            font-family: 'Arial', sans-serif;
             background-color: #f0f0f0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             height: 100vh;
-            font-family: Arial, sans-serif;
+            margin: 0;
         }
 
-        #game-container {
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-            border: 2px solid black;
+        h1 {
+            color: #333;
+            margin-bottom: 40px;
+        }
+
+        .mode-container {
+            display: flex;
+            gap: 40px;
+        }
+
+        .mode-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            width: 250px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: inherit;
+            border: 2px solid transparent;
+        }
+
+        .mode-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+            border-color: #4CAF50;
+        }
+
+        .mode-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .mode-desc {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .btn.rpg {
+            background-color: #9C27B0;
         }
     </style>
-
-    <!-- 右クリックメニューを抑制 -->
-    <script>
-        document.addEventListener('contextmenu', function (e) {
-            e.preventDefault();
-            return false;
-        }, false);
-    </script>
-    <!-- Phaser 3 CDNを読み込み -->
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
 </head>
 
 <body>
-    <div id="game-container"></div>
 
-    <!-- モジュール -->
-    <script src="src/config.js"></script>
+    <h1>マインスイーパー モード選択</h1>
 
-    <!-- ゲームオブジェクト -->
-    <script src="src/objects/Cell.js"></script>
-    <script src="src/objects/special/MineCell.js"></script>
-    <script src="src/objects/special/WallCell.js"></script>
-    <script src="src/objects/special/TreasureCell.js"></script>
-    <script src="src/objects/special/StairsCell.js"></script>
-    <script src="src/objects/Board.js"></script>
+    <div class="mode-container">
+        <a href="normal.html" class="mode-card">
+            <div class="mode-title">通常モード</div>
+            <div class="mode-desc">
+                地雷を避けてマスを開ける<br>クラシックなマインスイーパー
+            </div>
+            <div class="btn">プレイ</div>
+        </a>
 
-    <!-- UI Components -->
-    <!-- UI Core -->
-    <script src="src/ui/events/UIEventBus.js"></script>
-    <script src="src/ui/state/UIState.js"></script>
-    <script src="src/ui/layout/UILayout.js"></script>
+        <a href="rpg.html" class="mode-card" style="border-color: #9C27B0;">
+            <div class="mode-title" style="color: #9C27B0;">RPGモード</div>
+            <div class="mode-desc">
+                お宝を集め、階段を探して<br>深層を目指すエンドレスモード
+            </div>
+            <div class="btn rpg">冒険へ</div>
+        </a>
+    </div>
 
-    <!-- UI Components -->
-    <script src="src/ui/components/InfoPanel.js"></script>
-    <script src="src/ui/components/ControlPanel.js"></script>
-    <script src="src/ui/components/MessagePanel.js"></script>
-
-    <!-- UI Widgets -->
-    <script src="src/ui/widgets/ZoomSlider.js"></script>
-    <script src="src/ui/widgets/ScrollBarV.js"></script>
-    <script src="src/ui/widgets/ScrollBarH.js"></script>
-
-    <!-- UI Controllers -->
-    <script src="src/ui/controllers/ZoomController.js"></script>
-    <script src="src/ui/controllers/ScrollController.js"></script>
-
-
-    <!-- ロジック -->
-    <script src="src/logic/generator/strategies/MinePlacementStrategy.js"></script>
-    <script src="src/logic/generator/strategies/EnemyPlacementStrategy.js"></script>
-    <script src="src/logic/generator/strategies/WallPlacementStrategy.js"></script>
-    <script src="src/logic/generator/strategies/ItemPlacementStrategy.js"></script>
-    <script src="src/logic/BoardGenerator.js"></script>
-    <script src="src/logic/BoardModel.js"></script>
-    <script src="src/logic/GameSession.js"></script>
-
-    <!-- システム -->
-    <script src="src/system/AudioManager.js"></script>
-    <script src="src/system/SaveManager.js"></script>
-
-    <!-- シーン -->
-    <script src="src/scenes/BootScene.js"></script>
-    <script src="src/scenes/MenuScene.js"></script>
-
-    <!-- Menu Modules -->
-    <script src="src/menu/layout/MenuLayout.js"></script>
-    <script src="src/menu/components/MenuButton.js"></script>
-    <script src="src/menu/components/ModeSelector.js"></script>
-    <script src="src/menu/components/DifficultySelector.js"></script>
-    <script src="src/menu/components/GenericConfigPanel.js"></script>
-    <script src="src/menu/controllers/MenuController.js"></script>
-
-    <!-- Game Logic & Modules -->
-    <script src="src/logic/CameraController.js"></script>
-
-    <script src="src/game/events/GameEventBus.js"></script>
-    <script src="src/game/managers/ScoreManager.js"></script>
-    <script src="src/game/managers/BoardManager.js"></script>
-    <script src="src/game/controllers/InputController.js"></script>
-    <script src="src/game/controllers/ScrollController.js"></script>
-    <script src="src/game/controllers/GameFlowController.js"></script>
-    <script src="src/game/debug/GameDebugger.js"></script>
-
-    <script src="src/scenes/GameScene.js"></script>
-    <script src="src/ui/UIScene.js"></script>
-
-    <!-- ユーティリティ -->
-    <script src="src/utils/GameConfig.js"></script>
-
-    <!-- RexUI Plugin -->
-    <script src="https://cdn.jsdelivr.net/gh/rexrainbow/phaser3-rex-notes/dist/rexuiplugin.min.js"></script>
-
-    <!-- メインファイル -->
-    <script src="main.js"></script>
 </body>
 
 </html>

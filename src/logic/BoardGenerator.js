@@ -1,57 +1,76 @@
 /**
  * @fileoverview BoardGenerator.js
  * 
- * Game Board Generator Logic.
+ * ゲーム盤面生成ロジック (Game Board Generator Logic)
  * 
- * This static class is responsible for procedurally generating the Minesweeper board.
- * It handles the placement of mines, walls, treasures, and stairs, by delegating 
- * to specialized strategies.
+ * マインスイーパーの盤面をプロシージャルに生成する静的クラスです。
+ * 地雷、壁、お宝、階段の配置を専門のストラテジー（戦略クラス）に委譲して行います。
  */
 
 class BoardGenerator {
     /**
-     * Generate board data
-     * @param {Object} config - Config from GameConfig
-     * @param {Object} firstClick - {row, col}
-     * @returns {Array<Array<Object>>} Board data 2D array
+     * 盤面データを生成する
+     * @param {Object} config - GameConfigから取得した設定オブジェクト
+     * @param {Object} firstClick - 初回クリック位置 {row, col}
+     * @returns {Array<Array<Object>>} 生成された盤面データの2次元配列
      */
     static generate(config, firstClick) {
+        // 1. 盤面の初期化（全セルをデフォルト状態で作成）
         const board = this.initBoardData(config.rows, config.cols);
+
+        // 2. 安全地帯（Safe Zone）の確保
+        // 初回クリック位置とその周囲は地雷などを配置しない
         const safeZone = this.getSafeZone(config.rows, config.cols, firstClick.row, firstClick.col);
 
-        // 1. Place Mines (Pure Random)
+        // 3. 地雷の配置 (MinePlacementStrategy)
+        // ランダムに地雷を配置します。設定された地雷数(config.mines)配置されるまで繰り返します。
         MinePlacementStrategy.place(board, config, safeZone);
 
-        // 2. Place Enemies (Bomb Cells)
+        // 4. エネミー（ボムセル）の配置 (EnemyPlacementStrategy)
+        // RPGモード用。設定数(config.enemies)だけエネミーを配置します。通常モードでは0個なのでスキップされます。
         EnemyPlacementStrategy.place(board, config, safeZone);
 
-        // 3. Place Treasures/Stairs (Find safe spots among mines/enemies)
+        // 5. お宝と階段の配置 (ItemPlacementStrategy)
+        // RPGモード用。地雷やエネミーがない安全な場所（クラスター）を見つけて配置します。
+        // 通常モードでは0個なのでスキップされます。
         ItemPlacementStrategy.place(board, config, safeZone);
 
-        // Note: Walls are currently disabled in this pattern (RPG Mode Standard)
+        // Note: 壁（Wall）の配置は現在のパターン（RPGモード標準）では無効化されている、あるいは別ロジックで扱う想定
+        // （config.wallClusters が 0 なら生成されない）
 
+        // 6. 数字（隣接する地雷数）の計算
+        // 盤面上の地雷・エネミー・（設定によっては）壁をカウントして各セルに設定します。
         this.calculateNeighborMines(board, config.rows, config.cols, config.wallsCountInCalculation);
+
         return board;
     }
 
+    /**
+     * 指定サイズで空の盤面データを初期化する
+     */
     static initBoardData(rows, cols) {
         return Array(rows).fill().map(() =>
             Array(cols).fill().map(() => ({
-                isMine: false,
-                isEnemy: false,
-                isWall: false,
-                isTreasure: false,
-                isStairs: false,
-                isRevealed: false,
-                isFlagged: false,
-                neighborMines: 0,
-                wallClusterId: null
+                isMine: false,      // 地雷か
+                isEnemy: false,     // エネミーか
+                isWall: false,      // 壁か
+                isTreasure: false,  // お宝か
+                isStairs: false,    // 階段か
+                isRevealed: false,  // 開けられたか
+                isFlagged: false,   // 旗が立てられたか
+                neighborMines: 0,   // 隣接する危険セルの数
+                wallClusterId: null // 壁クラスターID（壁の場合）
             }))
         );
     }
 
+    /**
+     * 初回クリック位置周囲の安全地帯を取得する
+     * @returns {Set<string>} 安全地帯の座標セット ("row,col"形式)
+     */
     static getSafeZone(rows, cols, centerRow, centerCol) {
         const safeZone = new Set();
+        // 初回クリック位置の周囲3x3マスを安全地帯とする
         for (let i = Math.max(0, centerRow - 1); i <= Math.min(rows - 1, centerRow + 1); i++) {
             for (let j = Math.max(0, centerCol - 1); j <= Math.min(cols - 1, centerCol + 1); j++) {
                 safeZone.add(`${i},${j}`);
@@ -60,9 +79,13 @@ class BoardGenerator {
         return safeZone;
     }
 
+    /**
+     * 全セルの隣接地雷数を計算して設定する
+     */
     static calculateNeighborMines(board, rows, cols, wallsCountInCalculation) {
         for (let i = 0; i < rows; i++) {
             for (let j = 0; j < cols; j++) {
+                // 地雷や壁自体には数字を設定する必要はない（あるいは表示時に無視される）
                 if (!board[i][j].isMine && !board[i][j].isWall) {
                     board[i][j].neighborMines = this.countNeighborMines(board, rows, cols, i, j, wallsCountInCalculation);
                 }
@@ -70,16 +93,31 @@ class BoardGenerator {
         }
     }
 
+    /**
+     * 特定のセル周囲の危険セル（地雷・エネミー・壁）の数をカウントする
+     * 
+     * @param {Array<Array<Object>>} board - 盤面データ配列
+     * @param {number} rows - グリッドの行数
+     * @param {number} cols - グリッドの列数
+     * @param {number} row - 対象セルの行インデックス
+     * @param {number} col - 対象セルの列インデックス
+     * @param {boolean} wallsCountInCalculation - 壁を「危険セル」としてカウントに含めるかどうか（true=含める）
+     * @returns {number} 周囲8マスの危険セルの合計数
+     */
     static countNeighborMines(board, rows, cols, row, col, wallsCountInCalculation) {
         let count = 0;
         for (let i = Math.max(0, row - 1); i <= Math.min(rows - 1, row + 1); i++) {
             for (let j = Math.max(0, col - 1); j <= Math.min(cols - 1, col + 1); j++) {
+                // 自分自身はカウントしない
                 if (i === row && j === col) continue;
 
                 const cell = board[i][j];
+                // 地雷またはエネミーならカウント
                 if (cell.isMine || cell.isEnemy) {
                     count++;
-                } else if (wallsCountInCalculation && cell.isWall) {
+                }
+                // 壁もカウント対象ならカウント（RPGモードの設定による）
+                else if (wallsCountInCalculation && cell.isWall) {
                     count++;
                 }
             }

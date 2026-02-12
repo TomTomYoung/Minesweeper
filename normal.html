@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マインスイーパー (Phaser 3)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        #game-container {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            border: 2px solid black;
+        }
+    </style>
+
+    <!-- 右クリックメニューを抑制 -->
+    <script>
+        document.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+            return false;
+        }, false);
+    </script>
+    <!-- Phaser 3 CDNを読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+</head>
+
+<body>
+    <div id="game-container"></div>
+
+    <!-- モジュール -->
+    <script src="src/config.js"></script>
+
+    <!-- ゲームオブジェクト -->
+    <script src="src/objects/Cell.js"></script>
+    <script src="src/objects/special/MineCell.js"></script>
+    <script src="src/objects/special/WallCell.js"></script>
+    <script src="src/objects/special/TreasureCell.js"></script>
+    <script src="src/objects/special/StairsCell.js"></script>
+    <script src="src/objects/Board.js"></script>
+
+    <!-- UI Components -->
+    <!-- UI Core -->
+    <script src="src/ui/events/UIEventBus.js"></script>
+    <script src="src/ui/state/UIState.js"></script>
+    <script src="src/ui/layout/UILayout.js"></script>
+
+    <!-- UI Components -->
+    <script src="src/ui/components/InfoPanel.js"></script>
+    <script src="src/ui/components/ControlPanel.js"></script>
+    <script src="src/ui/components/MessagePanel.js"></script>
+
+    <!-- UI Widgets -->
+    <script src="src/ui/widgets/ZoomSlider.js"></script>
+    <script src="src/ui/widgets/ScrollBarV.js"></script>
+    <script src="src/ui/widgets/ScrollBarH.js"></script>
+
+    <!-- UI Controllers -->
+    <script src="src/ui/controllers/ZoomController.js"></script>
+    <script src="src/ui/controllers/ScrollController.js"></script>
+
+
+    <!-- ロジック -->
+    <script src="src/logic/generator/strategies/MinePlacementStrategy.js"></script>
+    <script src="src/logic/generator/strategies/EnemyPlacementStrategy.js"></script>
+    <script src="src/logic/generator/strategies/WallPlacementStrategy.js"></script>
+    <script src="src/logic/generator/strategies/ItemPlacementStrategy.js"></script>
+    <script src="src/logic/BoardGenerator.js"></script>
+    <script src="src/logic/BoardModel.js"></script>
+    <script src="src/logic/GameSession.js"></script>
+
+    <!-- システム -->
+    <script src="src/system/AudioManager.js"></script>
+    <script src="src/system/SaveManager.js"></script>
+
+    <!-- シーン -->
+    <script src="src/scenes/BootScene.js"></script>
+    <script src="src/scenes/MenuScene.js"></script>
+
+    <!-- Menu Modules -->
+    <script src="src/menu/layout/MenuLayout.js"></script>
+    <script src="src/menu/components/MenuButton.js"></script>
+    <script src="src/menu/components/ModeSelector.js"></script>
+    <script src="src/menu/components/DifficultySelector.js"></script>
+    <script src="src/menu/components/GenericConfigPanel.js"></script>
+    <script src="src/menu/controllers/MenuController.js"></script>
+
+    <!-- Game Logic & Modules -->
+    <script src="src/logic/CameraController.js"></script>
+
+    <script src="src/game/events/GameEventBus.js"></script>
+    <script src="src/game/managers/ScoreManager.js"></script>
+    <script src="src/game/managers/BoardManager.js"></script>
+    <script src="src/game/controllers/InputController.js"></script>
+    <script src="src/game/controllers/ScrollController.js"></script>
+    <script src="src/game/controllers/GameFlowController.js"></script>
+    <script src="src/game/debug/GameDebugger.js"></script>
+
+    <script src="src/scenes/GameScene.js"></script>
+    <script src="src/ui/UIScene.js"></script>
+
+    <!-- ユーティリティ -->
+    <script src="src/utils/GameConfig.js"></script>
+
+    <!-- RexUI Plugin -->
+    <script src="https://cdn.jsdelivr.net/gh/rexrainbow/phaser3-rex-notes/dist/rexuiplugin.min.js"></script>
+
+    <!-- モード設定 -->
+    <script>
+        window.initialGameMode = 'STANDARD';
+    </script>
+
+    <!-- メインファイル -->
+    <script src="main.js"></script>
+</body>
+
+</html>

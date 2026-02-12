@@ -16,17 +16,31 @@ class MenuScene extends Phaser.Scene {
         this.add.text(titlePos.x, titlePos.y, 'マインスイーパー', GAME_CONFIG.TEXT_STYLES.TITLE)
             .setOrigin(0.5);
 
-        // Subtitle
-        const subPos = this.layout.getSubtitlePosition(width);
-        this.add.text(subPos.x, subPos.y, 'お宝と階段セル付き', {
-            fontSize: '20px', fontFamily: 'Arial', color: '#555', align: 'center'
-        }).setOrigin(0.5);
+        // Subtitle & Mode Selector
+        if (window.initialGameMode) {
+            // Fixed Mode
+            const subPos = this.layout.getSubtitlePosition(width);
+            const modeName = window.initialGameMode === GameConfig.MODES.RPG ? 'RPGモード' : '通常モード';
+            const modeDesc = window.initialGameMode === GameConfig.MODES.RPG ? 'お宝と階段セル付き' : '地雷除去のみ';
 
-        // Mode Selector
-        const modePos = this.layout.getModeSelectorPosition(width);
-        const modeSelector = new ModeSelector(this, modePos.x, modePos.y, GameConfig.MODES.RPG, (mode) => {
-            this.controller.setMode(mode);
-        });
+            this.add.text(subPos.x, subPos.y, `${modeName}\n${modeDesc}`, {
+                fontSize: '20px', fontFamily: 'Arial', color: '#555', align: 'center'
+            }).setOrigin(0.5);
+
+            // No Mode Selector needed
+        } else {
+            // Default (Selectable)
+            const subPos = this.layout.getSubtitlePosition(width);
+            this.add.text(subPos.x, subPos.y, 'お宝と階段セル付き', {
+                fontSize: '20px', fontFamily: 'Arial', color: '#555', align: 'center'
+            }).setOrigin(0.5);
+
+            // Mode Selector
+            const modePos = this.layout.getModeSelectorPosition(width);
+            const modeSelector = new ModeSelector(this, modePos.x, modePos.y, GameConfig.MODES.RPG, (mode) => {
+                this.controller.setMode(mode);
+            });
+        }
 
         // Difficulty Icons/Buttons
         const diffPos = this.layout.getDifficultySelectorPosition(width);
@@ -66,7 +80,7 @@ class MenuScene extends Phaser.Scene {
             () => {
                 customPanel.setVisible(false);
             }
-        );
+        ).setDepth(100);
 
         // Custom Button
         const customBtnPos = this.layout.getCustomButtonPosition(width);

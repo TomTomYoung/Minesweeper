@@ -35,6 +35,7 @@ window.addEventListener('load', () => {
     game.gameData = {
         difficulty: 'easy',
         level: 1,
+        mode: window.initialGameMode || 'RPG', // Default to RPG if not set
         score: 0,
         totalScore: 0,
         gameConfig: null

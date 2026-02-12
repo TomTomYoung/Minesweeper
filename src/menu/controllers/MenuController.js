@@ -1,7 +1,8 @@
 class MenuController {
     constructor(scene) {
         this.scene = scene;
-        this.currentMode = GameConfig.MODES.RPG; // Default
+        const gameData = scene.game.gameData;
+        this.currentMode = gameData ? (gameData.mode || GameConfig.MODES.RPG) : GameConfig.MODES.RPG;
     }
 
     setMode(mode) {
