@@ -9,15 +9,15 @@ class CameraController {
 
     /**
      * パン操作のセットアップ
-     * @param {Phaser.GameObjects.GameObject} hitArea 
      */
-    setupPanInput(hitArea) {
-        // 背景ゾーンに対する操作のみを受け付ける
-        hitArea.on('pointermove', (pointer) => {
+    setupPanInput() {
+        // シーン全体のポインター移動を監視 (セル上でも動作するように)
+        this.scene.input.on('pointermove', (pointer) => {
             if (!pointer.isDown) return;
             if (this.isLocked) return;
-            // Ctrlキーが押されていない場合はパンしない (スクロールバー優先)
-            if (!pointer.event.ctrlKey) return;
+
+            // ホイール押し込み（中ボタン）でのみパン操作を許可
+            if (!pointer.middleButtonDown()) return;
 
             // カメラ移動量 (ズーム考慮)
             const deltaX = (pointer.x - pointer.prevPosition.x) / this.camera.zoom;

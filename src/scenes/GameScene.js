@@ -139,6 +139,23 @@ class GameScene extends Phaser.Scene {
 
         // this.eventBus.onCameraMoved(...) -> Removed or reduced to Debugger only
 
+        // Sync Scrollbar with Camera Movement (Reverse Calculation)
+        this.events.on('cameraMoved', () => {
+            const pivot = { x: this.focusMarker.x, y: this.focusMarker.y };
+            const zoom = this.cameras.main.zoom;
+            const scrollX = this.cameras.main.scrollX;
+            const scrollY = this.cameras.main.scrollY;
+
+            // Formula: Pan = Pivot * (1 - 1/S) - Scroll
+            this.cameraPanX = pivot.x * (1 - 1 / zoom) - scrollX;
+            this.cameraPanY = pivot.y * (1 - 1 / zoom) - scrollY;
+
+            // Sync with ScrollController
+            // const range = 2000; // Same range as used in ScrollRequest
+            // We should use a consistent range value or derive it. For now, hardcoded 2000.
+            this.scrollController.syncToState(this.cameraPanX, this.cameraPanY, 2000); // 2000 is default range
+        });
+
         this.eventBus.onBlockInput(() => this.cameraController.setLock(true));
         this.eventBus.onUnblockInput(() => this.cameraController.setLock(false));
 
@@ -196,8 +213,9 @@ class GameScene extends Phaser.Scene {
             .setInteractive()
             .setDepth(-9999);
 
-        // DISABLE PANNING as per spec
-        // this.cameraController.setupPanInput(this.backgroundZone);
+        // DISABLE PANNING as per spec -> RE-ENABLED
+        // Global pan input (handles middle-click drag anywhere)
+        this.cameraController.setupPanInput();
     }
 
     syncBoardData() {

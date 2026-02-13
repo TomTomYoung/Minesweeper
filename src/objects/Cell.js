@@ -87,7 +87,7 @@ class Cell extends Phaser.GameObjects.Container {
     setupEvents() {
         // 左クリック
         this.on('pointerdown', (pointer) => {
-            if (pointer.rightButtonDown()) return; // 右クリックの場合は処理しない
+            if (pointer.rightButtonDown() || pointer.middleButtonDown()) return; // 右クリック・ホイールクリックの場合は処理しない
 
             // クリック効果音を再生
             if (this.scene.audio) {
