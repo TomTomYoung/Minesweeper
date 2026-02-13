@@ -47,7 +47,7 @@ class BoardModel {
     toggleFlag(row, col, flagsLeft) {
         const cell = this.board[row][col];
 
-        if (cell.isRevealed || cell.isWall) {
+        if (cell.isRevealed) {
             return { success: false, flagsDelta: 0 };
         }
 

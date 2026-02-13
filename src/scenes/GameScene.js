@@ -69,6 +69,9 @@ class GameScene extends Phaser.Scene {
         this.time.delayedCall(100, () => {
             // Force initial sync with defaults (Pan=0, Range=2000)
             this.scrollController.syncToState(0, 0, 2000);
+
+            // Clear any lingering messages (e.g. Game Over from previous session)
+            this.eventBus.emitShowMessage({ text: '', duration: 0 });
         });
     }
 
@@ -233,5 +236,12 @@ class GameScene extends Phaser.Scene {
 
     restartGame() {
         this.scene.restart();
+    }
+
+    shutdown() {
+        if (this.boardManager) {
+            this.boardManager.destroy(); // Ensure board manager cleans up
+        }
+        // Additional cleanup if needed
     }
 }

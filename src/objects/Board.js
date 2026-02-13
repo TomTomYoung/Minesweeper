@@ -211,6 +211,15 @@ class Board extends Phaser.GameObjects.Container {
         }
     }
 
+    // 敵の危険地帯を描画（現状はクリアのみ）
+    drawEnemyDangerZones(boardData) {
+        if (!this.overlayLayer) return;
+        this.overlayLayer.clear();
+
+        // 必要に応じてここに描画ロジックを追加
+        // 例: Debugモードでのみ表示するなど
+    }
+
     // ボードのサイズ変更
     resize(rows, cols, cellSize) {
         this.rows = rows;

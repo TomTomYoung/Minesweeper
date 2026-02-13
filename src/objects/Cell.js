@@ -64,8 +64,17 @@ class Cell extends Phaser.GameObjects.Container {
         // });            
 
         // アイコン（地雷、旗など）
-        this.icon = this.scene.add.sprite(this.size / 2, this.size / 2, 'mine')
-            .setVisible(false);
+        // アイコン（地雷、旗など）
+        const iconKey = 'mine';
+        if (this.scene.textures.exists(iconKey)) {
+            this.icon = this.scene.add.sprite(this.size / 2, this.size / 2, iconKey)
+                .setVisible(false);
+        } else {
+            // テクスチャがない場合のフォールバック（矩形など）
+            console.warn(`Texture '${iconKey}' not found. Using fallback.`);
+            this.icon = this.scene.add.rectangle(this.size / 2, this.size / 2, this.size * 0.6, this.size * 0.6, 0xff0000)
+                .setVisible(false);
+        }
 
         // サイズを調整
         this.icon.setDisplaySize(this.size * 0.8, this.size * 0.8);

@@ -45,6 +45,24 @@ class MenuController {
         gameData.level = 1;
 
         // Start Scenes
+        // Start Scenes
+
+        // FORCE CLEANUP: Remove potentially lingering global listeners
+        // This prevents "ghost" UI scenes from reacting to GameScene events
+        const gameEvents = this.scene.game.events;
+        gameEvents.removeAllListeners('updateUI');
+        gameEvents.removeAllListeners('updateScroll');
+        gameEvents.removeAllListeners('showMessage');
+
+        // Start Scenes - ensure clean restart
+        if (this.scene.scene.isActive('GameScene')) {
+            this.scene.scene.stop('GameScene');
+        }
+
+        if (this.scene.scene.isActive('UIScene')) {
+            this.scene.scene.stop('UIScene');
+        }
+
         this.scene.scene.start('GameScene');
         this.scene.scene.start('UIScene');
 

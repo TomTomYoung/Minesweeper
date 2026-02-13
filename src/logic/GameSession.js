@@ -33,6 +33,7 @@ class GameSession {
         this.scoreManager = new ScoreManager(currentScore, totalScore);
 
         this.elapsedMS = 0;
+        this.timer = 0;
         this.flagsLeft = config.mines;
         this.isGameOver = false;
         this.isFirstClick = true;

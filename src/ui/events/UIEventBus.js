@@ -32,8 +32,8 @@ class UIEventBus {
 
     // Cleanup
     destroy() {
-        // Remove listeners if necessary, though simpler to let Scene handle cleanup if it destroys game.events listeners?
-        // Usually safe to leave global listeners if scene persists, but good practice to clear if unique.
-        // For now, minimal.
+        this.gameEvents.off('updateUI', undefined, undefined);
+        this.gameEvents.off('updateScroll', undefined, undefined);
+        this.gameEvents.off('showMessage', undefined, undefined);
     }
 }

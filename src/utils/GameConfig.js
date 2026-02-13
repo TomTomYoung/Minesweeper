@@ -157,6 +157,7 @@ class GameConfig {
             newConfig.totalWalls = 0;
             newConfig.treasures = 0;
             newConfig.stairs = 0;
+            newConfig.enemies = 0;
             newConfig.wallsCountInCalculation = false;
             newConfig.autoRevealWallCluster = false;
         }

@@ -40,6 +40,9 @@ class UIScene extends Phaser.Scene {
         this.time.delayedCall(100, () => {
             this.eventBus.emitRequestUIUpdate();
         });
+
+        // 6. Register Shutdown Handler
+        this.events.on('shutdown', this.shutdown, this);
     }
 
     initializeUI() {
@@ -139,6 +142,12 @@ class UIScene extends Phaser.Scene {
         this.scene.start('MenuScene');
         if (this.scene.get('GameScene')) {
             this.scene.stop('GameScene');
+        }
+    }
+
+    shutdown() {
+        if (this.eventBus) {
+            this.eventBus.destroy();
         }
     }
 }

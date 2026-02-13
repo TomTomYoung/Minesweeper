@@ -65,14 +65,34 @@ class BoardGenerator {
     }
 
     /**
-     * 初回クリック位置周囲の安全地帯を取得する
+     * 初回クリック位置周囲の安全地帯（地雷を置かない場所）を取得する
+     * 
+     * ゲーム開始時の理不尽な即死を防ぐため、最初にクリックしたマスと
+     * その周囲8マス（計9マス）を「安全地帯」として確保します。
+     * 
      * @returns {Set<string>} 安全地帯の座標セット ("row,col"形式)
      */
     static getSafeZone(rows, cols, centerRow, centerCol) {
         const safeZone = new Set();
-        // 初回クリック位置の周囲3x3マスを安全地帯とする
-        for (let i = Math.max(0, centerRow - 1); i <= Math.min(rows - 1, centerRow + 1); i++) {
-            for (let j = Math.max(0, centerCol - 1); j <= Math.min(cols - 1, centerCol + 1); j++) {
+
+        // 初回クリック位置(centerRow, centerCol)を中心とした3x3の範囲をループします
+        // Math.max/min を使うことで、盤面の端（0行目や最終行など）からはみ出さないように制御しています
+
+        // 開始行: クリック位置の1つ上。ただし0より小さくならないようにする（盤面上端の対策）
+        const startRow = Math.max(0, centerRow - 1);
+
+        // 終了行: クリック位置の1つ下。ただし(rows-1)より大きくならないようにする（盤面下端の対策）
+        const endRow = Math.min(rows - 1, centerRow + 1);
+
+        // 列についても同様に、左右の端を超えない範囲を計算します
+        const startCol = Math.max(0, centerCol - 1);
+        const endCol = Math.min(cols - 1, centerCol + 1);
+
+        // 計算した範囲（最大3x3マス）を走査
+        for (let i = startRow; i <= endRow; i++) {
+            for (let j = startCol; j <= endCol; j++) {
+                // 安全地帯の座標を "行,列" という文字列形式で記録
+                // Setを使うことで、重複なく座標を管理できます
                 safeZone.add(`${i},${j}`);
             }
         }
