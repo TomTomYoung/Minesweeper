@@ -66,9 +66,12 @@ class GameSession {
         this.flagsLeft = this.config.mines;
         this.isGameOver = false;
 
-        // Enemy Tracking
         this.enemiesDefeated = 0;
         this.totalEnemies = this.config.enemies || 0;
+
+        // Item flags
+        this.hasKey = false;
+        this.hasSword = false;
 
         return this.boardData;
     }
@@ -97,6 +100,10 @@ class GameSession {
         });
 
         if (result.events.includes('STAIRS_INTERACTED')) {
+            if (!this.hasKey) {
+                console.log("Cannot advance. Key is needed!");
+                return result; // Don't advance
+            }
             if (this.enemiesDefeated >= this.totalEnemies) {
                 result.events.push('NEXT_LEVEL');
             } else {
@@ -127,10 +134,22 @@ class GameSession {
 
         if (result.scoreEvents) {
             for (const evt of result.scoreEvents) {
-                if (evt.type === 'TREASURE') {
+                if (evt.type === 'TREASURE_GOLD') {
                     this.scoreManager.addPoints(this.config.treasurePoints);
                 }
             }
+        }
+
+        if (result.events.includes('ITEM_KEY')) {
+            this.hasKey = true;
+            console.log("Got Key!");
+        }
+
+        if (result.events.includes('ITEM_SWORD')) {
+            this.hasSword = true;
+            // Optionally add some bonus points or handle later
+            this.scoreManager.addPoints(50);
+            console.log("Got Sword!");
         }
 
         if (result.events.includes('ENEMY_DEFEATED')) {

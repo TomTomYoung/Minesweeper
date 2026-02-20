@@ -44,7 +44,14 @@ class BoardModel {
                 if (cell.isTreasure) {
                     cell.state = 2;
                     result.events.push('CELL_UPDATED');
-                    result.scoreEvents.push({ type: 'TREASURE' });
+
+                    if (cell.treasureContent === 'gold') {
+                        result.scoreEvents.push({ type: 'TREASURE_GOLD' });
+                    } else if (cell.treasureContent === 'key') {
+                        result.events.push('ITEM_KEY');
+                    } else if (cell.treasureContent === 'sword') {
+                        result.events.push('ITEM_SWORD');
+                    }
                 } else if (cell.isStairs) {
                     result.events.push('STAIRS_INTERACTED');
                 } else if (!cell.isWall && !cell.isMine && !cell.isEnemy) {

@@ -44,11 +44,31 @@ class ItemPlacementStrategy {
 
         let itemsPlaced = 0;
 
-        // Place Treasures
+        // Place Treasures and randomly assign contents
         const treasuresCount = Math.min(config.treasures, availableCells.length);
+
+        // Ensure at least one key if there are treasures
+        let hasKey = false;
+
         for (let i = 0; i < treasuresCount; i++) {
             const [row, col] = availableCells[i];
-            board[row][col].isTreasure = true;
+            const cell = board[row][col];
+            cell.isTreasure = true;
+
+            if (!hasKey) {
+                cell.treasureContent = 'key';
+                hasKey = true;
+            } else {
+                // Randomly decide between gold and sword 
+                // Currently just 50/50 for demonstration
+                const rand = Math.random();
+                if (rand < 0.5) {
+                    cell.treasureContent = 'gold';
+                } else {
+                    cell.treasureContent = 'sword';
+                }
+            }
+
             itemsPlaced++;
         }
 

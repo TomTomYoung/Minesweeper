@@ -209,7 +209,17 @@ class Cell extends Phaser.GameObjects.Container {
 
             if (this.cellState === 2) {
                 if (this.type === 'treasure') {
-                    this.icon.setAlpha(0.3); // 半透明にして取得済みを表現
+                    // Update texture based on the assigned content
+                    if (state.treasureContent === 'gold') {
+                        this.icon.setTexture('treasure'); // Or 'treasure_gold' once available
+                    } else if (state.treasureContent === 'key') {
+                        this.icon.setTexture('key') || this.icon.setTexture('key_gold');
+                    } else if (state.treasureContent === 'sword') {
+                        this.icon.setTexture('sword');
+                    }
+                    this.icon.setVisible(true); // Ensure it stays visible if it was hidden
+
+                    this.icon.setAlpha(0.6); // Slightly faded instead of 0.3 for better visibility of items
                     this.background.setFillStyle(0xe0e0e0); // 背景を暗くして取得済みを表現
                 }
             }
