@@ -58,6 +58,7 @@ class BoardGenerator {
                 isStairs: false,    // 階段か
                 isRevealed: false,  // 開けられたか
                 isFlagged: false,   // 旗が立てられたか
+                state: 0,           // 状態 (0:非表示, 1:表示, 2:アクション完了)
                 neighborMines: 0,   // 隣接する危険セルの数
                 wallClusterId: null // 壁クラスターID（壁の場合）
             }))

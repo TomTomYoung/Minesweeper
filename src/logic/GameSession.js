@@ -92,28 +92,17 @@ class GameSession {
             this.start({ row, col });
         }
 
-        const cell = this.boardModel.getCell(row, col);
-
-        if (cell.isRevealed) {
-            if (cell.isStairs) {
-                if (this.enemiesDefeated >= this.totalEnemies) {
-                    return { events: ['NEXT_LEVEL'] };
-                } else {
-                    // Optional: You could return an event to show a message "Enemies remaining!"
-                    // For now, just do nothing or maybe log it?
-                    console.log(`Cannot advance. Enemies defeated: ${this.enemiesDefeated}/${this.totalEnemies}`);
-                    return { events: [] };
-                }
-            }
-            if (!cell.isWall && !cell.isMine && !cell.isTreasure) {
-                return this.boardModel.expandRevealedNumberCell(row, col);
-            }
-            return { events: [] };
-        }
-
-        const result = this.boardModel.reveal(row, col, {
+        const result = this.boardModel.advanceState(row, col, {
             autoRevealWallCluster: this.config.autoRevealWallCluster
         });
+
+        if (result.events.includes('STAIRS_INTERACTED')) {
+            if (this.enemiesDefeated >= this.totalEnemies) {
+                result.events.push('NEXT_LEVEL');
+            } else {
+                console.log(`Cannot advance. Enemies defeated: ${this.enemiesDefeated}/${this.totalEnemies}`);
+            }
+        }
 
         this._processResult(result);
         return result;

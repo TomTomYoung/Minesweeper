@@ -13,6 +13,7 @@ class Cell extends Phaser.GameObjects.Container {
         this.revealed = false;
         this.flagged = false;
         this.type = 'normal'; // normal, mine, wall, treasure, stairs
+        this.cellState = 0; // 0=hidden, 1=revealed, 2=interacted
 
         // 表示要素の作成
         this.createVisuals();
@@ -200,6 +201,18 @@ class Cell extends Phaser.GameObjects.Container {
 
             // 開示
             this.reveal(state.neighborMines);
+        }
+
+        // 状態(state)の更新
+        if (state.state !== undefined && this.cellState !== state.state) {
+            this.cellState = state.state;
+
+            if (this.cellState === 2) {
+                if (this.type === 'treasure') {
+                    this.icon.setAlpha(0.3); // 半透明にして取得済みを表現
+                    this.background.setFillStyle(0xe0e0e0); // 背景を暗くして取得済みを表現
+                }
+            }
         }
     }
 }

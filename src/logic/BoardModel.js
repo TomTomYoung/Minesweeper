@@ -28,6 +28,45 @@ class BoardModel {
     }
 
     /**
+     * セルの状態を進める（クリックやインタラクト）
+     * 状態: 0=隠蔽、1=表示、2=アクション完了
+     */
+    advanceState(row, col, options = {}) {
+        const cell = this.board[row][col];
+        if (cell.isFlagged) return { events: [], scoreEvents: [] };
+
+        if (!cell.isRevealed) {
+            return this.reveal(row, col, options);
+        } else {
+            const result = { events: [], scoreEvents: [] };
+
+            if (cell.state === 1) {
+                if (cell.isTreasure) {
+                    cell.state = 2;
+                    result.events.push('CELL_UPDATED');
+                    result.scoreEvents.push({ type: 'TREASURE' });
+                } else if (cell.isStairs) {
+                    result.events.push('STAIRS_INTERACTED');
+                } else if (!cell.isWall && !cell.isMine && !cell.isEnemy) {
+                    return this.expandRevealedNumberCell(row, col);
+                }
+            } else if (cell.state === 2) {
+                // 既に状態2の場合は数字展開等（お宝などに数字がある場合等を想定）
+                if (!cell.isWall && !cell.isMine && !cell.isEnemy && !cell.isTreasure && !cell.isStairs) {
+                    return this.expandRevealedNumberCell(row, col);
+                }
+            } else {
+                // fallback for traditional mode (if state was not updated)
+                if (!cell.isWall && !cell.isMine && !cell.isTreasure && !cell.isStairs && !cell.isEnemy) {
+                    return this.expandRevealedNumberCell(row, col);
+                }
+            }
+
+            return result;
+        }
+    }
+
+    /**
      * 指定されたセルを取得
      */
     getCell(row, col) {
@@ -106,6 +145,7 @@ class BoardModel {
             if (currentCell.isWall) continue;
 
             currentCell.isRevealed = true;
+            currentCell.state = 1;
 
             // 地雷を踏んだ場合
             if (currentCell.isMine) {
@@ -121,10 +161,7 @@ class BoardModel {
                 // 自動展開はしない（通常の数字展開に任せる）。
             }
 
-            // お宝を見つけた場合
-            if (currentCell.isTreasure) {
-                result.scoreEvents.push({ type: 'TREASURE' });
-            }
+            // お宝を見つけた場合 (第一段階ではスコアを与えません)
 
             // 階段の場合
             if (currentCell.isStairs) {
@@ -221,6 +258,7 @@ class BoardModel {
                         const target = this.board[i][j];
                         if (target.isWall && target.wallClusterId === clusterId && !target.isRevealed) {
                             target.isRevealed = true;
+                            target.state = 1;
                         }
                     }
                 }
@@ -229,6 +267,7 @@ class BoardModel {
             // 手動モード
             if (!cell.isRevealed) {
                 cell.isRevealed = true;
+                cell.state = 1;
             } else {
                 // すでに開かれているセルをクリックした場合、4近傍を開く
                 const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
@@ -239,6 +278,7 @@ class BoardModel {
                         const neighbor = this.board[newRow][newCol];
                         if (neighbor.isWall && neighbor.wallClusterId === clusterId && !neighbor.isRevealed) {
                             neighbor.isRevealed = true;
+                            neighbor.state = 1;
                         }
                     }
                 }
@@ -254,6 +294,7 @@ class BoardModel {
             for (let j = 0; j < this.cols; j++) {
                 if (this.board[i][j].isMine) {
                     this.board[i][j].isRevealed = true;
+                    this.board[i][j].state = 1;
                 }
             }
         }
