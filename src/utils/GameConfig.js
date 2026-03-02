@@ -40,8 +40,6 @@ class GameConfig {
                 enemies: 2,
                 /** @type {number} Number of stairs cells (for level transition) */
                 stairs: 1,
-                /** @type {boolean} Whether wall cells count towards neighbor mine numbers */
-                wallsCountInCalculation: true,
                 /** @type {boolean} Whether clicking a wall reveals the entire cluster */
                 autoRevealWallCluster: false,
                 /** @type {number} Score points awarded for finding a treasure */
@@ -58,7 +56,6 @@ class GameConfig {
                 treasures: 5,
                 enemies: 3,
                 stairs: 1,
-                wallsCountInCalculation: true,
                 autoRevealWallCluster: false,
                 treasurePoints: 100,
                 cellSize: 35
@@ -72,7 +69,6 @@ class GameConfig {
                 treasures: 8,
                 enemies: 5,
                 stairs: 2,
-                wallsCountInCalculation: true,
                 autoRevealWallCluster: false,
                 treasurePoints: 100,
                 cellSize: 30
@@ -158,7 +154,6 @@ class GameConfig {
             newConfig.treasures = 0;
             newConfig.stairs = 0;
             newConfig.enemies = 0;
-            newConfig.wallsCountInCalculation = false;
             newConfig.autoRevealWallCluster = false;
         }
         return newConfig;

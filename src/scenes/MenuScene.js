@@ -64,7 +64,6 @@ class MenuScene extends Phaser.Scene {
                 { key: 'stairs', label: '階段の数:', min: 1, max: 5, default: 1 }
             ],
             toggles: [
-                { key: 'wallsCountInCalculation', label: '壁を数えに含める', default: true },
                 { key: 'autoRevealWallCluster', label: '壁クラスターを自動公開', default: false }
             ]
         };

@@ -52,8 +52,7 @@ class CustomPanel extends Phaser.GameObjects.Container {
 
         // Toggles
         const toggleY = -90 + fieldData.length * 30;
-        this.createToggle(-220, toggleY, '壁を数えに含める', true, 'wallsCountInCalculation');
-        this.createToggle(-220, toggleY + 30, '壁クラスターを自動公開', false, 'autoRevealWallCluster');
+        this.createToggle(-220, toggleY, '壁クラスターを自動公開', false, 'autoRevealWallCluster');
     }
 
     createNumberField(y, field) {

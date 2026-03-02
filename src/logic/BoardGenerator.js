@@ -39,8 +39,8 @@ class BoardGenerator {
         // （config.wallClusters が 0 なら生成されない）
 
         // 6. 数字（隣接する地雷数）の計算
-        // 盤面上の地雷・エネミー・（設定によっては）壁をカウントして各セルに設定します。
-        this.calculateNeighborMines(board, config.rows, config.cols, config.wallsCountInCalculation);
+        // 盤面上の地雷・エネミー・壁をカウントして各セルに設定します。
+        this.calculateNeighborMines(board, config.rows, config.cols);
 
         return board;
     }
@@ -104,12 +104,12 @@ class BoardGenerator {
     /**
      * 全セルの隣接地雷数を計算して設定する
      */
-    static calculateNeighborMines(board, rows, cols, wallsCountInCalculation) {
+    static calculateNeighborMines(board, rows, cols) {
         for (let i = 0; i < rows; i++) {
             for (let j = 0; j < cols; j++) {
                 // 地雷や壁自体には数字を設定する必要はない（あるいは表示時に無視される）
                 if (!board[i][j].isMine && !board[i][j].isWall) {
-                    board[i][j].neighborMines = this.countNeighborMines(board, rows, cols, i, j, wallsCountInCalculation);
+                    board[i][j].neighborMines = this.countNeighborMines(board, rows, cols, i, j);
                 }
             }
         }
@@ -123,10 +123,9 @@ class BoardGenerator {
      * @param {number} cols - グリッドの列数
      * @param {number} row - 対象セルの行インデックス
      * @param {number} col - 対象セルの列インデックス
-     * @param {boolean} wallsCountInCalculation - 壁を「危険セル」としてカウントに含めるかどうか（true=含める）
      * @returns {number} 周囲8マスの危険セルの合計数
      */
-    static countNeighborMines(board, rows, cols, row, col, wallsCountInCalculation) {
+    static countNeighborMines(board, rows, cols, row, col) {
         let count = 0;
         for (let i = Math.max(0, row - 1); i <= Math.min(rows - 1, row + 1); i++) {
             for (let j = Math.max(0, col - 1); j <= Math.min(cols - 1, col + 1); j++) {
@@ -134,12 +133,8 @@ class BoardGenerator {
                 if (i === row && j === col) continue;
 
                 const cell = board[i][j];
-                // 地雷またはエネミーならカウント
-                if (cell.isMine || cell.isEnemy) {
-                    count++;
-                }
-                // 壁もカウント対象ならカウント（RPGモードの設定による）
-                else if (wallsCountInCalculation && cell.isWall) {
+                // 地雷、エネミー、または壁ならカウント
+                if (cell.isMine || cell.isEnemy || cell.isWall) {
                     count++;
                 }
             }
