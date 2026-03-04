@@ -26,14 +26,14 @@ class BoardGenerator {
         // ランダムに地雷を配置します。設定された地雷数(config.mines)配置されるまで繰り返します。
         MinePlacementStrategy.place(board, config, safeZone);
 
-        // 4. エネミー（ボムセル）の配置 (EnemyPlacementStrategy)
-        // RPGモード用。設定数(config.enemies)だけエネミーを配置します。通常モードでは0個なのでスキップされます。
-        EnemyPlacementStrategy.place(board, config, safeZone);
-
-        // 5. お宝と階段の配置 (ItemPlacementStrategy)
-        // RPGモード用。地雷やエネミーがない安全な場所（クラスター）を見つけて配置します。
+        // 4. お宝と階段の配置 (ItemPlacementStrategy)
+        // RPGモード用。地雷がない安全な場所（クラスター）を見つけて配置します。
         // 通常モードでは0個なのでスキップされます。
         ItemPlacementStrategy.place(board, config, safeZone);
+
+        // 5. エネミー（ボムセル）の配置 (EnemyPlacementStrategy)
+        // RPGモード用。設定数(config.enemies)だけエネミーを配置します。通常モードでは0個なのでスキップされます。
+        EnemyPlacementStrategy.place(board, config, safeZone);
 
         // Note: 壁（Wall）の配置は現在のパターン（RPGモード標準）では無効化されている、あるいは別ロジックで扱う想定
         // （config.wallClusters が 0 なら生成されない）
@@ -107,8 +107,8 @@ class BoardGenerator {
     static calculateNeighborMines(board, rows, cols) {
         for (let i = 0; i < rows; i++) {
             for (let j = 0; j < cols; j++) {
-                // 地雷や壁自体には数字を設定する必要はない（あるいは表示時に無視される）
-                if (!board[i][j].isMine && !board[i][j].isWall) {
+                // 注意: 壁や敵などは数字の計算に含まれない。地雷のみをカウントするよう仕様変更
+                if (!board[i][j].isMine && !board[i][j].isWall && !board[i][j].isEnemy) {
                     board[i][j].neighborMines = this.countNeighborMines(board, rows, cols, i, j);
                 }
             }
@@ -116,14 +116,15 @@ class BoardGenerator {
     }
 
     /**
-     * 特定のセル周囲の危険セル（地雷・エネミー・壁）の数をカウントする
+     * 特定のセル周囲の地雷数をカウントする
+     * （仕様書29行目・145行目：エネミーや壁自体は数字の計算に含まれない）
      * 
      * @param {Array<Array<Object>>} board - 盤面データ配列
      * @param {number} rows - グリッドの行数
      * @param {number} cols - グリッドの列数
      * @param {number} row - 対象セルの行インデックス
      * @param {number} col - 対象セルの列インデックス
-     * @returns {number} 周囲8マスの危険セルの合計数
+     * @returns {number} 周囲8マスの地雷の合計数
      */
     static countNeighborMines(board, rows, cols, row, col) {
         let count = 0;
@@ -133,8 +134,8 @@ class BoardGenerator {
                 if (i === row && j === col) continue;
 
                 const cell = board[i][j];
-                // 地雷、エネミー、または壁ならカウント
-                if (cell.isMine || cell.isEnemy || cell.isWall) {
+                // 地雷のみカウント
+                if (cell.isMine) {
                     count++;
                 }
             }

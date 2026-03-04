@@ -2,7 +2,7 @@
  * ItemPlacementStrategy.js
  * 
  * Strategy for placing Treasures and Stairs.
- * Ensures items are placed in locations surrounded by safe cells (no mines/walls).
+ * Ensures items are placed in locations surrounded by safe cells (no mines).
  */
 class ItemPlacementStrategy {
     static place(board, config, safeZone) {
@@ -13,12 +13,11 @@ class ItemPlacementStrategy {
         // Identify available cells
         for (let i = 0; i < rows; i++) {
             for (let j = 0; j < cols; j++) {
-                // Not in safe zone (start area), not Mine, not Wall
+                // Not in safe zone (start area), not Mine
                 if (!safeZone.has(`${i},${j}`) &&
-                    !board[i][j].isMine &&
-                    !board[i][j].isWall) {
+                    !board[i][j].isMine) {
 
-                    // Check neighbors (8 directions) - Items prefer open spaces
+                    // Check neighbors (8 directions) - Items prefer open spaces (no mines)
                     let isSafe = true;
                     for (let di = -1; di <= 1 && isSafe; di++) {
                         for (let dj = -1; dj <= 1 && isSafe; dj++) {
@@ -26,7 +25,7 @@ class ItemPlacementStrategy {
                             const ni = i + di;
                             const nj = j + dj;
                             if (ni >= 0 && ni < rows && nj >= 0 && nj < cols) {
-                                if (board[ni][nj].isMine || board[ni][nj].isWall) {
+                                if (board[ni][nj].isMine) {
                                     isSafe = false;
                                 }
                             }
