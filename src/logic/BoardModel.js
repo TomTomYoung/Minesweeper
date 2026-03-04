@@ -134,10 +134,6 @@ class BoardModel {
             return result;
         }
 
-        // セルを開く前のお宝状態を記録
-        const wasTreasure = cell.isTreasure;
-        const wasStairs = cell.isStairs;
-
         // 幅優先探索（BFS）による自動オープン処理
         const queue = [[row, col]];
 
@@ -176,21 +172,15 @@ class BoardModel {
                 // ただしBFSは続く
             }
 
-            // 周囲８方向のうち、数字が0なら隣接セルを展開（※非壁セル・非エネミーのみ）
-            // お宝と階段は自動展開しない
-            // エネミーも自動展開の連鎖には含めない（クリックが必要だから？ それとも0の隣なら開いていい？）
-            // 仕様: "すべてのエネミーをクリックしなければならない" -> 自動で開くのはOK？
-            // 「クリック」という表現が「アクション」を指すなら、自動で開くのは微妙かも。
-            // しかし、0の隣なら安全確定なので開いて良いはず。
-            if (currentCell.neighborMines === 0 &&
-                !wasTreasure && !wasStairs &&
-                !currentCell.isTreasure && !currentCell.isStairs && !currentCell.isEnemy) {
+            // 周囲８方向のうち、数字が0なら隣接セルを展開
+            // 特殊セルも空白相当であれば自動オープンを続行する
+            if (currentCell.neighborMines === 0) {
 
                 for (let i = Math.max(0, r - 1); i <= Math.min(this.rows - 1, r + 1); i++) {
                     for (let j = Math.max(0, c - 1); j <= Math.min(this.cols - 1, c + 1); j++) {
                         if (i === r && j === c) continue;
                         const neighbor = this.board[i][j];
-                        if (!neighbor.isRevealed && !neighbor.isFlagged && !neighbor.isWall) {
+                        if (!neighbor.isRevealed && !neighbor.isFlagged && !neighbor.isWall && !neighbor.isMine) {
                             queue.push([i, j]);
                         }
                     }
