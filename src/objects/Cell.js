@@ -133,6 +133,14 @@ class Cell extends Phaser.GameObjects.Container {
 
             case 'wall':
                 this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.WALL);
+                this.icon.setTexture('wall');
+                this.icon.setVisible(true);
+                break;
+
+            case 'enemy':
+                this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.MINE);
+                this.icon.setTexture(this.scene.textures.exists('enemy') ? 'enemy' : 'mine');
+                this.icon.setVisible(true);
                 break;
 
             case 'treasure':
@@ -195,6 +203,7 @@ class Cell extends Phaser.GameObjects.Container {
         if (!this.revealed && state.isRevealed) {
             // タイプを設定
             if (state.isMine) this.setType('mine');
+            else if (state.isEnemy) this.setType('enemy');
             else if (state.isWall) this.setType('wall');
             else if (state.isTreasure) this.setType('treasure');
             else if (state.isStairs) this.setType('stairs');

@@ -48,15 +48,15 @@ class BoardManager {
         }
     }
 
-    revealAllMines(boardModel) {
-        boardModel.revealAllMines();
+    revealAll(boardModel) {
+        boardModel.revealAll();
         // Since boardModel is modified, we just trigger UI update for all
         // Or Board object might need specific method if optimized, but updateBoardUI is fine.
-        // Actually GameScene implementation called session.boardModel.revealAllMines() then updateBoardUI().
+        // Actually GameScene implementation called session.boardModel.revealAll() then updateBoardUI().
         // BoardManager should receive the model to act upon? 
         // Or just assume the caller (GameScene) updated the model?
         // Let's passed the model to updateBoardUI.
-        // For revealAllMines, the logic is in model.
+        // For revealAll, the logic is in model.
     }
 
     reconstructBoard(boardData) {

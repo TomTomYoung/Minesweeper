@@ -130,6 +130,7 @@ class GameSession {
     _processResult(result) {
         if (result.events.includes('GAME_OVER')) {
             this.isGameOver = true;
+            this.boardModel.revealAll();
         }
 
         if (result.scoreEvents) {
@@ -185,6 +186,7 @@ class GameSession {
         if (revealedNonWallCells === nonMineCells - wallCells) {
             this.isGameOver = true;
             this.win = true;
+            this.boardModel.revealAll();
 
             const timeBonus = this.scoreManager.calculateTimeBonus(this.timer);
             const flagBonus = this.flagsLeft * 10;

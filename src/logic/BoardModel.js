@@ -144,9 +144,6 @@ class BoardModel {
             // すでに開かれているか旗が立っているならスキップ
             if (currentCell.isRevealed || currentCell.isFlagged) continue;
 
-            // 万が一、BFS中に壁セルが混入した場合は除外
-            if (currentCell.isWall) continue;
-
             currentCell.isRevealed = true;
             currentCell.state = 1;
 
@@ -180,7 +177,7 @@ class BoardModel {
                     for (let j = Math.max(0, c - 1); j <= Math.min(this.cols - 1, c + 1); j++) {
                         if (i === r && j === c) continue;
                         const neighbor = this.board[i][j];
-                        if (!neighbor.isRevealed && !neighbor.isFlagged && !neighbor.isWall && !neighbor.isMine) {
+                        if (!neighbor.isRevealed && !neighbor.isFlagged && !neighbor.isMine) {
                             queue.push([i, j]);
                         }
                     }
@@ -284,15 +281,13 @@ class BoardModel {
     }
 
     /**
-     * 全ての地雷を表示 (ゲームオーバー時など)
+     * 全てのセルを表示 (ゲームオーバー時)
      */
-    revealAllMines() {
+    revealAll() {
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
-                if (this.board[i][j].isMine) {
-                    this.board[i][j].isRevealed = true;
-                    this.board[i][j].state = 1;
-                }
+                this.board[i][j].isRevealed = true;
+                this.board[i][j].state = 1;
             }
         }
     }

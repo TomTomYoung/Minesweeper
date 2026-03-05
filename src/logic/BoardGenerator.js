@@ -35,8 +35,9 @@ class BoardGenerator {
         // RPGモード用。設定数(config.enemies)だけエネミーを配置します。通常モードでは0個なのでスキップされます。
         EnemyPlacementStrategy.place(board, config, safeZone);
 
-        // Note: 壁（Wall）の配置は現在のパターン（RPGモード標準）では無効化されている、あるいは別ロジックで扱う想定
-        // （config.wallClusters が 0 なら生成されない）
+        // Note: 壁（Wall）の配置
+        // config.wallClusters に応じて生成します。
+        WallPlacementStrategy.place(board, config, safeZone);
 
         // 6. 数字（隣接する地雷数）の計算
         // 盤面上の地雷・エネミー・壁をカウントして各セルに設定します。
@@ -107,8 +108,8 @@ class BoardGenerator {
     static calculateNeighborMines(board, rows, cols) {
         for (let i = 0; i < rows; i++) {
             for (let j = 0; j < cols; j++) {
-                // 注意: 壁や敵などは数字の計算に含まれない。地雷のみをカウントするよう仕様変更
-                if (!board[i][j].isMine && !board[i][j].isWall && !board[i][j].isEnemy) {
+                // 全ての被覆セル（壁、エネミー等）の下地（ベースセル）は計算対象になる
+                if (!board[i][j].isMine) {
                     board[i][j].neighborMines = this.countNeighborMines(board, rows, cols, i, j);
                 }
             }

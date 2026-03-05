@@ -76,6 +76,8 @@ class Board extends Phaser.GameObjects.Container {
                     }
                 } else if (cellData.isMine) {
                     newCell = new MineCell(this.scene, x, y, this.cellSize, i, j);
+                } else if (cellData.isEnemy) {
+                    newCell = new EnemyCell(this.scene, x, y, this.cellSize, i, j);
                 } else if (cellData.isTreasure) {
                     newCell = new TreasureCell(this.scene, x, y, this.cellSize, i, j);
                 } else if (cellData.isStairs) {
@@ -143,6 +145,7 @@ class Board extends Phaser.GameObjects.Container {
         // セルのタイプが変わる場合は置き換え
         if (cellData.isWall && cell.type !== 'wall') return true;
         if (cellData.isMine && cell.type !== 'mine') return true;
+        if (cellData.isEnemy && cell.type !== 'enemy') return true;
         if (cellData.isTreasure && cell.type !== 'treasure') return true;
         if (cellData.isStairs && cell.type !== 'stairs') return true;
 
@@ -173,6 +176,8 @@ class Board extends Phaser.GameObjects.Container {
             }
         } else if (cellData.isMine) {
             newCell = new MineCell(this.scene, x, y, this.cellSize, row, col);
+        } else if (cellData.isEnemy) {
+            newCell = new EnemyCell(this.scene, x, y, this.cellSize, row, col);
         } else if (cellData.isTreasure) {
             newCell = new TreasureCell(this.scene, x, y, this.cellSize, row, col);
         } else if (cellData.isStairs) {
