@@ -230,7 +230,7 @@ class GameScene extends Phaser.Scene {
         const flowStatus = this.gameFlowController.processResult(result);
         if (flowStatus && flowStatus.isGameOver) {
             if (!flowStatus.isWin) {
-                this.boardManager.revealAllMines(this.gameSession.boardModel);
+                this.boardManager.revealAll(this.gameSession.boardModel);
                 this.boardManager.updateBoardUI(this.gameSession.config, this.gameSession.boardModel);
             }
         }

@@ -108,7 +108,6 @@ class BoardGenerator {
     static calculateNeighborMines(board, rows, cols) {
         for (let i = 0; i < rows; i++) {
             for (let j = 0; j < cols; j++) {
-                // 全ての被覆セル（壁、エネミー等）の下地（ベースセル）は計算対象になる
                 if (!board[i][j].isMine) {
                     board[i][j].neighborMines = this.countNeighborMines(board, rows, cols, i, j);
                 }

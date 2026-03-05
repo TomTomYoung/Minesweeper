@@ -127,31 +127,31 @@ class Cell extends Phaser.GameObjects.Container {
         switch (this.type) {
             case 'mine':
                 this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.MINE);
-                this.icon.setTexture('mine');
+                if (this.icon.setTexture) this.icon.setTexture('mine');
                 this.icon.setVisible(true);
                 break;
 
             case 'wall':
                 this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.WALL);
-                this.icon.setTexture('wall');
+                if (this.icon.setTexture) this.icon.setTexture('wall');
                 this.icon.setVisible(true);
                 break;
 
             case 'enemy':
                 this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.MINE);
-                this.icon.setTexture(this.scene.textures.exists('enemy') ? 'enemy' : 'mine');
+                if (this.icon.setTexture) this.icon.setTexture(this.scene.textures.exists('enemy') ? 'enemy' : 'mine');
                 this.icon.setVisible(true);
                 break;
 
             case 'treasure':
                 this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.TREASURE);
-                this.icon.setTexture('treasure');
+                if (this.icon.setTexture) this.icon.setTexture('treasure');
                 this.icon.setVisible(true);
                 break;
 
             case 'stairs':
                 this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.STAIRS);
-                this.icon.setTexture('stairs');
+                if (this.icon.setTexture) this.icon.setTexture('stairs');
                 this.icon.setVisible(true);
                 break;
 
@@ -195,7 +195,7 @@ class Cell extends Phaser.GameObjects.Container {
             this.flagged = state.isFlagged;
             this.icon.setVisible(this.flagged);
             if (this.flagged) {
-                this.icon.setTexture('flag');
+                if (this.icon.setTexture) this.icon.setTexture('flag');
             }
         }
 
@@ -219,12 +219,14 @@ class Cell extends Phaser.GameObjects.Container {
             if (this.cellState === 2) {
                 if (this.type === 'treasure') {
                     // Update texture based on the assigned content
-                    if (state.treasureContent === 'gold') {
-                        this.icon.setTexture('treasure'); // Or 'treasure_gold' once available
-                    } else if (state.treasureContent === 'key') {
-                        this.icon.setTexture('key') || this.icon.setTexture('key_gold');
-                    } else if (state.treasureContent === 'sword') {
-                        this.icon.setTexture('sword');
+                    if (this.icon.setTexture) {
+                        if (state.treasureContent === 'gold') {
+                            this.icon.setTexture('treasure'); // Or 'treasure_gold' once available
+                        } else if (state.treasureContent === 'key') {
+                            this.icon.setTexture('key') || this.icon.setTexture('key_gold');
+                        } else if (state.treasureContent === 'sword') {
+                            this.icon.setTexture('sword');
+                        }
                     }
                     this.icon.setVisible(true); // Ensure it stays visible if it was hidden
 

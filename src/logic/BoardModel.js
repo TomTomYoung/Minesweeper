@@ -123,6 +123,8 @@ class BoardModel {
             scoreEvents: [] // { type: 'TREASURE', points: 100 }
         };
 
+        console.log("ok");
+
         const cell = this.board[row][col];
 
         // 既に開かれているか、旗が立っている場合は何もしない
@@ -136,6 +138,8 @@ class BoardModel {
 
         // 幅優先探索（BFS）による自動オープン処理
         const queue = [[row, col]];
+        const visited = new Set();
+        visited.add(`${row},${col}`);
 
         while (queue.length > 0) {
             const [r, c] = queue.shift();
@@ -176,9 +180,13 @@ class BoardModel {
                 for (let i = Math.max(0, r - 1); i <= Math.min(this.rows - 1, r + 1); i++) {
                     for (let j = Math.max(0, c - 1); j <= Math.min(this.cols - 1, c + 1); j++) {
                         if (i === r && j === c) continue;
-                        const neighbor = this.board[i][j];
-                        if (!neighbor.isRevealed && !neighbor.isFlagged && !neighbor.isMine) {
-                            queue.push([i, j]);
+                        const key = `${i},${j}`;
+                        if (!visited.has(key)) {
+                            const neighbor = this.board[i][j];
+                            if (!neighbor.isRevealed && !neighbor.isFlagged && !neighbor.isMine) {
+                                visited.add(key);
+                                queue.push([i, j]);
+                            }
                         }
                     }
                 }

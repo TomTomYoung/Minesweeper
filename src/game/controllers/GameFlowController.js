@@ -9,7 +9,7 @@ class GameFlowController {
     processResult(result) {
         if (result.events && result.events.length > 0) {
             if (result.events.includes('GAME_OVER')) {
-                this.gameOver(false);
+                return this.gameOver(false);
             }
             if (result.events.includes('NEXT_LEVEL')) {
                 this.goToNextLevel();
@@ -38,9 +38,9 @@ class GameFlowController {
             // Actually getWinState just checks flags/mines. Session doesn't set isGameOver on win automatically?
             // GameSession implementation: start, open, checkWinCondition...
             // Usually we check win after every move.
-            this.gameOver(true);
+            return this.gameOver(true);
         } else if (this.session.isGameOver && this.session.win) {
-            this.gameOver(true);
+            return this.gameOver(true);
         }
     }
 
