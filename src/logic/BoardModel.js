@@ -123,8 +123,6 @@ class BoardModel {
             scoreEvents: [] // { type: 'TREASURE', points: 100 }
         };
 
-        console.log("ok");
-
         const cell = this.board[row][col];
 
         // 既に開かれているか、旗が立っている場合は何もしない
