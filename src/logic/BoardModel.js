@@ -170,9 +170,9 @@ class BoardModel {
             }
 
             // 周囲８方向のうち、数字が0なら隣接セルを展開
-            // 特殊セルも空白相当であれば自動オープンを続行する
+            // 仕様上、自動オープンは被覆セル（壁・特殊セル）を判定に使わず
+            // ベースセル情報（neighborMines / isMine）のみで連鎖させる。
             if (currentCell.neighborMines === 0) {
-
                 for (let i = Math.max(0, r - 1); i <= Math.min(this.rows - 1, r + 1); i++) {
                     for (let j = Math.max(0, c - 1); j <= Math.min(this.cols - 1, c + 1); j++) {
                         if (i === r && j === c) continue;
