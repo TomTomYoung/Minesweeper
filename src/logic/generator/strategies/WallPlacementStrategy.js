@@ -66,8 +66,9 @@ class WallPlacementStrategy {
 
         // Place first wall
         if (!board[startRow][startCol].isWall) {
-            board[startRow][startCol].isWall = true;
-            board[startRow][startCol].wallClusterId = clusterId;
+            const wallCell = new WallCell();
+            wallCell.wallClusterId = clusterId;
+            board[startRow][startCol] = wallCell;
             wallClusterMap[clusterId].push([startRow, startCol]);
             wallsPlaced++;
         }
@@ -97,8 +98,9 @@ class WallPlacementStrategy {
                 if (wallsPlaced >= wallsToPlace) break;
 
                 if (!board[newRow][newCol].isWall) {
-                    board[newRow][newCol].isWall = true;
-                    board[newRow][newCol].wallClusterId = clusterId;
+                    const wallCell = new WallCell();
+                    wallCell.wallClusterId = clusterId;
+                    board[newRow][newCol] = wallCell;
                     wallClusterMap[clusterId].push([newRow, newCol]);
                     queue.push([newRow, newCol]);
                     wallsPlaced++;

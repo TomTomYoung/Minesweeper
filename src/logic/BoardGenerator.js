@@ -51,19 +51,7 @@ class BoardGenerator {
      */
     static initBoardData(rows, cols) {
         return Array(rows).fill().map(() =>
-            Array(cols).fill().map(() => ({
-                isMine: false,      // 地雷か
-                isEnemy: false,     // エネミーか
-                isWall: false,      // 壁か
-                isTreasure: false,  // お宝か
-                isStairs: false,    // 階段か
-                isRevealed: false,  // 開けられたか
-                isFlagged: false,   // 旗が立てられたか
-                state: 0,           // 状態 (0:非表示, 1:表示, 2:アクション完了)
-                treasureContent: null, // お宝の中身 ('gold', 'key', 'sword')
-                neighborMines: 0,   // 隣接する危険セルの数
-                wallClusterId: null // 壁クラスターID（壁の場合）
-            }))
+            Array(cols).fill().map(() => new EmptyCell())
         );
     }
 
@@ -109,7 +97,19 @@ class BoardGenerator {
         for (let i = 0; i < rows; i++) {
             for (let j = 0; j < cols; j++) {
                 if (!board[i][j].isMine) {
-                    board[i][j].neighborMines = this.countNeighborMines(board, rows, cols, i, j);
+                    const count = this.countNeighborMines(board, rows, cols, i, j);
+
+                    // If the cell is an empty cell but has neighbor mines, upgrade it to a NumberCell
+                    if (count > 0 && board[i][j] instanceof EmptyCell) {
+                        const newCell = new NumberCell();
+                        // Transfer state
+                        newCell.isRevealed = board[i][j].isRevealed;
+                        newCell.isFlagged = board[i][j].isFlagged;
+                        newCell.state = board[i][j].state;
+                        board[i][j] = newCell;
+                    }
+
+                    board[i][j].neighborMines = count;
                 }
             }
         }

@@ -32,7 +32,7 @@ class MinePlacementStrategy {
             // because special cells haven't been placed yet.
             // Safe spots for special cells will be found later by ItemPlacementStrategy.
 
-            cell.isMine = true;
+            board[row][col] = new MineCell();
             minesPlaced++;
         }
 

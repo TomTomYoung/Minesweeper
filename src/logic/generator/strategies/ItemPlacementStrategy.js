@@ -51,22 +51,24 @@ class ItemPlacementStrategy {
 
         for (let i = 0; i < treasuresCount; i++) {
             const [row, col] = availableCells[i];
-            const cell = board[row][col];
-            cell.isTreasure = true;
+
+            let treasureContent = '';
 
             if (!hasKey) {
-                cell.treasureContent = 'key';
+                treasureContent = 'key';
                 hasKey = true;
             } else {
                 // Randomly decide between gold and sword 
                 // Currently just 50/50 for demonstration
                 const rand = Math.random();
                 if (rand < 0.5) {
-                    cell.treasureContent = 'gold';
+                    treasureContent = 'gold';
                 } else {
-                    cell.treasureContent = 'sword';
+                    treasureContent = 'sword';
                 }
             }
+
+            board[row][col] = new TreasureCell(treasureContent);
 
             itemsPlaced++;
         }
@@ -76,7 +78,7 @@ class ItemPlacementStrategy {
         const stairsEnd = Math.min(treasuresCount + config.stairs, availableCells.length);
         for (let i = stairsStart; i < stairsEnd; i++) {
             const [row, col] = availableCells[i];
-            board[row][col].isStairs = true;
+            board[row][col] = new StairsCell();
             itemsPlaced++;
         }
 

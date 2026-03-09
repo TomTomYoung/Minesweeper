@@ -143,11 +143,11 @@ class Board extends Phaser.GameObjects.Container {
     // セルを置き換えるべきか判断
     shouldReplaceCell(cellData, cell) {
         // セルのタイプが変わる場合は置き換え
-        if (cellData.isWall && cell.type !== 'wall') return true;
-        if (cellData.isMine && cell.type !== 'mine') return true;
-        if (cellData.isEnemy && cell.type !== 'enemy') return true;
-        if (cellData.isTreasure && cell.type !== 'treasure') return true;
-        if (cellData.isStairs && cell.type !== 'stairs') return true;
+        if (cellData instanceof WallCell && !(cell instanceof WallCell)) return true;
+        if (cellData instanceof MineCell && !(cell instanceof MineCell)) return true;
+        if (cellData instanceof EnemyCell && !(cell instanceof EnemyCell)) return true;
+        if (cellData instanceof TreasureCell && !(cell instanceof TreasureCell)) return true;
+        if (cellData instanceof StairsCell && !(cell instanceof StairsCell)) return true;
 
         return false;
     }

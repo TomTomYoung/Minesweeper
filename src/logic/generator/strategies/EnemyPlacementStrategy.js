@@ -32,12 +32,8 @@ class EnemyPlacementStrategy {
                 continue;
             }
 
-            // Note: Unlike Mines in Pattern A, Enemies might not strictly need neighbor checks 
-            // if we consider them part of the "Bomb Cell" group which defines the numbers.
-            // However, sticking to the Pattern B philosophy: "Bomb Cells First, then Safe Spots".
-            // So we place Enemies randomly (like Mines).
-
-            cell.isEnemy = true;
+            // Replace cell with EnemyCell
+            board[row][col] = new EnemyCell();
             enemiesPlaced++;
         }
 
