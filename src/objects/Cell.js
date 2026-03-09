@@ -66,7 +66,7 @@ class Cell extends Phaser.GameObjects.Container {
 
         // アイコン（地雷、旗など）
         // アイコン（地雷、旗など）
-        const iconKey = 'mine';
+        const iconKey = 'dummy';
         if (this.scene.textures.exists(iconKey)) {
             this.icon = this.scene.add.sprite(this.size / 2, this.size / 2, iconKey)
                 .setVisible(false);

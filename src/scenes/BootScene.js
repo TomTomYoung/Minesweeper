@@ -60,6 +60,7 @@ class BootScene extends Phaser.Scene {
     // ゲームで使用するアセットをロード
     loadAssets() {
         // 画像
+        this.load.image('dummy', 'assets/images/dummy.png');
         this.load.image('mine', 'assets/images/mine.png');
         this.load.image('flag', 'assets/images/flag.png');
         this.load.image('wall', 'assets/images/wall.png');
