@@ -23,6 +23,12 @@ class WallCell extends Cell {
         this.showWallEffect();
     }
 
+    renderReveal(value) {
+        this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.WALL);
+        if (this.icon.setTexture) this.icon.setTexture('wall');
+        this.icon.setVisible(true);
+    }
+
     // 壁開示エフェクト
     showWallEffect() {
         // 壁が開示されたときのエフェクト

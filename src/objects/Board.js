@@ -1,4 +1,4 @@
-﻿// Board.js - ゲームボ�Eドを管琁E��るクラス
+﻿// Board.js - ゲームボードを管理するクラス
 class Board extends Phaser.GameObjects.Container {
     constructor(scene, x, y, rows, cols, cellSize) {
         super(scene, x, y);
@@ -8,20 +8,20 @@ class Board extends Phaser.GameObjects.Container {
         this.cols = cols;
         this.cellSize = cellSize;
 
-        // セルの2次允E�E刁E
+        // セルの2次元配列
         this.cells = [];
 
-        // ボ�Eドを作�E
+        // ボードを作成
         this.createBoard();
     }
 
-    // ボ�Eド�E作�E
+    // ボードの作成
     createBoard() {
-        // 既存�Eセルをクリア
+        // 既存のセルをクリア
         this.removeAll(true);
         this.cells = [];
 
-        // 行ごとにセルを作�E
+        // 行ごとにセルを作成
         for (let i = 0; i < this.rows; i++) {
             this.cells[i] = [];
 
@@ -30,14 +30,14 @@ class Board extends Phaser.GameObjects.Container {
                 const x = j * this.cellSize;
                 const y = i * this.cellSize;
 
-                // 通常のセルを作�E
+                // 通常のセルを作成
                 const cell = new Cell(this.scene, x, y, this.cellSize, i, j);
 
-                // セルを�Eードに追加
+                // セルをボードに追加
                 this.add(cell);
                 this.cells[i][j] = cell;
 
-                // セルのイベントをボ�Eドに伝播
+                // セルのイベントをボードに伝播
                 cell.on('cellClicked', this.handleCellClick, this);
                 cell.on('cellRightClicked', this.handleCellRightClick, this);
             }
@@ -48,9 +48,9 @@ class Board extends Phaser.GameObjects.Container {
         this.add(this.overlayLayer);
     }
 
-    // セルの種類を更新�E�壁、地雷、お宝、E��段�E�E
+    // セルの種類を更新（壁、地雷、お宝、階段など）
     updateCellTypes(boardData) {
-        // セルの種類を適刁E��設宁E
+        // セルの種類を適切に設定
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
                 const cellData = boardData[i][j];
@@ -66,31 +66,27 @@ class Board extends Phaser.GameObjects.Container {
                 const x = j * this.cellSize;
                 const y = i * this.cellSize;
 
-                // 新しいセルを作�E�E�タイプに応じて�E�E
-                let newCell;
+                // 新しいセルを作成（タイプに応じて）
+                const ViewCellClasses = {
+                    'wall': WallCell,
+                    'mine': MineCell,
+                    'enemy': EnemyCell,
+                    'treasure': TreasureCell,
+                    'stairs': StairsCell,
+                    'normal': Cell
+                };
+                const ViewClass = ViewCellClasses[cellData.viewType] || Cell;
+                let newCell = new ViewClass(this.scene, x, y, this.cellSize, i, j);
 
-                if (cellData.isWall) {
-                    newCell = new WallCell(this.scene, x, y, this.cellSize, i, j);
-                    if (cellData.wallClusterId) {
-                        newCell.setClusterId(cellData.wallClusterId);
-                    }
-                } else if (cellData.isMine) {
-                    newCell = new MineCell(this.scene, x, y, this.cellSize, i, j);
-                } else if (cellData.isEnemy) {
-                    newCell = new EnemyCell(this.scene, x, y, this.cellSize, i, j);
-                } else if (cellData.isTreasure) {
-                    newCell = new TreasureCell(this.scene, x, y, this.cellSize, i, j);
-                } else if (cellData.isStairs) {
-                    newCell = new StairsCell(this.scene, x, y, this.cellSize, i, j);
-                } else {
-                    newCell = new Cell(this.scene, x, y, this.cellSize, i, j);
+                if (cellData.viewType === 'wall' && cellData.wallClusterId) {
+                    newCell.setClusterId(cellData.wallClusterId);
                 }
 
-                // セルを�Eードに追加
+                // セルをボードに追加
                 this.add(newCell);
                 this.cells[i][j] = newCell;
 
-                // セルのイベントをボ�Eドに伝播
+                // セルのイベントをボードに伝播
                 newCell.on('cellClicked', this.handleCellClick, this);
                 newCell.on('cellRightClicked', this.handleCellRightClick, this);
 
@@ -106,19 +102,19 @@ class Board extends Phaser.GameObjects.Container {
         }
     }
 
-    // セルクリチE��イベント�Eハンドラー
+    // セルクリックイベントのハンドラー
     handleCellClick(cell) {
-        // ボ�Eドレベルのイベントを発火
+        // ボードレベルのイベントを発火
         this.emit('cellClicked', cell);
     }
 
-    // セル右クリチE��イベント�Eハンドラー
+    // セル右クリックイベントのハンドラー
     handleCellRightClick(cell) {
-        // ボ�Eドレベルのイベントを発火
+        // ボードレベルのイベントを発火
         this.emit('cellRightClicked', cell);
     }
 
-    // 特定�EセルのUI状態を更新
+    // 特定のセルのUI状態を更新
     updateCellUI(row, col, cellData) {
         const cell = this.cells[row][col];
         if (!cell) return;
@@ -134,19 +130,24 @@ class Board extends Phaser.GameObjects.Container {
             }
         }
 
-        // 旗�E状態を更新
+        // 旗の状態を更新
         if (cellData.isFlagged !== cell.flagged) {
             cell.toggleFlag();
         }
     }
 
     shouldReplaceCell(cellData, cell) {
-        // セルのタイプが変わる場合�E置き換ぁE
-        if (cellData instanceof WallLogicCell && !(cell instanceof WallCell)) return true;
-        if (cellData instanceof MineLogicCell && !(cell instanceof MineCell)) return true;
-        if (cellData instanceof EnemyLogicCell && !(cell instanceof EnemyCell)) return true;
-        if (cellData instanceof TreasureLogicCell && !(cell instanceof TreasureCell)) return true;
-        if (cellData instanceof StairsLogicCell && !(cell instanceof StairsCell)) return true;
+        // セルのタイプが変わる場合は置き換える
+        const ViewCellClasses = {
+            'wall': WallCell,
+            'mine': MineCell,
+            'enemy': EnemyCell,
+            'treasure': TreasureCell,
+            'stairs': StairsCell,
+            'normal': Cell
+        };
+        const ExpectedClass = ViewCellClasses[cellData.viewType] || Cell;
+        if (cell.constructor !== ExpectedClass) return true;
 
         return false;
     }
@@ -165,23 +166,19 @@ class Board extends Phaser.GameObjects.Container {
         const x = col * this.cellSize;
         const y = row * this.cellSize;
 
-        let newCell;
+        const ViewCellClasses = {
+            'wall': WallCell,
+            'mine': MineCell,
+            'enemy': EnemyCell,
+            'treasure': TreasureCell,
+            'stairs': StairsCell,
+            'normal': Cell
+        };
+        const ViewClass = ViewCellClasses[cellData.viewType] || Cell;
+        let newCell = new ViewClass(this.scene, x, y, this.cellSize, row, col);
 
-        if (cellData instanceof WallLogicCell) {
-            newCell = new WallCell(this.scene, x, y, this.cellSize, row, col);
-            if (cellData.wallClusterId) {
-                newCell.setClusterId(cellData.wallClusterId);
-            }
-        } else if (cellData instanceof MineLogicCell) {
-            newCell = new MineCell(this.scene, x, y, this.cellSize, row, col);
-        } else if (cellData instanceof EnemyLogicCell) {
-            newCell = new EnemyCell(this.scene, x, y, this.cellSize, row, col);
-        } else if (cellData instanceof TreasureLogicCell) {
-            newCell = new TreasureCell(this.scene, x, y, this.cellSize, row, col);
-        } else if (cellData instanceof StairsLogicCell) {
-            newCell = new StairsCell(this.scene, x, y, this.cellSize, row, col);
-        } else {
-            newCell = new Cell(this.scene, x, y, this.cellSize, row, col);
+        if (cellData.viewType === 'wall' && cellData.wallClusterId) {
+            newCell.setClusterId(cellData.wallClusterId);
         }
 
         // セルをボードに追加
@@ -201,7 +198,7 @@ class Board extends Phaser.GameObjects.Container {
             newCell.toggleFlag();
         }
     }
-    // 階段セルをアクチE��ブに
+    // 階段セルをアクティブに
     activateStairs() {
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
@@ -213,23 +210,22 @@ class Board extends Phaser.GameObjects.Container {
         }
     }
 
-    // 敵の危険地帯を描画�E�現状はクリアのみ�E�E
+    // 敵の危険地帯を描画（現状はクリアのみ）
     drawEnemyDangerZones(boardData) {
         if (!this.overlayLayer) return;
         this.overlayLayer.clear();
 
-        // 忁E��に応じてここに描画ロジチE��を追加
-        // 侁E Debugモードでのみ表示するなど
+        // 必要に応じてここに描画ロジックを追加
+        // 例: Debugモードでのみ表示するなど
     }
 
-    // ボ�Eド�Eサイズ変更
+    // ボードのサイズ変更
     resize(rows, cols, cellSize) {
         this.rows = rows;
         this.cols = cols;
         this.cellSize = cellSize;
 
-        // ボ�Eドを再作�E
+        // ボードを再作成
         this.createBoard();
     }
 }
-

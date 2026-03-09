@@ -11,6 +11,10 @@ class BaseLogicCell {
         this.neighborMines = 0;
     }
 
+    get viewType() {
+        return 'normal';
+    }
+
     /**
      * Called when the user clicks to reveal this cell.
      * @param {BoardModel} board - Reference to the board model.

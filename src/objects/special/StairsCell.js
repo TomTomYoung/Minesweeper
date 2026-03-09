@@ -3,29 +3,35 @@ class StairsCell extends Cell {
     constructor(scene, x, y, size, row, col) {
         super(scene, x, y, size, row, col);
         this.setType('stairs');
-        
+
         // 階段がアクティブかどうか（レベルが完全にクリアされるまではアクティブではない）
         this.active = false;
     }
-    
+
     // 階段をアクティブにする
     activate() {
         this.active = true;
-        
+
         // アクティブ状態の視覚効果
         this.showActiveEffect();
     }
-    
+
     // 階段セル特有の開示動作
     reveal() {
         if (this.revealed || this.flagged) return;
-        
+
         super.reveal();
-        
+
         // 階段発見エフェクト
         this.showStairsEffect();
     }
-    
+
+    renderReveal(value) {
+        this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.STAIRS);
+        if (this.icon.setTexture) this.icon.setTexture('stairs');
+        this.icon.setVisible(true);
+    }
+
     // 階段発見エフェクト
     showStairsEffect() {
         // 階段を見つけたときのエフェクト
@@ -37,7 +43,7 @@ class StairsCell extends Cell {
             repeat: 1
         });
     }
-    
+
     // アクティブ状態のエフェクト
     showActiveEffect() {
         // 階段がアクティブになったときのエフェクト（点滅など）
@@ -51,7 +57,7 @@ class StairsCell extends Cell {
             });
         }
     }
-    
+
     // クリック時の特別な処理（アクティブな場合のみ次のレベルへ）
     // このメソッドはゲームシーンから呼び出される
     onClick() {

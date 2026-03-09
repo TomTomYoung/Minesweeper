@@ -15,6 +15,12 @@ class MineCell extends Cell {
         this.explode();
     }
 
+    renderReveal(value) {
+        this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.MINE);
+        if (this.icon.setTexture) this.icon.setTexture('mine');
+        this.icon.setVisible(true);
+    }
+
     // 爆発エフェクト
     explode() {
         // 爆発エフェクトの作成（パーティクル）

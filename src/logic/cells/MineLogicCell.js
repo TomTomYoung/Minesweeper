@@ -4,6 +4,10 @@ class MineLogicCell extends BaseLogicCell {
         this.isMine = true;
     }
 
+    get viewType() {
+        return 'mine';
+    }
+
     reveal(board, row, col) {
         const result = super.reveal(board, row, col);
         result.events.push('GAME_OVER');

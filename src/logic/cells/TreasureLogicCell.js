@@ -5,6 +5,10 @@ class TreasureLogicCell extends NumberLogicCell {
         this.treasureContent = content; // 'gold', 'key', 'sword'
     }
 
+    get viewType() {
+        return 'treasure';
+    }
+
     interact(board, row, col) {
         // Treasure specific interaction applies first
         if (this.state === 1) {

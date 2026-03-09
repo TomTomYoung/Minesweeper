@@ -123,50 +123,8 @@ class Cell extends Phaser.GameObjects.Container {
 
         this.revealed = true;
 
-        // タイプに応じた視覚効果を設定
-        switch (this.type) {
-            case 'mine':
-                this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.MINE);
-                if (this.icon.setTexture) this.icon.setTexture('mine');
-                this.icon.setVisible(true);
-                break;
-
-            case 'wall':
-                this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.WALL);
-                if (this.icon.setTexture) this.icon.setTexture('wall');
-                this.icon.setVisible(true);
-                break;
-
-            case 'enemy':
-                this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.MINE);
-                if (this.icon.setTexture) this.icon.setTexture(this.scene.textures.exists('enemy') ? 'enemy' : 'mine');
-                this.icon.setVisible(true);
-                break;
-
-            case 'treasure':
-                this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.TREASURE);
-                if (this.icon.setTexture) this.icon.setTexture('treasure');
-                this.icon.setVisible(true);
-                break;
-
-            case 'stairs':
-                this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.STAIRS);
-                if (this.icon.setTexture) this.icon.setTexture('stairs');
-                this.icon.setVisible(true);
-                break;
-
-            default: // 通常セル
-                this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.REVEALED);
-                this.background.setStrokeStyle(1, 0xa9a9a9);
-
-                // 数字を表示（value が数値の場合）
-                if (value !== null && value > 0) {
-                    this.text.setText(value.toString());
-                    this.text.setColor('#' + GAME_CONFIG.NUMBER_COLORS[value].toString(16).padStart(6, '0'));
-                    this.text.setVisible(true);
-                }
-                break;
-        }
+        // Call a method that subclasses can override
+        this.renderReveal(value);
     }
 
     // 旗を設定/解除
@@ -202,11 +160,9 @@ class Cell extends Phaser.GameObjects.Container {
         // 開示状態を更新
         if (!this.revealed && state.isRevealed) {
             // タイプを設定
-            if (state.isMine) this.setType('mine');
-            else if (state.isEnemy) this.setType('enemy');
-            else if (state.isWall) this.setType('wall');
-            else if (state.isTreasure) this.setType('treasure');
-            else if (state.isStairs) this.setType('stairs');
+            if (state.viewType) {
+                this.setType(state.viewType);
+            }
 
             // 開示
             this.reveal(state.neighborMines);
@@ -216,24 +172,27 @@ class Cell extends Phaser.GameObjects.Container {
         if (state.state !== undefined && this.cellState !== state.state) {
             this.cellState = state.state;
 
-            if (this.cellState === 2) {
-                if (this.type === 'treasure') {
-                    // Update texture based on the assigned content
-                    if (this.icon.setTexture) {
-                        if (state.treasureContent === 'gold') {
-                            this.icon.setTexture('treasure'); // Or 'treasure_gold' once available
-                        } else if (state.treasureContent === 'key') {
-                            this.icon.setTexture('key') || this.icon.setTexture('key_gold');
-                        } else if (state.treasureContent === 'sword') {
-                            this.icon.setTexture('sword');
-                        }
-                    }
-                    this.icon.setVisible(true); // Ensure it stays visible if it was hidden
-
-                    this.icon.setAlpha(0.6); // Slightly faded instead of 0.3 for better visibility of items
-                    this.background.setFillStyle(0xe0e0e0); // 背景を暗くして取得済みを表現
-                }
-            }
+            this.renderStateUpdate(state);
         }
+    }
+
+    // デフォルトの開示時の視覚効果（通常セル）
+    // サブクラスでオーバーライドして特有の表現を実装する
+    renderReveal(value) {
+        this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.REVEALED);
+        this.background.setStrokeStyle(1, 0xa9a9a9);
+
+        // 数字を表示（value が数値の場合）
+        if (value !== null && value > 0) {
+            this.text.setText(value.toString());
+            this.text.setColor('#' + GAME_CONFIG.NUMBER_COLORS[value].toString(16).padStart(6, '0'));
+            this.text.setVisible(true);
+        }
+    }
+
+    // 状態更新時の視覚効果
+    // サブクラスでオーバーライド可能
+    renderStateUpdate(state) {
+        // デフォルトでは何もしない
     }
 }

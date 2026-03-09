@@ -12,4 +12,10 @@ class EnemyCell extends Cell {
 
         // 爆発などはせず、敵としての特別なアニメーションなどが必要な場合はここに追加
     }
+
+    renderReveal(value) {
+        this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.MINE);
+        if (this.icon.setTexture) this.icon.setTexture(this.scene.textures.exists('enemy') ? 'enemy' : 'mine');
+        this.icon.setVisible(true);
+    }
 }

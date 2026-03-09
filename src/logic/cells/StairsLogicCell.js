@@ -4,6 +4,10 @@ class StairsLogicCell extends NumberLogicCell {
         this.isStairs = true;
     }
 
+    get viewType() {
+        return 'stairs';
+    }
+
     interact(board, row, col) {
         if (this.state === 1) {
             return { events: ['STAIRS_INTERACTED'], scoreEvents: [] };

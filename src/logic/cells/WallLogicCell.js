@@ -5,6 +5,10 @@ class WallLogicCell extends BaseLogicCell {
         this.wallClusterId = null;
     }
 
+    get viewType() {
+        return 'wall';
+    }
+
     reveal(board, row, col, options = {}) {
         if (this.isRevealed) return { events: [], scoreEvents: [] };
 

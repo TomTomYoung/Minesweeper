@@ -5,22 +5,47 @@ class TreasureCell extends Cell {
         this.setType('treasure');
         this.points = points;
     }
-    
+
     // ポイント値を設定
     setPoints(points) {
         this.points = points;
     }
-    
+
     // お宝セル特有の開示動作
     reveal() {
         if (this.revealed || this.flagged) return;
-        
+
         super.reveal();
-        
+
         // 宝箱を開けるエフェクト
         this.showTreasureEffect();
     }
-    
+
+    renderReveal(value) {
+        this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.TREASURE);
+        if (this.icon.setTexture) this.icon.setTexture('treasure');
+        this.icon.setVisible(true);
+    }
+
+    renderStateUpdate(state) {
+        if (this.cellState === 2) {
+            // Update texture based on the assigned content
+            if (this.icon.setTexture) {
+                if (state.treasureContent === 'gold') {
+                    this.icon.setTexture('treasure'); // Or 'treasure_gold' once available
+                } else if (state.treasureContent === 'key') {
+                    this.icon.setTexture('key') || this.icon.setTexture('key_gold');
+                } else if (state.treasureContent === 'sword') {
+                    this.icon.setTexture('sword');
+                }
+            }
+            this.icon.setVisible(true); // Ensure it stays visible if it was hidden
+
+            this.icon.setAlpha(0.6); // Slightly faded instead of 0.3 for better visibility of items
+            this.background.setFillStyle(0xe0e0e0); // 背景を暗くして取得済みを表現
+        }
+    }
+
     // 宝箱を開けるエフェクト
     showTreasureEffect() {
         // キラキラエフェクト
@@ -33,13 +58,13 @@ class TreasureCell extends Cell {
                 tint: 0xffff00,
                 quantity: 8
             });
-            
+
             // 少し経ったら消す
             this.scene.time.delayedCall(800, () => {
                 particles.destroy();
             });
         }
-        
+
         // ポイント表示
         const pointText = this.scene.add.text(
             this.x + this.size / 2,
@@ -52,7 +77,7 @@ class TreasureCell extends Cell {
                 color: '#ffd700'
             }
         ).setOrigin(0.5);
-        
+
         // ポイントテキストをアニメーション
         this.scene.tweens.add({
             targets: pointText,
