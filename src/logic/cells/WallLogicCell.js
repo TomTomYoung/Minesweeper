@@ -1,4 +1,4 @@
-class WallCell extends BaseCell {
+class WallLogicCell extends BaseLogicCell {
     constructor() {
         super();
         this.isWall = true;

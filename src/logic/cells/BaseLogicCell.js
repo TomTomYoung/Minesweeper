@@ -1,4 +1,4 @@
-class BaseCell {
+class BaseLogicCell {
     constructor() {
         this.isMine = false;
         this.isEnemy = false;

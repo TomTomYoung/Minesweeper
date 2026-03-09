@@ -68,7 +68,7 @@ class ItemPlacementStrategy {
                 }
             }
 
-            board[row][col] = new TreasureCell(treasureContent);
+            board[row][col] = new TreasureLogicCell(treasureContent);
 
             itemsPlaced++;
         }
@@ -78,7 +78,7 @@ class ItemPlacementStrategy {
         const stairsEnd = Math.min(treasuresCount + config.stairs, availableCells.length);
         for (let i = stairsStart; i < stairsEnd; i++) {
             const [row, col] = availableCells[i];
-            board[row][col] = new StairsCell();
+            board[row][col] = new StairsLogicCell();
             itemsPlaced++;
         }
 

@@ -33,7 +33,7 @@ class EnemyPlacementStrategy {
             }
 
             // Replace cell with EnemyCell
-            board[row][col] = new EnemyCell();
+            board[row][col] = new EnemyLogicCell();
             enemiesPlaced++;
         }
 

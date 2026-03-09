@@ -1,89 +1,89 @@
 /**
  * @fileoverview BoardGenerator.js
  * 
- * ゲーム盤面生成ロジック (Game Board Generator Logic)
+ * ゲーム盤面生�EロジチE�� (Game Board Generator Logic)
  * 
- * マインスイーパーの盤面をプロシージャルに生成する静的クラスです。
- * 地雷、壁、お宝、階段の配置を専門のストラテジー（戦略クラス）に委譲して行います。
+ * マインスイーパ�Eの盤面を�Eロシージャルに生�Eする静的クラスです、E
+ * 地雷、壁、お宝、E��段の配置を専門のストラチE��ー�E�戦略クラス�E�に委譲して行います、E
  */
 
 class BoardGenerator {
     /**
-     * 盤面データを生成する
-     * @param {Object} config - GameConfigから取得した設定オブジェクト
-     * @param {Object} firstClick - 初回クリック位置 {row, col}
-     * @returns {Array<Array<Object>>} 生成された盤面データの2次元配列
+     * 盤面チE�Eタを生成すめE
+     * @param {Object} config - GameConfigから取得した設定オブジェクチE
+     * @param {Object} firstClick - 初回クリチE��位置 {row, col}
+     * @returns {Array<Array<Object>>} 生�Eされた盤面チE�Eタの2次允E�E刁E
      */
     static generate(config, firstClick) {
-        // 1. 盤面の初期化（全セルをデフォルト状態で作成）
+        // 1. 盤面の初期化（�Eセルをデフォルト状態で作�E�E�E
         const board = this.initBoardData(config.rows, config.cols);
 
-        // 2. 安全地帯（Safe Zone）の確保
-        // 初回クリック位置とその周囲は地雷などを配置しない
+        // 2. 安�E地帯�E�Eafe Zone�E��E確俁E
+        // 初回クリチE��位置とそ�E周囲は地雷などを�E置しなぁE
         const safeZone = this.getSafeZone(config.rows, config.cols, firstClick.row, firstClick.col);
 
         // 3. 地雷の配置 (MinePlacementStrategy)
-        // ランダムに地雷を配置します。設定された地雷数(config.mines)配置されるまで繰り返します。
+        // ランダムに地雷を�E置します。設定された地雷数(config.mines)配置されるまで繰り返します、E
         MinePlacementStrategy.place(board, config, safeZone);
 
         // 4. お宝と階段の配置 (ItemPlacementStrategy)
-        // RPGモード用。地雷がない安全な場所（クラスター）を見つけて配置します。
-        // 通常モードでは0個なのでスキップされます。
+        // RPGモード用。地雷がなぁE���Eな場所�E�クラスター�E�を見つけて配置します、E
+        // 通常モードでは0個なのでスキチE�Eされます、E
         ItemPlacementStrategy.place(board, config, safeZone);
 
-        // 5. エネミー（ボムセル）の配置 (EnemyPlacementStrategy)
-        // RPGモード用。設定数(config.enemies)だけエネミーを配置します。通常モードでは0個なのでスキップされます。
+        // 5. エネミー�E��Eムセル�E��E配置 (EnemyPlacementStrategy)
+        // RPGモード用。設定数(config.enemies)だけエネミーを�E置します。通常モードでは0個なのでスキチE�Eされます、E
         EnemyPlacementStrategy.place(board, config, safeZone);
 
-        // Note: 壁（Wall）の配置
-        // config.wallClusters に応じて生成します。
+        // Note: 壁E��Eall�E��E配置
+        // config.wallClusters に応じて生�Eします、E
         WallPlacementStrategy.place(board, config, safeZone);
 
-        // 6. 数字（隣接する地雷数）の計算
-        // 盤面上の地雷・エネミー・壁をカウントして各セルに設定します。
+        // 6. 数字（隣接する地雷数�E��E計箁E
+        // 盤面上�E地雷・エネミー・壁をカウントして吁E��ルに設定します、E
         this.calculateNeighborMines(board, config.rows, config.cols);
 
         return board;
     }
 
     /**
-     * 指定サイズで空の盤面データを初期化する
+     * 持E��サイズで空の盤面チE�Eタを�E期化する
      */
     static initBoardData(rows, cols) {
         return Array(rows).fill().map(() =>
-            Array(cols).fill().map(() => new EmptyCell())
+            Array(cols).fill().map(() => new EmptyLogicCell())
         );
     }
 
     /**
-     * 初回クリック位置周囲の安全地帯（地雷を置かない場所）を取得する
+     * 初回クリチE��位置周囲の安�E地帯�E�地雷を置かなぁE��所�E�を取得すめE
      * 
-     * ゲーム開始時の理不尽な即死を防ぐため、最初にクリックしたマスと
-     * その周囲8マス（計9マス）を「安全地帯」として確保します。
+     * ゲーム開始時の琁E��尽な即死を防ぐため、最初にクリチE��したマスと
+     * そ�E周囲8マス�E�訁Eマス�E�を「安�E地帯」として確保します、E
      * 
-     * @returns {Set<string>} 安全地帯の座標セット ("row,col"形式)
+     * @returns {Set<string>} 安�E地帯の座標セチE�� ("row,col"形弁E
      */
     static getSafeZone(rows, cols, centerRow, centerCol) {
         const safeZone = new Set();
 
-        // 初回クリック位置(centerRow, centerCol)を中心とした3x3の範囲をループします
-        // Math.max/min を使うことで、盤面の端（0行目や最終行など）からはみ出さないように制御しています
+        // 初回クリチE��位置(centerRow, centerCol)を中忁E��した3x3の篁E��をループしまぁE
+        // Math.max/min を使ぁE��とで、盤面の端�E�E行目めE��終行など�E�から�Eみ出さなぁE��ぁE��制御してぁE��ぁE
 
-        // 開始行: クリック位置の1つ上。ただし0より小さくならないようにする（盤面上端の対策）
+        // 開始衁E クリチE��位置の1つ上。ただぁEより小さくならなぁE��ぁE��する�E�盤面上端の対策！E
         const startRow = Math.max(0, centerRow - 1);
 
-        // 終了行: クリック位置の1つ下。ただし(rows-1)より大きくならないようにする（盤面下端の対策）
+        // 終亁E��E クリチE��位置の1つ下。ただぁErows-1)より大きくならなぁE��ぁE��する�E�盤面下端の対策！E
         const endRow = Math.min(rows - 1, centerRow + 1);
 
-        // 列についても同様に、左右の端を超えない範囲を計算します
+        // 列につぁE��も同様に、左右の端を趁E��なぁE��E��を計算しまぁE
         const startCol = Math.max(0, centerCol - 1);
         const endCol = Math.min(cols - 1, centerCol + 1);
 
-        // 計算した範囲（最大3x3マス）を走査
+        // 計算した篁E���E�最大3x3マス�E�を走査
         for (let i = startRow; i <= endRow; i++) {
             for (let j = startCol; j <= endCol; j++) {
-                // 安全地帯の座標を "行,列" という文字列形式で記録
-                // Setを使うことで、重複なく座標を管理できます
+                // 安�E地帯の座標を "衁E刁E とぁE��斁E���E形式で記録
+                // Setを使ぁE��とで、E��褁E��く座標を管琁E��きまぁE
                 safeZone.add(`${i},${j}`);
             }
         }
@@ -91,7 +91,7 @@ class BoardGenerator {
     }
 
     /**
-     * 全セルの隣接地雷数を計算して設定する
+     * 全セルの隣接地雷数を計算して設定すめE
      */
     static calculateNeighborMines(board, rows, cols) {
         for (let i = 0; i < rows; i++) {
@@ -100,8 +100,8 @@ class BoardGenerator {
                     const count = this.countNeighborMines(board, rows, cols, i, j);
 
                     // If the cell is an empty cell but has neighbor mines, upgrade it to a NumberCell
-                    if (count > 0 && board[i][j] instanceof EmptyCell) {
-                        const newCell = new NumberCell();
+                    if (count > 0 && board[i][j] instanceof EmptyLogicCell) {
+                        const newCell = new NumberLogicCell();
                         // Transfer state
                         newCell.isRevealed = board[i][j].isRevealed;
                         newCell.isFlagged = board[i][j].isFlagged;
@@ -116,25 +116,25 @@ class BoardGenerator {
     }
 
     /**
-     * 特定のセル周囲の地雷数をカウントする
-     * （仕様書29行目・145行目：エネミーや壁自体は数字の計算に含まれない）
+     * 特定�Eセル周囲の地雷数をカウントすめE
+     * �E�仕様書29行目・145行目�E�エネミーめE���E体�E数字�E計算に含まれなぁE��E
      * 
-     * @param {Array<Array<Object>>} board - 盤面データ配列
-     * @param {number} rows - グリッドの行数
-     * @param {number} cols - グリッドの列数
-     * @param {number} row - 対象セルの行インデックス
-     * @param {number} col - 対象セルの列インデックス
+     * @param {Array<Array<Object>>} board - 盤面チE�Eタ配�E
+     * @param {number} rows - グリチE��の行数
+     * @param {number} cols - グリチE��の列数
+     * @param {number} row - 対象セルの行インチE��クス
+     * @param {number} col - 対象セルの列インチE��クス
      * @returns {number} 周囲8マスの地雷の合計数
      */
     static countNeighborMines(board, rows, cols, row, col) {
         let count = 0;
         for (let i = Math.max(0, row - 1); i <= Math.min(rows - 1, row + 1); i++) {
             for (let j = Math.max(0, col - 1); j <= Math.min(cols - 1, col + 1); j++) {
-                // 自分自身はカウントしない
+                // 自刁E�E身はカウントしなぁE
                 if (i === row && j === col) continue;
 
                 const cell = board[i][j];
-                // 地雷のみカウント
+                // 地雷のみカウンチE
                 if (cell.isMine) {
                     count++;
                 }

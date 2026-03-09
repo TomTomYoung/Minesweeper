@@ -1,4 +1,4 @@
-class NumberCell extends BaseCell {
+class NumberLogicCell extends BaseLogicCell {
 
     /**
      * Called when the user clicks an already revealed number cell.

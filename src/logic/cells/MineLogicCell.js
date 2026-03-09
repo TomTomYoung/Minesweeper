@@ -1,12 +1,12 @@
-class EnemyCell extends BaseCell {
+class MineLogicCell extends BaseLogicCell {
     constructor() {
         super();
-        this.isEnemy = true;
+        this.isMine = true;
     }
 
     reveal(board, row, col) {
         const result = super.reveal(board, row, col);
-        result.events.push('ENEMY_DEFEATED');
+        result.events.push('GAME_OVER');
         return result;
     }
 }

@@ -1,4 +1,4 @@
-class TreasureCell extends NumberCell {
+class TreasureLogicCell extends NumberLogicCell {
     constructor(content) {
         super();
         this.isTreasure = true;

@@ -1,4 +1,4 @@
-class StairsCell extends NumberCell {
+class StairsLogicCell extends NumberLogicCell {
     constructor() {
         super();
         this.isStairs = true;

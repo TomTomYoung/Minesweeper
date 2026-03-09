@@ -1,4 +1,4 @@
-class EmptyCell extends BaseCell {
+class EmptyLogicCell extends BaseLogicCell {
     /**
      * Called when the user clicks this cell.
      */
@@ -23,7 +23,7 @@ class EmptyCell extends BaseCell {
                 currentCell.state = 1;
 
                 // If it's another empty cell, add neighbors to BFS
-                if (currentCell instanceof EmptyCell) {
+                if (currentCell instanceof EmptyLogicCell) {
                     for (let i = Math.max(0, r - 1); i <= Math.min(board.rows - 1, r + 1); i++) {
                         for (let j = Math.max(0, c - 1); j <= Math.min(board.cols - 1, c + 1); j++) {
                             if (i === r && j === c) continue;
