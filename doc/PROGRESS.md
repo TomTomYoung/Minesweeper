@@ -1,12 +1,12 @@
 # Minesweeper 進捗
 
-調査日: 2026-09-07 UTC
+調査日: 2026-09-08 UTC
 基準コミット: 30a29b7ab1fe4e0bb2cfa4fe4a2cafec8acabe08
 最終コード更新確認日: 2026-03-09 UTC
 
 ## 1. 総合判定
 
-通常モードは中核ロジックと画面構成が実装済みですが、実ブラウザでの回帰確認と自動テストがありません。
+通常モードは中核ロジックと画面構成が実装済みです。最小限のロジックテストは追加しましたが、実ブラウザでの回帰確認と網羅的な自動テストはありません。
 
 RPG モードは要素の表示と一部イベントが動く試作段階です。既存の RPG 仕様書が要求する多層セル、装備消費、敵との危険な相互作用、階段中心の勝利条件には達していません。
 
@@ -35,6 +35,12 @@ RPG モードは要素の表示と一部イベントが動く試作段階です�
 17. Phaser ロジックと表示の分離を意図したクラス構成
 18. EnemyCell の HTML 読み込み漏れ修正。PR 2 で main へ反映済み
 19. 自動展開が被覆情報ではなく基底情報を見る、という方針コメント。PR 1 で main へ反映済み
+20. 起動時に使用する enemy、key、sword の画像ロードと、存在しない音声 preload の除去
+21. Node.js 標準テストランナーによる起動資産と BoardGenerator の最小テスト基盤
+22. 壁が地雷、宝、敵、階段を上書きしない配置判定と、全 Strategy の配置不足時の明示的エラー
+23. 生成結果の種類別実配置数を GameSession へ引き渡す placementCounts
+24. GameSession への明示的な mode 引き渡しと、STANDARD/RPG の勝利判定分離
+25. CLASSIC と RPG_SIMPLE の ModeDefinition、BoardModel、BoardGenerator、RuleSet 選択境界
 
 ## 3. 部分実装
 
@@ -77,7 +83,7 @@ BootScene は click、explosion、treasure の音声を assets/sounds から読�
 11. BGM、効果音、ミュート操作の統合
 12. キーボード操作とアクセシビリティ対応
 13. モバイル向け右クリック代替操作
-14. 自動テスト
+14. 網羅的な自動テスト
 15. CI
 16. README に相当する導入、実行、開発手順
 17. ライセンス表記と外部アセットの権利整理
@@ -86,25 +92,27 @@ BootScene は click、explosion、treasure の音声を assets/sounds から読�
 
 ### P0 起動資産の不整合
 
-BootScene が参照する assets/sounds/click.mp3、explosion.mp3、treasure.mp3 が存在しません。
+存在しない音声の preload は停止し、enemy、key、sword を含む使用画像を BootScene でロードするよう修正済みです。音声は素材の出典とライセンスを確定してから正式採用します。
 
-enemy、key、sword の画像ファイル自体はありますが BootScene でロードしていません。表示コードはこれらのテクスチャを参照します。
-
-完了条件は、ブラウザのコンソールと Network に資産 404 がなく、通常モードと RPG モードのメニューまで到達することです。
+静的な資産存在テストは追加済みです。通常モードと RPG モードについて、実ブラウザのコンソールと Network に 404 がないことの継続的な統合確認はまだ必要です。
 
 ### P0 壁配置が既存セルを上書きする
 
-WallPlacementStrategy は壁以外の占有状態を確認せず、地雷、宝、階段、敵を WallLogicCell へ置き換えます。配置済み地雷数と flagsLeft が一致しなくなるほか、鍵や階段が消えて RPG が進行不能になる可能性があります。
+WallPlacementStrategy は全特殊セルと安全地帯を占有不可として扱うよう修正済みです。全配置 Strategy は要求数を満たせない場合に明示的な RangeError を投げ、生成結果の実配置数は placementCounts として GameSession が参照します。
+
+高密度かつ複数クラスターの設定では、空きセル数が足りていても連結領域が不足すれば明示的に生成失敗となります。カスタム設定画面での事前検証とユーザー向けエラー表示は今後追加が必要です。
 
 ### P0 RPG と通常勝利条件の競合
 
-GameSession._checkWinCondition はモードを見ません。RPG でも地雷と壁以外をすべて開くと isGameOver と win が設定され、階段による周回設計と競合します。
+GameSession は明示的な mode を受け取り、通常の全安全セル公開による勝利は STANDARD だけで判定するよう修正済みです。RPG は鍵を取得し、必要数の敵を倒した後の階段操作だけで NEXT_LEVEL を発行します。
+
+現時点のモード名は既存互換の STANDARD/RPG のままです。CLASSIC/RPG_SIMPLE を含む正式なモード境界と RuleSet 化は次の P0 作業として残っています。
 
 ### P0 モード境界が未実装
 
-既存 RPG 仕様書はベースセルと被覆セルの重なりを前提にしていますが、実装は一座標一 LogicCell です。
+GameModeRegistry を追加し、既存名 STANDARD/RPG を CLASSIC/RPG_SIMPLE へ正規化したうえで、各 ModeDefinition から BoardModel、BoardGenerator、RuleSet を選択する最初の境界を実装しました。
 
-両者を一方式へ統一せず、現行方式を RPG_SIMPLE、多層方式を RPG_LAYERED として並行開発する方針です。ただし、現在はモード別 BoardModel、Generator、RuleSet、共通 ViewModel の境界がありません。この境界を設けるまでは、新旧方式が GameSession と Board で再び混線する危険があります。
+現時点では CLASSIC と RPG_SIMPLE が既存の単一セル BoardModel/BoardGenerator を共有し、進行条件だけを別 RuleSet としています。RPG_LAYERED と EXPERIMENTAL は識別子のみ定義し、未実装モードを選択した場合は明示的に失敗します。専用 BoardModel/Generator と共通 ViewModel は後続作業です。
 
 ### P1 カスタム RPG の敵数が暗黙値
 
@@ -166,7 +174,7 @@ backup と trash に旧コードや一時スクリプトが残っています。
 
 ## 8. 品質保証状況
 
-package.json、テストランナー、テストファイル、GitHub Actions は確認できませんでした。
+package.json と Node.js 標準テストランナーによる最小テストを追加しました。GitHub Actions とブラウザ統合テストは未実装です。
 
 今回の調査はコードと履歴の静的確認です。ブラウザでの実動作確認は未実施です。したがって、「実装済み」はコードが存在することを示し、正常動作を保証するものではありません。
 

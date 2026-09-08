@@ -1,45 +1,40 @@
-/**
- * MinePlacementStrategy.js
- * 
- * Strategy for placing mines on the board.
- * 
- * @interface IPlacementStrategy
- * @method place(board, config, safeZone)
- */
+/** Strategy for placing mines on unoccupied cells outside the safe zone. */
 class MinePlacementStrategy {
     static place(board, config, safeZone) {
-        let minesPlaced = 0;
-        const rows = config.rows;
-        const cols = config.cols;
+        const availableCells = this.getAvailableCells(board, config.rows, config.cols, safeZone);
 
-        // Safety break to prevent infinite loops if board is too full
-        let attempts = 0;
-        const MAX_ATTEMPTS = rows * cols * 10;
+        if (availableCells.length < config.mines) {
+            throw new RangeError(`Cannot place ${config.mines} mines; only ${availableCells.length} cells are available`);
+        }
 
-        while (minesPlaced < config.mines && attempts < MAX_ATTEMPTS) {
-            attempts++;
-            const row = Math.floor(Math.random() * rows);
-            const col = Math.floor(Math.random() * cols);
-
-            const cell = board[row][col];
-            // 1. Basic Eligibility Check
-            // Ensure cell is not in safe zone, not already a mine/enemy/item
-            if (safeZone.has(`${row},${col}`) || cell.isMine || cell.isEnemy || cell.isWall || cell.isTreasure || cell.isStairs) {
-                continue;
-            }
-
-            // Note: In Pattern B (Mines First), no need to check neighbors for special cells 
-            // because special cells haven't been placed yet.
-            // Safe spots for special cells will be found later by ItemPlacementStrategy.
-
+        this.shuffleArray(availableCells);
+        for (let index = 0; index < config.mines; index++) {
+            const [row, col] = availableCells[index];
             board[row][col] = new MineLogicCell();
-            minesPlaced++;
         }
+        return config.mines;
+    }
 
-        if (minesPlaced < config.mines) {
-            console.warn(`Could not place all mines. Placed: ${minesPlaced}, Requested: ${config.mines}`);
+    static getAvailableCells(board, rows, cols, safeZone) {
+        const availableCells = [];
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const cell = board[row][col];
+                if (!safeZone.has(`${row},${col}`) &&
+                    !cell.isMine && !cell.isEnemy && !cell.isWall &&
+                    !cell.isTreasure && !cell.isStairs) {
+                    availableCells.push([row, col]);
+                }
+            }
         }
+        return availableCells;
+    }
 
-        return minesPlaced;
+    static shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
     }
 }
