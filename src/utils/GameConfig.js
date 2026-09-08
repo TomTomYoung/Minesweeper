@@ -148,7 +148,7 @@ class GameConfig {
      */
     static applyMode(config, mode) {
         const newConfig = { ...config };
-        if (mode === 'STANDARD') {
+        if (mode === 'STANDARD' || mode === 'CLASSIC') {
             newConfig.wallClusters = 0;
             newConfig.totalWalls = 0;
             newConfig.treasures = 0;
@@ -162,5 +162,9 @@ class GameConfig {
 
 GameConfig.MODES = {
     RPG: 'RPG',
-    STANDARD: 'STANDARD'
+    STANDARD: 'STANDARD',
+    CLASSIC: 'CLASSIC',
+    RPG_SIMPLE: 'RPG_SIMPLE',
+    RPG_LAYERED: 'RPG_LAYERED',
+    EXPERIMENTAL: 'EXPERIMENTAL'
 };

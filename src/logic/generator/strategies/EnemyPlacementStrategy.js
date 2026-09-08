@@ -1,42 +1,37 @@
-/**
- * EnemyPlacementStrategy.js
- * 
- * Strategy for placing enemies on the board.
- * Enemies are "Bomb Cells" (dangerous/obstacles) but must be clicked to be defeated.
- */
+/** Strategy for placing enemies on unoccupied cells outside the safe zone. */
 class EnemyPlacementStrategy {
     static place(board, config, safeZone) {
-        let enemiesPlaced = 0;
-        const rows = config.rows;
-        const cols = config.cols;
+        const requestedEnemies = config.enemies || 0;
+        const availableCells = [];
 
-        // Safety break
-        let attempts = 0;
-        const MAX_ATTEMPTS = rows * cols * 10;
-
-        while (enemiesPlaced < config.enemies && attempts < MAX_ATTEMPTS) {
-            attempts++;
-            const row = Math.floor(Math.random() * rows);
-            const col = Math.floor(Math.random() * cols);
-
-            const cell = board[row][col];
-
-            // Eligibility Check
-            // Ensure cell is not in safe zone, and not already occupied by anything
-            if (safeZone.has(`${row},${col}`) ||
-                cell.isMine ||
-                cell.isEnemy ||
-                cell.isWall ||
-                cell.isTreasure ||
-                cell.isStairs) {
-                continue;
+        for (let row = 0; row < config.rows; row++) {
+            for (let col = 0; col < config.cols; col++) {
+                const cell = board[row][col];
+                if (!safeZone.has(`${row},${col}`) &&
+                    !cell.isMine && !cell.isEnemy && !cell.isWall &&
+                    !cell.isTreasure && !cell.isStairs) {
+                    availableCells.push([row, col]);
+                }
             }
-
-            // Replace cell with EnemyCell
-            board[row][col] = new EnemyLogicCell();
-            enemiesPlaced++;
         }
 
-        return enemiesPlaced;
+        if (availableCells.length < requestedEnemies) {
+            throw new RangeError(`Cannot place ${requestedEnemies} enemies; only ${availableCells.length} cells are available`);
+        }
+
+        this.shuffleArray(availableCells);
+        for (let index = 0; index < requestedEnemies; index++) {
+            const [row, col] = availableCells[index];
+            board[row][col] = new EnemyLogicCell();
+        }
+        return requestedEnemies;
+    }
+
+    static shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
     }
 }

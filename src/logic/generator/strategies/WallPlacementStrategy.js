@@ -1,114 +1,97 @@
-/**
- * WallPlacementStrategy.js
- * 
- * Strategy for placing wall clusters on the board.
- * Uses BFS to create contiguous clusters.
- */
+/** Strategy for placing contiguous wall clusters without replacing occupied cells. */
 class WallPlacementStrategy {
     static place(board, config, safeZone) {
-        if (config.wallClusters <= 0 || config.totalWalls <= 0) return 0;
-
-        const rows = config.rows;
-        const cols = config.cols;
-        const wallClusterMap = {}; // Cluster ID -> Coord List
-
-        let wallsPlaced = 0;
-        let clustersCreated = 0;
-
-        // Determine walls per cluster
-        const wallsPerCluster = Math.floor(config.totalWalls / config.wallClusters);
-        let remainingWalls = config.totalWalls % config.wallClusters;
-
-        while (clustersCreated < config.wallClusters && wallsPlaced < config.totalWalls) {
-            let wallsForThisCluster = wallsPerCluster;
-            if (remainingWalls > 0) {
-                wallsForThisCluster++;
-                remainingWalls--;
-            }
-
-            // Random Start Position
-            let startRow, startCol;
-            let attempts = 0;
-            const maxAttempts = 100;
-
-            do {
-                startRow = Math.floor(Math.random() * rows);
-                startCol = Math.floor(Math.random() * cols);
-                attempts++;
-            } while ((safeZone.has(`${startRow},${startCol}`) ||
-                board[startRow][startCol].isWall) && attempts < maxAttempts);
-
-            if (attempts >= maxAttempts) continue;
-
-            const clusterId = clustersCreated + 1;
-            wallClusterMap[clusterId] = [];
-
-            // Generate Cluster
-            const placedCount = this.placeSingleCluster(
-                board, rows, cols,
-                startRow, startCol, clusterId,
-                wallsForThisCluster, safeZone,
-                wallClusterMap
-            );
-
-            if (placedCount > 0) {
-                wallsPlaced += placedCount;
-                clustersCreated++;
-            }
+        const requestedClusters = config.wallClusters || 0;
+        const requestedWalls = config.totalWalls || 0;
+        if (requestedClusters === 0 && requestedWalls === 0) return 0;
+        if (requestedClusters <= 0 || requestedWalls < requestedClusters) {
+            throw new RangeError('Wall configuration requires at least one wall per cluster');
         }
 
+        const clusterSizes = Array(requestedClusters).fill(Math.floor(requestedWalls / requestedClusters));
+        for (let index = 0; index < requestedWalls % requestedClusters; index++) {
+            clusterSizes[index]++;
+        }
+
+        let wallsPlaced = 0;
+        for (let index = 0; index < clusterSizes.length; index++) {
+            const placed = this.placeCluster(
+                board,
+                config.rows,
+                config.cols,
+                index + 1,
+                clusterSizes[index],
+                safeZone
+            );
+            if (placed !== clusterSizes[index]) {
+                throw new RangeError(
+                    `Cannot place wall cluster ${index + 1}; placed ${placed} of ${clusterSizes[index]} walls`
+                );
+            }
+            wallsPlaced += placed;
+        }
         return wallsPlaced;
     }
 
-    static placeSingleCluster(board, rows, cols, startRow, startCol, clusterId, wallsToPlace, safeZone, wallClusterMap) {
-        const queue = [[startRow, startCol]];
-        let wallsPlaced = 0;
+    static placeCluster(board, rows, cols, clusterId, requestedWalls, safeZone) {
+        const candidates = this.getAvailableCells(board, rows, cols, safeZone);
+        this.shuffleArray(candidates);
 
-        // Place first wall
-        if (!board[startRow][startCol].isWall) {
-            const wallCell = new WallLogicCell();
-            wallCell.wallClusterId = clusterId;
-            board[startRow][startCol] = wallCell;
-            wallClusterMap[clusterId].push([startRow, startCol]);
-            wallsPlaced++;
+        for (const start of candidates) {
+            const connectedCells = this.collectConnectedCells(
+                board, rows, cols, start, requestedWalls, safeZone
+            );
+            if (connectedCells.length < requestedWalls) continue;
+
+            for (const [row, col] of connectedCells) {
+                const wall = new WallLogicCell();
+                wall.wallClusterId = clusterId;
+                board[row][col] = wall;
+            }
+            return connectedCells.length;
         }
+        return 0;
+    }
 
-        while (queue.length > 0 && wallsPlaced < wallsToPlace) {
+    static collectConnectedCells(board, rows, cols, start, limit, safeZone) {
+        const queue = [start];
+        const visited = new Set([`${start[0]},${start[1]}`]);
+        const connectedCells = [];
+
+        while (queue.length > 0 && connectedCells.length < limit) {
             const [row, col] = queue.shift();
+            if (!this.isAvailable(board, row, col, safeZone)) continue;
+            connectedCells.push([row, col]);
 
-            // Neighbors (Up, Down, Left, Right)
-            const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
-            const neighbors = [];
-
-            for (const [dr, dc] of directions) {
-                const newRow = row + dr;
-                const newCol = col + dc;
-
-                if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols) {
-                    if (!board[newRow][newCol].isWall && !safeZone.has(`${newRow},${newCol}`)) {
-                        neighbors.push([newRow, newCol]);
-                    }
-                }
-            }
-
-            // Shuffle neighbors for random shape
+            const neighbors = [[row - 1, col], [row + 1, col], [row, col - 1], [row, col + 1]]
+                .filter(([nextRow, nextCol]) => nextRow >= 0 && nextRow < rows && nextCol >= 0 && nextCol < cols);
             this.shuffleArray(neighbors);
-
-            for (const [newRow, newCol] of neighbors) {
-                if (wallsPlaced >= wallsToPlace) break;
-
-                if (!board[newRow][newCol].isWall) {
-                    const wallCell = new WallLogicCell();
-                    wallCell.wallClusterId = clusterId;
-                    board[newRow][newCol] = wallCell;
-                    wallClusterMap[clusterId].push([newRow, newCol]);
-                    queue.push([newRow, newCol]);
-                    wallsPlaced++;
+            for (const [nextRow, nextCol] of neighbors) {
+                const key = `${nextRow},${nextCol}`;
+                if (!visited.has(key) && this.isAvailable(board, nextRow, nextCol, safeZone)) {
+                    visited.add(key);
+                    queue.push([nextRow, nextCol]);
                 }
             }
         }
+        return connectedCells;
+    }
 
-        return wallsPlaced;
+    static getAvailableCells(board, rows, cols, safeZone) {
+        const cells = [];
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                if (this.isAvailable(board, row, col, safeZone)) cells.push([row, col]);
+            }
+        }
+        return cells;
+    }
+
+    static isAvailable(board, row, col, safeZone) {
+        const cell = board[row][col];
+        return !safeZone.has(`${row},${col}`) &&
+            !cell.isMine && !cell.isEnemy && !cell.isWall &&
+            !cell.isTreasure && !cell.isStairs;
     }
 
     static shuffleArray(array) {

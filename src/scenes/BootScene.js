@@ -66,11 +66,12 @@ class BootScene extends Phaser.Scene {
         this.load.image('wall', 'assets/images/wall.png');
         this.load.image('treasure', 'assets/images/treasure.png');
         this.load.image('stairs', 'assets/images/stairs.png');
+        this.load.image('enemy', 'assets/images/enemy.png');
+        this.load.image('key', 'assets/images/key.png');
+        this.load.image('sword', 'assets/images/sword.png');
 
-        // 音声
-        this.load.audio('click', 'assets/sounds/click.mp3');
-        this.load.audio('explosion', 'assets/sounds/explosion.mp3');
-        this.load.audio('treasure', 'assets/sounds/treasure.mp3');
+        // 音声素材はまだ同梱していないため、正式採用するまで読み込まない。
+        // 呼び出し側はサウンドが登録済みかを確認してから再生する。
 
         // テクスチャアトラスやスプライトシートがあれば追加
     }

@@ -24,10 +24,14 @@ class GameSession {
      * @param {number} level - 現在のレベル
      * @param {number} currentScore - 現在のスコア
      * @param {number} totalScore - 累計スコア
+     * @param {string} mode - game mode or a supported legacy mode name
      */
-    constructor(config, level = 1, currentScore = 0, totalScore = 0) {
+    constructor(config, level = 1, currentScore = 0, totalScore = 0, mode = 'STANDARD') {
         this.config = config;
         this.level = level;
+        this.modeDefinition = GameModeRegistry.resolve(mode);
+        this.mode = this.modeDefinition.id;
+        this.ruleSet = this.modeDefinition.ruleSet;
 
         // Score Manager
         this.scoreManager = new ScoreManager(currentScore, totalScore);
@@ -42,6 +46,7 @@ class GameSession {
 
         this.boardModel = null;
         this.boardData = null;
+        this.placementCounts = null;
     }
 
     get score() {
@@ -54,20 +59,23 @@ class GameSession {
 
     start(firstClick = null) {
         if (firstClick) {
-            this.boardData = BoardGenerator.generate(this.config, firstClick);
-            this.boardModel = new BoardModel(this.boardData);
+            this.boardData = this.modeDefinition.boardGenerator.generate(this.config, firstClick);
+            this.boardModel = new this.modeDefinition.boardModel(this.boardData);
+            this.placementCounts = this.boardData.placementCounts;
             this.isFirstClick = false;
         } else {
-            this.boardData = BoardGenerator.initBoardData(this.config.rows, this.config.cols);
-            this.boardModel = new BoardModel(this.boardData);
+            this.boardData = this.modeDefinition.boardGenerator.initBoardData(this.config.rows, this.config.cols);
+            this.boardModel = new this.modeDefinition.boardModel(this.boardData);
+            this.placementCounts = null;
             this.isFirstClick = true;
         }
 
-        this.flagsLeft = this.config.mines;
+        this.flagsLeft = this.placementCounts ? this.placementCounts.mines : this.config.mines;
         this.isGameOver = false;
+        this.win = false;
 
         this.enemiesDefeated = 0;
-        this.totalEnemies = this.config.enemies || 0;
+        this.totalEnemies = this.placementCounts ? this.placementCounts.enemies : (this.config.enemies || 0);
 
         // Item flags
         this.hasKey = false;
@@ -100,15 +108,9 @@ class GameSession {
         });
 
         if (result.events.includes('STAIRS_INTERACTED')) {
-            if (!this.hasKey) {
-                console.log("Cannot advance. Key is needed!");
-                return result; // Don't advance
-            }
-            if (this.enemiesDefeated >= this.totalEnemies) {
-                result.events.push('NEXT_LEVEL');
-            } else {
-                console.log(`Cannot advance. Enemies defeated: ${this.enemiesDefeated}/${this.totalEnemies}`);
-            }
+            const progression = this.ruleSet.evaluateStairs(this);
+            if (progression.canAdvance) result.events.push('NEXT_LEVEL');
+            result.progression = progression;
         }
 
         this._processResult(result);
@@ -166,6 +168,8 @@ class GameSession {
     }
 
     _checkWinCondition() {
+        if (this.isGameOver || !this.ruleSet.shouldCheckClassicWin()) return null;
+
         const totalCells = this.config.rows * this.config.cols;
         const nonMineCells = totalCells - this.config.mines;
 

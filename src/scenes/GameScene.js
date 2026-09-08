@@ -93,7 +93,8 @@ class GameScene extends Phaser.Scene {
             adjustedConfig,
             level,
             globalGameData.score,
-            globalGameData.totalScore
+            globalGameData.totalScore,
+            globalGameData.mode
         );
         this.gameSession.start();
     }

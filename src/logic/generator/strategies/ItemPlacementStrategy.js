@@ -44,7 +44,13 @@ class ItemPlacementStrategy {
         let itemsPlaced = 0;
 
         // Place Treasures and randomly assign contents
-        const treasuresCount = Math.min(config.treasures, availableCells.length);
+        const requestedTreasures = config.treasures || 0;
+        const requestedStairs = config.stairs || 0;
+        const requestedItems = requestedTreasures + requestedStairs;
+        if (availableCells.length < requestedItems) {
+            throw new RangeError(`Cannot place ${requestedItems} items; only ${availableCells.length} safe cells are available`);
+        }
+        const treasuresCount = requestedTreasures;
 
         // Ensure at least one key if there are treasures
         let hasKey = false;
@@ -75,14 +81,14 @@ class ItemPlacementStrategy {
 
         // Place Stairs (after treasures)
         const stairsStart = treasuresCount;
-        const stairsEnd = Math.min(treasuresCount + config.stairs, availableCells.length);
+        const stairsEnd = treasuresCount + requestedStairs;
         for (let i = stairsStart; i < stairsEnd; i++) {
             const [row, col] = availableCells[i];
             board[row][col] = new StairsLogicCell();
             itemsPlaced++;
         }
 
-        return itemsPlaced;
+        return { treasures: treasuresCount, stairs: requestedStairs, total: itemsPlaced };
     }
 
     static shuffleArray(array) {
