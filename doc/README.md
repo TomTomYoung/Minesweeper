@@ -1,8 +1,8 @@
 # Minesweeper 引き継ぎ資料
 
-調査日: 2026-09-07 UTC
+調査日: 2026-10-16 JST
 調査対象: main
-基準コミット: 30a29b7ab1fe4e0bb2cfa4fe4a2cafec8acabe08
+基準コミット: 3fad1bc760dc326ecfd584ee2e8f3b9b1ff4cc2f
 
 このフォルダは、現行実装を基準に仕様、進捗、次担当者向けの作業指示をまとめたものです。既存の docs フォルダは過去の設計資料や個別解説として残し、本フォルダを作業再開時の入口とします。
 
@@ -28,7 +28,7 @@ HANDOFF.md は、次担当者が安全に作業を再開するための優先順
 4. docs/rpgモード仕様.md
 5. docs/guitest_spec.md
 6. docs/ズームとスクロールバー.md
-7. main のコミット履歴およびマージ済み PR 1、PR 2
+7. main のコミット履歴およびマージ済み PR 1、PR 2、PR 3
 
 記述が食い違う場合、現在動くものの説明はコードを優先し、目標仕様は既存設計書を優先しています。
 
@@ -44,3 +44,13 @@ HANDOFF.md は、次担当者が安全に作業を再開するための優先順
 4. EXPERIMENTAL
 
 共通 UI と基盤を再利用しながら、盤面モデル、生成器、進行条件をモード単位で差し替えます。詳細は SPECIFICATION.md と HANDOFF.md を参照してください。
+
+## 2026-10-16の現在地
+
+CLASSICとRPG_SIMPLEの入口、共通盤面・表示、モード別RuleSetを実装済みです。PR #3で画像ロード、壁上書き防止、配置不足エラー、モード境界、通常勝利の分離、Node.jsテストがmainに入りました。旧P0を未着手として再実装しないでください。
+
+今回 `npm test` は14件成功し、src・testの全62 JavaScriptファイルの構文チェックも成功しました。ただしRPGには自動展開による敵撃破イベント欠落と階層更新の上書きが残ります。再現結果と修正優先度は [PROGRESS.md](./PROGRESS.md)、次担当者の受入条件は [HANDOFF.md](./HANDOFF.md) にあります。ブラウザ描画・操作は今回未検証です。
+
+起動はリポジトリ直下を静的HTTP配信します。例: `python3 -m http.server 4173` → `http://localhost:4173/`。VS Codeの静的プレビュー等でも同じルートで配信できます。Node.jsはテストに使用し、npm依存のインストールやビルドは不要です。CDNのPhaser／RexUIへの接続は必要です。
+
+調査時点のブランチはmainのみ、open PR・open issueは各0件です。既存のdocs、backup、trashは今回変更していません。
