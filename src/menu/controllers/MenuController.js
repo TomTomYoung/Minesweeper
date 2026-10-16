@@ -13,29 +13,17 @@ class MenuController {
         const gameData = this.scene.game.gameData;
         const gameConfig = gameData.gameConfig;
 
-        if (difficulty !== 'custom') {
-            const config = gameConfig.getConfig(difficulty);
-            const modeConfig = GameConfig.applyMode(config, this.currentMode);
-            gameConfig.updateConfig(modeConfig);
-        } else if (customConfig) {
-            // Validate Logic from original MenuScene
-            const totalCells = customConfig.rows * customConfig.cols;
-            const totalSpecial = customConfig.mines + customConfig.totalWalls + customConfig.treasures + customConfig.stairs;
-
-            if (totalSpecial >= totalCells - 9) {
-                return { error: '地雷・壁・お宝・階段の合計が多すぎます' };
-            }
-
-            // Cell Size
-            const maxWidth = 700;
-            const maxHeight = 500;
-            const cellW = Math.min(Math.floor(maxWidth / customConfig.cols), 40);
-            const cellH = Math.min(Math.floor(maxHeight / customConfig.rows), 40);
-            customConfig.cellSize = Math.min(cellW, cellH);
-
-            const modeConfig = GameConfig.applyMode(customConfig, this.currentMode); // Apply mode even to custom? Original code did.
-            gameConfig.updateConfig(modeConfig);
+        const base = difficulty === 'custom'
+            ? { ...gameConfig.getConfig('easy'), ...customConfig }
+            : gameConfig.getConfig(difficulty);
+        // Validate the effective mode configuration, not unused RPG fields in CLASSIC.
+        const config = GameConfig.applyMode(base, this.currentMode);
+        const error = GameConfig.validate(config, this.currentMode);
+        if (error) return { error };
+        if (difficulty === 'custom') {
+            config.cellSize = Math.min(40, Math.floor(700 / config.cols), Math.floor(390 / config.rows));
         }
+        gameConfig.updateConfig(config);
 
         // Save State
         gameData.difficulty = difficulty;
@@ -43,16 +31,6 @@ class MenuController {
         gameData.score = 0;
         gameData.totalScore = 0;
         gameData.level = 1;
-
-        // Start Scenes
-        // Start Scenes
-
-        // FORCE CLEANUP: Remove potentially lingering global listeners
-        // This prevents "ghost" UI scenes from reacting to GameScene events
-        const gameEvents = this.scene.game.events;
-        gameEvents.removeAllListeners('updateUI');
-        gameEvents.removeAllListeners('updateScroll');
-        gameEvents.removeAllListeners('showMessage');
 
         // Start Scenes - ensure clean restart
         if (this.scene.scene.isActive('GameScene')) {
@@ -69,3 +47,4 @@ class MenuController {
         return { success: true };
     }
 }
+

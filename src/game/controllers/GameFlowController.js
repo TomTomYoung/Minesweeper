@@ -3,81 +3,69 @@ class GameFlowController {
         this.scene = scene;
         this.eventBus = eventBus;
         this.session = session;
+        this.transitionTimer = null;
+        this.hasShownGameOver = false;
     }
 
-    // Logic from handleCellClick/RightClick results
     processResult(result) {
-        if (result.events && result.events.length > 0) {
-            if (result.events.includes('GAME_OVER')) {
-                return this.gameOver(false);
-            }
-            if (result.events.includes('NEXT_LEVEL')) {
-                this.goToNextLevel();
-            }
+        const events = result.events || [];
+        if (events.includes('GENERATION_FAILED')) {
+            this.eventBus.emitShowMessage({
+                text: '盤面を生成できません。再度クリックするか、設定を変更してください。',
+                color: '#cc0000'
+            });
+            return;
         }
+        if (events.includes('GAME_OVER')) return this.gameOver(false);
+        if (events.includes('NEXT_LEVEL')) this.goToNextLevel();
 
-        if (result.scoreEvents) {
-            for (const evt of result.scoreEvents) {
-                if (evt.type === 'TREASURE') {
-                    this.eventBus.emitShowMessage({
-                        text: `お宝を見つけました！ +${this.session.config.treasurePoints}点`,
-                        color: '#ffd700',
-                        duration: 2000
-                    });
-                    if (this.scene.sound.get('treasure')) {
-                        this.scene.sound.play('treasure');
-                    }
-                }
+        const messages = [];
+        for (const event of result.scoreEvents || []) {
+            if (event.type === 'TREASURE_GOLD') {
+                messages.push(`お宝を獲得！ +${this.session.config.treasurePoints}点`);
             }
         }
-
-        // Win check
-        const winState = this.session.getWinState();
-        if (winState.isWin && !this.session.isGameOver) {
-            // isGameOver check is important to not trigger twice if session not updated?
-            // Actually getWinState just checks flags/mines. Session doesn't set isGameOver on win automatically?
-            // GameSession implementation: start, open, checkWinCondition...
-            // Usually we check win after every move.
-            return this.gameOver(true);
-        } else if (this.session.isGameOver && this.session.win) {
-            return this.gameOver(true);
+        if (events.includes('ITEM_KEY')) messages.push('この階の鍵を獲得しました');
+        if (events.includes('ITEM_SWORD')) messages.push('剣を獲得！ +50点');
+        const defeated = events.filter(event => event === 'ENEMY_DEFEATED').length;
+        if (defeated) messages.push(`敵を${defeated}体撃破！ +${defeated * 50}点`);
+        if (result.progression && !result.progression.canAdvance) {
+            messages.push(result.progression.reason === 'KEY_REQUIRED'
+                ? '階段には、この階の鍵が必要です'
+                : `残り${this.session.totalEnemies - this.session.enemiesDefeated}体の敵を倒してください`);
         }
+        if (messages.length) {
+            this.eventBus.emitShowMessage({ text: messages.join(' / '), color: '#765500', duration: 2500 });
+        }
+        if (this.session.getWinState().isWin) return this.gameOver(true);
     }
 
     gameOver(isWin) {
-        if (isWin) {
-            this.eventBus.emitShowMessage({
-                text: `勝利！おめでとうございます！`,
-                color: '#00aa00'
-            });
-        } else {
-            // Reveal mines is handled by Scene/BoardManager usually?
-            // Scene calls boardManager.revealAllMines();
-            // We should signal this.
-
-            this.eventBus.emitShowMessage({
-                text: 'ゲームオーバー！',
-                color: '#ff0000'
-            });
-            if (this.scene.sound.get('explosion')) {
-                this.scene.sound.play('explosion');
-            }
-        }
-        // Return status to Scene to handle visual actions (Reveal mines)
+        if (this.hasShownGameOver) return { isWin, isGameOver: true };
+        this.hasShownGameOver = true;
+        this.destroy();
+        this.eventBus.emitShowMessage({
+            text: isWin ? '勝利！おめでとうございます！' : 'ゲームオーバー！',
+            color: isWin ? '#00aa00' : '#ff0000'
+        });
         return { isWin, isGameOver: true };
     }
 
     goToNextLevel() {
+        if (this.transitionTimer || !this.session.isTransitioning) return;
         this.eventBus.emitShowMessage({
-            text: '階段を見つけました！次のレベルへ…',
-            color: '#9370db',
-            duration: 1500
+            text: '階段を見つけました！次の階へ…', color: '#9370db', duration: 1500
         });
-
-        this.scene.game.gameData.level++;
-
-        this.scene.time.delayedCall(1500, () => {
+        this.transitionTimer = this.scene.time.delayedCall(1500, () => {
+            this.transitionTimer = null;
+            if (!this.session.advanceLevel()) return;
+            this.scene.updateUI();
             this.scene.scene.restart();
         });
+    }
+
+    destroy() {
+        if (this.transitionTimer) this.transitionTimer.remove();
+        this.transitionTimer = null;
     }
 }

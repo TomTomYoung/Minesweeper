@@ -4,7 +4,7 @@ class InfoPanel extends Phaser.GameObjects.Container {
         scene.add.existing(this);
 
         this.width = width;
-        this.height = 50;
+        this.height = 80;
         this.uiElements = {};
 
         this.createElements();
@@ -25,16 +25,20 @@ class InfoPanel extends Phaser.GameObjects.Container {
         // Calculate startX relative to container center (0,0)
         let startX = -totalContentWidth / 2 + itemWidth / 2;
 
-        this.createItem(startX, 0, '🚩 残り:', '10', 'flagsLeft');
+        this.createItem(startX, -15, '🚩 残り:', '10', 'flagsLeft');
         startX += itemWidth + spacing;
 
-        this.createItem(startX, 0, '⏱️ 時間:', '0', 'timer');
+        this.createItem(startX, -15, '⏱️ 時間:', '0', 'timer');
         startX += itemWidth + spacing;
 
-        this.createItem(startX, 0, '💎 得点:', '0', 'score');
+        this.createItem(startX, -15, '💎 階得点:', '0', 'score');
         startX += itemWidth + spacing;
 
-        this.createItem(startX, 0, '🏆 総得点:', '0', 'totalScore');
+        this.createItem(startX, -15, '🏆 総得点:', '0', 'totalScore');
+        this.progressText = this.scene.add.text(0, 20, '', {
+            fontSize: '14px', fontFamily: 'Arial', color: '#333'
+        }).setOrigin(0.5);
+        this.add(this.progressText);
     }
 
     createItem(x, y, label, value, key) {
@@ -76,6 +80,10 @@ class InfoPanel extends Phaser.GameObjects.Container {
     }
 
     updateUI(data) {
+        if (data.mode) {
+            this.progressText.setText(data.mode === 'CLASSIC' ? '通常モード' :
+                `${data.level}階  鍵:${data.hasKey ? 'あり' : 'なし'}  剣:${data.hasSword ? 'あり' : 'なし'}  敵:${data.enemiesDefeated}/${data.totalEnemies}撃破`);
+        }
         if (data.flagsLeft !== undefined && this.uiElements.flagsLeft) {
             this.uiElements.flagsLeft.setText(data.flagsLeft.toString());
         }
@@ -90,3 +98,4 @@ class InfoPanel extends Phaser.GameObjects.Container {
         }
     }
 }
+

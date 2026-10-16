@@ -40,6 +40,7 @@ class GameSession {
         this.timer = 0;
         this.flagsLeft = config.mines;
         this.isGameOver = false;
+        this.isTransitioning = false;
         this.isFirstClick = true;
         this.enemiesDefeated = 0;
         this.totalEnemies = config.enemies || 0;
@@ -72,7 +73,10 @@ class GameSession {
 
         this.flagsLeft = this.placementCounts ? this.placementCounts.mines : this.config.mines;
         this.isGameOver = false;
+        this.isTransitioning = false;
         this.win = false;
+        this.elapsedMS = 0;
+        this.timer = 0;
 
         this.enemiesDefeated = 0;
         this.totalEnemies = this.placementCounts ? this.placementCounts.enemies : (this.config.enemies || 0);
@@ -85,22 +89,28 @@ class GameSession {
     }
 
     updateTimer(delta) {
-        if (this.isGameOver || this.isFirstClick) return false;
+        if (this.isGameOver || this.isFirstClick || this.isTransitioning) return false;
 
         this.elapsedMS += delta;
         if (this.elapsedMS >= 1000) {
-            this.timer++;
-            this.elapsedMS -= 1000;
+            const seconds = Math.floor(this.elapsedMS / 1000);
+            this.timer += seconds;
+            this.elapsedMS -= seconds * 1000;
             return true;
         }
         return false;
     }
 
     handleCellClick(row, col) {
-        if (this.isGameOver) return { events: [] };
+        if (this.isGameOver || this.isTransitioning) return { events: [] };
 
         if (this.isFirstClick) {
-            this.start({ row, col });
+            try {
+                this.start({ row, col });
+            } catch (error) {
+                if (!(error instanceof RangeError)) throw error;
+                return { events: ['GENERATION_FAILED'], scoreEvents: [], error: error.message };
+            }
         }
 
         const result = this.boardModel.advanceState(row, col, {
@@ -109,7 +119,10 @@ class GameSession {
 
         if (result.events.includes('STAIRS_INTERACTED')) {
             const progression = this.ruleSet.evaluateStairs(this);
-            if (progression.canAdvance) result.events.push('NEXT_LEVEL');
+            if (progression.canAdvance) {
+                this.isTransitioning = true;
+                result.events.push('NEXT_LEVEL');
+            }
             result.progression = progression;
         }
 
@@ -118,7 +131,7 @@ class GameSession {
     }
 
     handleCellRightClick(row, col) {
-        if (this.isGameOver) return { success: false };
+        if (this.isGameOver || this.isTransitioning) return { success: false };
         if (this.isFirstClick) return { success: false };
 
         const result = this.boardModel.toggleFlag(row, col, this.flagsLeft);
@@ -155,7 +168,8 @@ class GameSession {
             console.log("Got Sword!");
         }
 
-        if (result.events.includes('ENEMY_DEFEATED')) {
+        for (const event of result.events) {
+            if (event !== 'ENEMY_DEFEATED') continue;
             this.enemiesDefeated++;
             console.log(`Enemy defeated! Total: ${this.enemiesDefeated}/${this.totalEnemies}`);
             // Bonus points for enemy?
@@ -203,8 +217,21 @@ class GameSession {
         return null;
     }
 
+    // Commit a reserved transition exactly once. Items belong to their floor.
+    advanceLevel() {
+        if (!this.isTransitioning || this.isGameOver) return false;
+        this.level++;
+        this.scoreManager.reset();
+        this.hasKey = false;
+        this.hasSword = false;
+        // Keep input locked until the scene creates the next session.
+        this.isGameOver = true;
+        return true;
+    }
+
     getWinState() {
         if (this.isGameOver && this.win) return { isWin: true };
         return { isWin: false };
     }
 }
+

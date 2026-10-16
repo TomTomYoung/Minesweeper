@@ -14,7 +14,7 @@ class BoardManager {
         const boardWidth = cols * cellSize;
         const boardHeight = rows * cellSize;
         const boardX = (this.scene.cameras.main.width - boardWidth) / 2;
-        const boardY = 70;
+        const boardY = 130;
 
         // Background
         const boardBg = this.scene.add.rectangle(
@@ -39,11 +39,13 @@ class BoardManager {
         return this.board;
     }
 
-    updateBoardUI(config, boardModel) {
+    updateBoardUI(config, boardModel, progression = null) {
         if (!this.board) return;
         for (let i = 0; i < config.rows; i++) {
             for (let j = 0; j < config.cols; j++) {
                 this.board.updateCellUI(i, j, boardModel.getCell(i, j));
+                const view = this.board.cells[i][j];
+                if (view instanceof StairsCell && progression) view.setUnlocked(progression.canAdvance);
             }
         }
     }
@@ -66,19 +68,27 @@ class BoardManager {
         }
     }
 
+    destroy() {
+        if (this.board && this.board.scene) this.board.destroy();
+        if (this.boardContainer && this.boardContainer.scene) this.boardContainer.destroy();
+        this.board = null;
+        this.boardContainer = null;
+    }
+
     // Helper for ScrollController to get bounds
     getBoardDimensions(rows, cols, cellSize) {
         // Need to replicate calculation or store it.
         // let's store basics
         const boardWidth = cols * cellSize;
         const boardHeight = rows * cellSize;
-        // BoardX/Y logic is: (ScreenW - BoardW)/2, 70
+        // BoardX/Y logic is: (ScreenW - BoardW)/2, 130
         // We need ScreenW... which is camera width.
         const width = this.scene.cameras.main.width;
 
         const boardX = (width - boardWidth) / 2;
-        const boardY = 70;
+        const boardY = 130;
 
         return { x: boardX, y: boardY, width: boardWidth, height: boardHeight };
     }
 }
+

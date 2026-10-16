@@ -1,7 +1,7 @@
 const UILayout = {
     // レイアウト設定定数
     CONFIG: {
-        HEADER_HEIGHT: 50,  // 上部情報パネルの高さ
+        HEADER_HEIGHT: 80,  // 上部情報パネルの高さ
         FOOTER_HEIGHT: 60,  // 下部コントロールパネルの高さ
         MARGIN: 10,         // 基本余白
         PANEL_SPACING: 20   // パネル間の間隔
@@ -93,3 +93,4 @@ const UILayout = {
         };
     }
 };
+

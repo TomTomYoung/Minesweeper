@@ -47,8 +47,7 @@ class CameraController {
             // Clamp (0.5 ~ 2.0 based on UIScene)
             const newZoom = Phaser.Math.Clamp(this.camera.zoom + zoomDelta, 0.5, 2.0);
 
-            this.setZoom(newZoom);
-            // GameSceneからUISceneへ通知されるようにする
+            // Wheel and slider share the same pivot-aware transform.
             this.scene.game.events.emit('zoomUpdate', newZoom);
         });
     }
@@ -62,7 +61,7 @@ class CameraController {
     /**
      * Applies the 'Guitest' transform formula to position the camera.
      * ScreenPos = Pivot + (WorldOrigin + Pan - Pivot) * Zoom
-     * Corresponds to: Camera.scroll = Pivot * (1 - 1/Zoom) - Pan (assuming Origin=0)
+     * Corresponds to: Camera.scroll = (Pivot - CameraOrigin) * (1 - 1/Zoom) - Pan
      * 
      * @param {number} zoom - Zoom Level
      * @param {Object} pivot - {x, y} Screen Coordinates of Focus Point
@@ -71,39 +70,24 @@ class CameraController {
     updateCameraTransform(zoom, pivot, pan) {
         this.camera.setZoom(zoom);
 
-        // Formula: Scroll = Pivot * (1 - 1/S) - Pan
+        // Formula: Scroll = (Pivot - CameraOrigin) * (1 - 1/S) - Pan
         // Note: This assumes World Origin (0,0) is the reference point for Pan.
 
-        this.camera.scrollX = pivot.x * (1 - 1 / zoom) - pan.x;
-        this.camera.scrollY = pivot.y * (1 - 1 / zoom) - pan.y;
+        this.camera.scrollX = (pivot.x - this.camera.width * this.camera.originX) * (1 - 1 / zoom) - pan.x;
+        this.camera.scrollY = (pivot.y - this.camera.height * this.camera.originY) * (1 - 1 / zoom) - pan.y;
 
         this.scene.events.emit('cameraMoved');
     }
 
     setZoom(value, anchor = null) {
+        const oldZoom = this.camera.zoom;
         if (anchor) {
-            // Anchor-based zoom logic
-            const oldZoom = this.camera.zoom;
-            // Previous vector from Scroll(TL) to Anchor in World Units
-            const diffX = anchor.x - this.camera.scrollX;
-            const diffY = anchor.y - this.camera.scrollY;
-
-            // Apply new Zoom
-            this.camera.setZoom(value);
-
-            // We want (Anchor - NewScroll) to be scaled such that screen position is invariant.
-            // ScreenPos = Diff * OldZoom
-            // NewScreenPos = NewDiff * NewZoom
-            // Diff * OldZoom = (Anchor - NewScroll) * NewZoom
-            // Anchor - NewScroll = Diff * (OldZoom / NewZoom)
-
-            const scale = oldZoom / value;
-            this.camera.scrollX = anchor.x - (diffX * scale);
-            this.camera.scrollY = anchor.y - (diffY * scale);
-        } else {
-            this.camera.setZoom(value);
+            const originX = this.camera.width * this.camera.originX;
+            const originY = this.camera.height * this.camera.originY;
+            this.camera.scrollX += (anchor.x - originX) * (1 / oldZoom - 1 / value);
+            this.camera.scrollY += (anchor.y - originY) * (1 / oldZoom - 1 / value);
         }
-
+        this.camera.setZoom(value);
         this.scene.events.emit('cameraMoved');
     }
 }

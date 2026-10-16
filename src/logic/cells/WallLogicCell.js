@@ -10,7 +10,7 @@ class WallLogicCell extends BaseLogicCell {
     }
 
     reveal(board, row, col, options = {}) {
-        if (this.isRevealed) return { events: [], scoreEvents: [] };
+        if (this.isRevealed || this.isFlagged) return { events: [], scoreEvents: [] };
 
         const autoReveal = options && options.autoRevealWallCluster;
 
@@ -19,7 +19,7 @@ class WallLogicCell extends BaseLogicCell {
             for (let i = 0; i < board.rows; i++) {
                 for (let j = 0; j < board.cols; j++) {
                     const target = board.getCell(i, j);
-                    if (target.isWall && target.wallClusterId === this.wallClusterId && !target.isRevealed) {
+                    if (target.isWall && target.wallClusterId === this.wallClusterId && !target.isRevealed && !target.isFlagged) {
                         target.isRevealed = true;
                         target.state = 1;
                     }
@@ -43,7 +43,7 @@ class WallLogicCell extends BaseLogicCell {
                 const newCol = col + dc;
 
                 const neighbor = board.getCell(newRow, newCol);
-                if (neighbor && neighbor.isWall && neighbor.wallClusterId === this.wallClusterId && !neighbor.isRevealed) {
+                if (neighbor && neighbor.isWall && neighbor.wallClusterId === this.wallClusterId && !neighbor.isRevealed && !neighbor.isFlagged) {
                     neighbor.isRevealed = true;
                     neighbor.state = 1;
                 }
@@ -53,3 +53,4 @@ class WallLogicCell extends BaseLogicCell {
         return { events: [], scoreEvents: [] };
     }
 }
+

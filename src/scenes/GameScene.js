@@ -1,221 +1,125 @@
-// GameScene.js - Integrated Version
 class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: 'GameScene' });
-        // Core Modules
-        this.eventBus = null;
-        this.boardManager = null;
-        this.debugger = null;
-        this.cameraController = null;
-
-        // Controllers
-        this.inputController = null;
-        this.scrollController = null;
-        this.gameFlowController = null;
-
-        // Data
-        this.gameSession = null;
-        this.boardData = null; // Sync with Session
-
-        // State for Guitest-style Camera Logic
-        this.cameraZoom = 1.0;
-        this.cameraPanX = 0;
-        this.cameraPanY = 0;
     }
 
     create() {
-        // 1. Initialize Core
+        this.cameraZoom = 1;
+        this.cameraPanX = 0;
+        this.cameraPanY = 0;
+        this.focusPoint = { x: this.cameras.main.width / 2, y: this.cameras.main.height / 2 };
         this.eventBus = new GameEventBus(this);
+        this.events.once('shutdown', this.shutdown, this);
         this.debugger = new GameDebugger(this);
-
-        // 2. Initialize Logic (Session)
         this.initGameSession();
-
-        // 3. Initialize Visuals (Camera & Board)
         this.cameraController = new CameraController(this, this.cameras.main);
         this.boardManager = new BoardManager(this, this.eventBus);
-
-        // 4. Create Board
-        this.boardManager.createGameBoard(
-            this.gameSession.config.rows,
-            this.gameSession.config.cols,
-            this.gameSession.config.cellSize
-        );
+        const config = this.gameSession.config;
+        this.boardManager.createGameBoard(config.rows, config.cols, config.cellSize);
         this.boardData = this.gameSession.boardData;
-
-        // 5. Initialize Controllers
-        // Pass BoardManager and Session to InputController so it can wire itself up
         this.inputController = new InputController(this, this.eventBus, this.boardManager, this.gameSession);
-
         this.scrollController = new GameScrollController(this, this.eventBus, this.boardManager, this.cameraController);
         this.scrollController.setSession(this.gameSession);
-
         this.gameFlowController = new GameFlowController(this, this.eventBus, this.gameSession);
-
-        // 6. Setup Inputs & Events
         this.setupHelpers();
-        this.updateUI(); // Initial Update
-
-        // Message
-        if (this.gameSession.level > 1) {
+        this.updateUI();
+        this.time.delayedCall(0, () => {
             this.eventBus.emitShowMessage({
-                text: `レベル ${this.gameSession.level} スタート！`,
-                color: '#0000ff',
-                duration: 3000
+                text: this.gameSession.mode === 'RPG_SIMPLE' ? `${this.gameSession.level}階 スタート！` : '',
+                color: '#0000aa', duration: 1500
             });
-        }
-
-        // Initial Scroll Send
-        this.time.delayedCall(100, () => {
-            // Force initial sync with defaults (Pan=0, Range=2000)
-            this.scrollController.syncToState(0, 0, 2000);
-
-            // Clear any lingering messages (e.g. Game Over from previous session)
-            this.eventBus.emitShowMessage({ text: '', duration: 0 });
         });
     }
 
     update(time, delta) {
-        if (this.gameSession.updateTimer(delta)) {
-            this.updateUI();
-        }
+        if (this.gameSession.updateTimer(delta)) this.updateUI();
     }
 
     initGameSession() {
-        const globalGameData = this.game.gameData;
-        const config = globalGameData.gameConfig.getCurrentConfig();
-        const level = globalGameData.level || 1;
-        const adjustedConfig = globalGameData.gameConfig.adjustForLevel(level);
-
-        if (!adjustedConfig.cellSize) adjustedConfig.cellSize = 40;
-
-        this.gameSession = new GameSession(
-            adjustedConfig,
-            level,
-            globalGameData.score,
-            globalGameData.totalScore,
-            globalGameData.mode
-        );
+        const data = this.game.gameData;
+        const level = data.level || 1;
+        const config = data.gameConfig.adjustForLevel(level);
+        this.gameSession = new GameSession(config, level, data.score, data.totalScore, data.mode);
         this.gameSession.start();
     }
 
     setupHelpers() {
-        // Board Interaction
-        // Board Interaction is now handled by InputController internally
-
-        // Global Events
-        // Global Events
-        this.eventBus.onZoomUpdate((zoom) => {
+        this.createFocusMarker();
+        this.eventBus.onZoomUpdate(zoom => {
             this.cameraZoom = zoom;
             this.updateCameraState();
-        }, this);
-
-        this.eventBus.onScrollRequest((data) => {
-            // data: { axis: 'vertical', value: 0..1 }
-            // Map 0..1 to Pan Range
-            const range = 2000; // Large enough range as per guitest idea (or board based)
-
-            if (data.axis === 'vertical') {
-                // val=0.5 -> pan=0. val=0 -> pan=500? matches guitest: (0 - 0.5)*-1 = 0.5
-                // Guitest: (ratio - 0.5) * range * -1
-                // Ratio 0 (Top) -> +500 (Scroll Down/Content Down) -> PanY=+500
-                // Ratio 1 (Bottom) -> -500 (Content Up) -> PanY=-500
-                this.cameraPanY = (data.value - 0.5) * range * -1;
-            } else if (data.axis === 'horizontal') {
-                // Same logic for H
-                this.cameraPanX = (data.value - 0.5) * range * -1;
-            }
-
-            this.updateCameraState();
-
-            // Notify UI to update Thumb position (Sync)
-            // Use specific method to avoiding reading back from Camera (which is derived)
-            this.scrollController.syncToState(this.cameraPanX, this.cameraPanY, range);
-        }, this);
-
-        // We no longer rely on 'cameraMoved' to drive the scrollbar because it's derived.
-        // Scrollbar drives Pan. Pan drives Camera.
-        // But if Camera moves by other means (e.g. initial setup?), we might need sync?
-        // For 'Guitest' spec, inputs are master.
-
-        // this.eventBus.onCameraMoved(...) -> Removed or reduced to Debugger only
-
-        // Sync Scrollbar with Camera Movement (Reverse Calculation)
-        this.events.on('cameraMoved', () => {
-            const pivot = { x: this.focusMarker.x, y: this.focusMarker.y };
-            const zoom = this.cameras.main.zoom;
-            const scrollX = this.cameras.main.scrollX;
-            const scrollY = this.cameras.main.scrollY;
-
-            // Formula: Pan = Pivot * (1 - 1/S) - Scroll
-            this.cameraPanX = pivot.x * (1 - 1 / zoom) - scrollX;
-            this.cameraPanY = pivot.y * (1 - 1 / zoom) - scrollY;
-
-            // Sync with ScrollController
-            // const range = 2000; // Same range as used in ScrollRequest
-            // We should use a consistent range value or derive it. For now, hardcoded 2000.
-            this.scrollController.syncToState(this.cameraPanX, this.cameraPanY, 2000); // 2000 is default range
         });
-
+        this.eventBus.onScrollRequest(data => {
+            const pan = (data.value - 0.5) * -2000;
+            if (data.axis === 'vertical') this.cameraPanY = pan;
+            if (data.axis === 'horizontal') this.cameraPanX = pan;
+            this.updateCameraState();
+        });
+        this.eventBus.onCameraMoved(() => {
+            const camera = this.cameras.main;
+            this.cameraZoom = camera.zoom;
+            this.cameraPanX = (this.focusPoint.x - camera.width * camera.originX) * (1 - 1 / camera.zoom) - camera.scrollX;
+            this.cameraPanY = (this.focusPoint.y - camera.height * camera.originY) * (1 - 1 / camera.zoom) - camera.scrollY;
+            this.updateFocusMarker();
+            this.syncCameraUI();
+        });
+        this.eventBus.onRequestUIUpdate(() => {
+            this.updateUI();
+            this.syncCameraUI();
+        });
         this.eventBus.onBlockInput(() => this.cameraController.setLock(true));
         this.eventBus.onUnblockInput(() => this.cameraController.setLock(false));
-
-        // Camera Input
         this.setupCameraInputZone();
         this.cameraController.setupZoomInput();
+        this.updateCameraState();
+    }
 
-        // Setup Focus Marker
-        this.createFocusMarker();
+    syncCameraUI() {
+        this.scrollController.syncToState(this.cameraPanX, this.cameraPanY, 2000);
+        this.eventBus.emitZoomChanged(this.cameraZoom);
     }
 
     updateCameraState() {
-        if (!this.focusMarker) return;
-
-        const pivot = { x: this.focusMarker.x, y: this.focusMarker.y };
-        const pan = { x: this.cameraPanX, y: this.cameraPanY };
-
-        this.cameraController.updateCameraTransform(this.cameraZoom, pivot, pan);
+        this.cameraController.updateCameraTransform(
+            this.cameraZoom, this.focusPoint, { x: this.cameraPanX, y: this.cameraPanY }
+        );
     }
 
     createFocusMarker() {
-        // Default Position (Center)
-        const x = this.cameras.main.width / 2;
-        const y = this.cameras.main.height / 2;
-
-        this.focusMarker = this.add.container(x, y);
-        this.focusMarker.setScrollFactor(0); // Screen Space
-        this.focusMarker.setDepth(2000);     // Top Layer
-
-        const gfx = this.add.graphics();
-        gfx.lineStyle(2, 0xff0000, 1);
-        gfx.moveTo(-10, 0); gfx.lineTo(10, 0);
-        gfx.moveTo(0, -10); gfx.lineTo(0, 10);
-        gfx.strokePath();
-
+        this.focusMarker = this.add.container(this.focusPoint.x, this.focusPoint.y);
+        this.focusMarker.setScrollFactor(0).setDepth(2000);
+        const graphics = this.add.graphics();
+        graphics.lineStyle(2, 0xff0000, 1);
+        graphics.moveTo(-10, 0); graphics.lineTo(10, 0);
+        graphics.moveTo(0, -10); graphics.lineTo(0, 10);
+        graphics.strokePath();
         const hit = this.add.rectangle(0, 0, 40, 40, 0xff0000, 0.01).setInteractive({ draggable: true });
-
-        this.focusMarker.add([gfx, hit]);
-
-        hit.on('drag', (pointer, dragX, dragY) => {
-            this.focusMarker.x = pointer.x;
-            this.focusMarker.y = pointer.y;
-            // Immediate update
+        this.focusMarker.add([graphics, hit]);
+        hit.on('drag', pointer => {
+            // Moving the pivot must not move the board at the current zoom.
+            const scale = 1 - 1 / this.cameraZoom;
+            this.cameraPanX += (pointer.x - this.focusPoint.x) * scale;
+            this.cameraPanY += (pointer.y - this.focusPoint.y) * scale;
+            this.focusPoint = { x: pointer.x, y: pointer.y };
             this.updateCameraState();
         });
     }
 
-    setupCameraInputZone() {
-        // Background Zone for Panning
-        const width = this.cameras.main.width;
-        const height = this.cameras.main.height;
-        this.backgroundZone = this.add.zone(0, 0, width, height)
-            .setOrigin(0)
-            .setScrollFactor(0)
-            .setInteractive()
-            .setDepth(-9999);
+    updateFocusMarker() {
+        const camera = this.cameras.main;
+        const originX = camera.width * camera.originX;
+        const originY = camera.height * camera.originY;
+        // scrollFactor(0) removes scroll, but not zoom: compensate both position and size.
+        this.focusMarker.setPosition(
+            originX + (this.focusPoint.x - originX) / camera.zoom,
+            originY + (this.focusPoint.y - originY) / camera.zoom
+        );
+        this.focusMarker.setScale(1 / camera.zoom);
+    }
 
-        // DISABLE PANNING as per spec -> RE-ENABLED
-        // Global pan input (handles middle-click drag anywhere)
+    setupCameraInputZone() {
+        this.backgroundZone = this.add.zone(0, 0, this.cameras.main.width, this.cameras.main.height)
+            .setOrigin(0).setScrollFactor(0).setInteractive().setDepth(-9999);
         this.cameraController.setupPanInput();
     }
 
@@ -227,40 +131,42 @@ class GameScene extends Phaser.Scene {
     }
 
     handleResult(result) {
-        // Flow Controller logic
-        const flowStatus = this.gameFlowController.processResult(result);
-        if (flowStatus && flowStatus.isGameOver) {
-            if (!flowStatus.isWin) {
-                this.boardManager.revealAll(this.gameSession.boardModel);
-                this.boardManager.updateBoardUI(this.gameSession.config, this.gameSession.boardModel);
-            }
-        }
-
-        this.boardManager.updateBoardUI(this.gameSession.config, this.gameSession.boardModel);
+        this.gameFlowController.processResult(result);
+        this.boardManager.updateBoardUI(
+            this.gameSession.config, this.gameSession.boardModel,
+            this.gameSession.ruleSet.evaluateStairs(this.gameSession)
+        );
         this.updateUI();
     }
 
     updateUI() {
-        this.game.gameData.score = this.gameSession.score;
-        this.game.gameData.totalScore = this.gameSession.totalScore;
-        this.game.gameData.level = this.gameSession.level;
-
+        const session = this.gameSession;
+        this.game.gameData.score = session.score;
+        this.game.gameData.totalScore = session.totalScore;
+        this.game.gameData.level = session.level;
         this.eventBus.emitUpdateUI({
-            flagsLeft: this.gameSession.flagsLeft,
-            timer: this.gameSession.timer,
-            score: this.gameSession.score,
-            totalScore: this.gameSession.totalScore
+            flagsLeft: session.flagsLeft, timer: session.timer,
+            score: session.score, totalScore: session.totalScore,
+            mode: session.mode, level: session.level,
+            hasKey: session.hasKey, hasSword: session.hasSword,
+            enemiesDefeated: session.enemiesDefeated, totalEnemies: session.totalEnemies
         });
     }
 
     restartGame() {
+        const data = this.game.gameData;
+        data.level = 1;
+        data.score = 0;
+        data.totalScore = 0;
+        this.gameFlowController.destroy();
+        this.inputController.destroy();
         this.scene.restart();
     }
 
     shutdown() {
-        if (this.boardManager) {
-            this.boardManager.destroy(); // Ensure board manager cleans up
-        }
-        // Additional cleanup if needed
+        if (this.inputController) this.inputController.destroy();
+        if (this.gameFlowController) this.gameFlowController.destroy();
+        if (this.eventBus) this.eventBus.destroy();
+        if (this.boardManager) this.boardManager.destroy();
     }
 }

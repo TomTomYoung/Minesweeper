@@ -11,7 +11,9 @@ class MessagePanel extends Phaser.GameObjects.Container {
             fontSize: '20px',
             fontFamily: 'Arial',
             fontWeight: 'bold',
-            color: '#333'
+            color: '#333',
+            align: 'center',
+            wordWrap: { width: this.scene.cameras.main.width - 40 }
         }).setOrigin(0.5);
         this.add(this.messageText);
     }
@@ -31,3 +33,4 @@ class MessagePanel extends Phaser.GameObjects.Container {
         }
     }
 }
+

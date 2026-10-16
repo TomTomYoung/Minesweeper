@@ -146,6 +146,33 @@ class GameConfig {
      * @param {string} mode - The game mode ('RPG' or 'STANDARD').
      * @returns {Object} The config with mode settings applied.
      */
+    static validate(config, mode) {
+        for (const key of ['rows', 'cols', 'mines', 'wallClusters', 'totalWalls', 'treasures', 'stairs', 'enemies']) {
+            const value = config[key];
+            if (!Number.isInteger(value) || value < 0) return '設定には0以上の整数を指定してください';
+        }
+        if (config.rows < 5 || config.rows > 30 || config.cols < 5 || config.cols > 30) {
+            return '行数・列数は5〜30で指定してください';
+        }
+        if (config.mines < 1) return '地雷は1個以上で指定してください';
+        if ((config.totalWalls === 0) !== (config.wallClusters === 0) || config.totalWalls < config.wallClusters) {
+            return '壁を置かない場合は総数とクラスター数を0にしてください。置く場合は各クラスターに1マス以上必要です';
+        }
+        const total = config.mines + config.totalWalls + config.treasures + config.stairs + config.enemies;
+        if (total > config.rows * config.cols - 9) return '地雷・壁・お宝・階段・敵の合計が多すぎます';
+        if (mode === 'RPG' || mode === 'RPG_SIMPLE') {
+            if (config.treasures < 1 || config.stairs < 1) {
+                return 'RPGでは、この階の鍵を入れるお宝と階段がそれぞれ1個以上必要です';
+            }
+            // Endless exploration must leave room for the later-floor mine cap.
+            const maximumMines = Math.max(config.mines, Math.floor(config.rows * config.cols * 0.3));
+            if (total - config.mines + maximumMines > config.rows * config.cols - 9) {
+                return '階が進んだ時の地雷増加に備え、壁・お宝・階段・敵を減らしてください';
+            }
+        }
+        return null;
+    }
+
     static applyMode(config, mode) {
         const newConfig = { ...config };
         if (mode === 'STANDARD' || mode === 'CLASSIC') {
@@ -168,3 +195,4 @@ GameConfig.MODES = {
     RPG_LAYERED: 'RPG_LAYERED',
     EXPERIMENTAL: 'EXPERIMENTAL'
 };
+

@@ -30,7 +30,7 @@ class NumberLogicCell extends BaseLogicCell {
         if (flagCount === this.neighborMines) {
             for (const [r, c] of neighbors) {
                 const neighborCell = board.getCell(r, c);
-                const subResult = neighborCell.reveal(board, r, c);
+                const subResult = neighborCell.reveal(board, r, c, { automatic: true });
 
                 result.events.push(...subResult.events);
                 result.scoreEvents.push(...subResult.scoreEvents);
@@ -42,3 +42,4 @@ class NumberLogicCell extends BaseLogicCell {
         return result;
     }
 }
+

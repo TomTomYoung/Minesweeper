@@ -37,12 +37,10 @@ class UIScene extends Phaser.Scene {
         this.setupEventListeners();
 
         // 5. Initial Update Request
-        this.time.delayedCall(100, () => {
-            this.eventBus.emitRequestUIUpdate();
-        });
+        this.eventBus.emitRequestUIUpdate();
 
         // 6. Register Shutdown Handler
-        this.events.on('shutdown', this.shutdown, this);
+        this.events.once('shutdown', this.shutdown, this);
     }
 
     initializeUI() {
@@ -112,30 +110,8 @@ class UIScene extends Phaser.Scene {
 
     // --- Public Methods called by Components (Text Buttons) ---
     restartGame() {
-        // Original logic: this.scene.restart();
-        // This likely restarts the UI Scene. 
-        // If the intention is to restart the GAME, we should probably emit an event or restart GameScene.
-        // However, sticking to original behavior for refactor safety:
-        // But wait, "New Game" button usually implies resetting the game state.
-        // If I just restart UI, the game persists?
-        // Let's assume the user handles game restart via some other mechanism or this was placeholder.
-        // BUT, I should probably emit 'requestRestart' if I want to be robust, 
-        // or access GameScene.
-        // For now, I will replicate original "this.scene.restart()" but also emit an event just in case.
-        // Actually, looking at ControlPanel.js: "this.scene.restartGame()"
-
-        // Let's try to do the right thing: Restart GameScene too.
-        if (this.scene.get('GameScene')) {
-            this.scene.get('GameScene').restartGame(); // GameScene has restartGame method?
-            // Original GameScene.js has restartGame method at the bottom!
-            // "restartGame() { this.scene.restart(); }"
-            // So calling that is correct.
-            this.scene.get('GameScene').restartGame();
-        }
-
-        // And restart UI to reset state
-        // this.scene.restart(); // This might be redundant if GameScene creates UIScene.
-        // Usually Boot or Main starts them.
+        const gameScene = this.scene.get('GameScene');
+        if (gameScene) gameScene.restartGame();
     }
 
     returnToMenu() {
@@ -151,3 +127,4 @@ class UIScene extends Phaser.Scene {
         }
     }
 }
+
