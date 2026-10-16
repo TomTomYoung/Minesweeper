@@ -15,7 +15,7 @@ Phaser 3.60.0 を CDN から読み込んで動作する、ブラウザ向けマ�
 
 静的 HTTP サーバーの公開ディレクトリをリポジトリ直下にして index.html を開きます。Phaser と RexUI は外部 CDN へ接続できる環境が必要です。
 
-`package.json` と `npm test`（Node.js標準の `node --test test/*.test.js`）があります。ビルドスクリプトとGitHub Actionsはありません。2026-10-16の修正後検証は43件成功です。Phaserは3.60.0固定、RexUIのCDN URLはバージョン固定されていません。
+`package.json` と `npm test`（Node.js標準の `node --test test/*.test.js`）があります。ビルドスクリプトとリポジトリ定義のGitHub Actionsはありません。GitHub Pagesの公開処理を利用しています。2026-10-17の起動修正後は45件成功です。Phaserは3.60.0、RexUIは1.60.0の上流コミット `0112498f036d7ed0761c173d9ce665d67e728cdd` に固定します。RexUIの無指定URLはPhaser 4向けに変わり、Phaser 3では起動前に停止するため使用しません。
 
 ## 3. ゲームモード
 
