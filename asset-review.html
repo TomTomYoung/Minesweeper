@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>素材一覧 | Minesweeper</title>
+    <link rel="stylesheet" href="src/review/assets.css">
+</head>
+<body>
+    <header>
+        <a href="index.html">← モード選択へ</a>
+        <p class="eyebrow">MINESWEEPER / 素材 V2</p>
+        <h1>冒険の道具箱</h1>
+        <p>画像26点と音12点。旧素材を残し、新しい絵柄でそろえました。</p>
+        <nav><a href="normal.html">通常モードを遊ぶ</a><a href="rpg.html">RPGモードを遊ぶ</a><a href="#sounds">音を試す</a></nav>
+    </header>
+    <main>
+        <section aria-label="表示設定" class="controls">
+            <label>表示 <select id="filter"><option value="all">すべて</option><option value="active">ゲームで使用中</option><option value="reserve">今後のために保管</option></select></label>
+            <label>背景 <select id="surface"><option value="light">明るい色</option><option value="dark">暗い色</option><option value="checker">透過チェック</option></select></label>
+            <span id="count" aria-live="polite"></span>
+        </section>
+        <div id="gallery" class="gallery"></div>
+        <section class="marks">
+            <h2>盤面と状態の目印</h2>
+            <p>未開放のマス、時計、総得点、ロック、達成印、階数、取得時の光です。</p>
+            <div id="marks" class="mark-list"></div>
+        </section>
+        <section id="sounds">
+            <h2>音を試す</h2>
+            <p>再生ボタンで試聴できます。曲は繰り返し再生します。</p>
+            <div id="audio-list" class="audio-list"></div>
+        </section>
+        <footer>保管中の素材には、まだ専用のゲームルールはありません。<a href="doc/ASSET_PRODUCTION.md">制作記録</a></footer>
+    </main>
+    <script src="src/assets.js"></script>
+    <script src="src/system/AssetPresentation.js"></script>
+    <script src="src/review/assets.js"></script>
+</body>
+</html>

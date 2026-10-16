@@ -17,7 +17,7 @@ class MineCell extends Cell {
 
     renderReveal(value) {
         this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.MINE);
-        if (this.icon.setTexture) this.icon.setTexture('mine');
+        if (this.icon.setTexture) this.setIconTexture('mine');
         this.icon.setVisible(true);
     }
 

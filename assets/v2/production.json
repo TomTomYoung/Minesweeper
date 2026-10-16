@@ -1,0 +1,370 @@
+{
+  "version": "v2",
+  "generator": "built-in image_gen",
+  "images": [
+    {
+      "id": "chest_closed",
+      "sourceFile": "exec-c2cc34fb-8b55-466f-9265-8b2eb0f51809.png",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent square game inventory/board icon for a Minesweeper dungeon game, displayed at 32–40 pixels. Primary request: a single CLOSED wooden treasure chest with a rounded lid, broad iron bands and one large brass keyhole. Style: carefully painted compact fantasy game prop, bold clean dark silhouette, chunky readable shapes, restrained surface detail, soft upper-left light, gentle three-quarter view. Composition: entire object centered, fills roughly 78% of a square canvas, generous even transparent padding, no ground plane, no scenery, no separate drop shadow, no text, no frame, no grid, no other items. Must have a genuinely transparent background and clean alpha edges. This icon establishes the consistent style for a complete board asset set.",
+      "referenceId": null,
+      "export": {
+        "path": "assets/v2/images/chest_closed.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 124744,
+        "sha256": "e09f7b80467409e168897708e8e9adc67524d28c67756f484a465e0183836034"
+      }
+    },
+    {
+      "id": "chest_open",
+      "sourceFile": "exec-d82eca9e-0159-4565-86a4-a27a62a920f8.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied closed treasure chest. Produce its OPENED, EMPTY state for a game icon. Keep precisely the same chest construction, orange-brown wood, dark steel bands, brass lock, painting style, three-quarter viewpoint and canvas scale. Raise the hinged lid so the empty dark interior is clearly visible even at 32px. One chest only, no gold, no items, no sparkles, no background or ground plane, genuine transparent alpha. Keep all parts inside the square canvas with a small transparent margin.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/chest_open.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 135115,
+        "sha256": "629924a292370ad9ac1ed5cc0b209c363708c39cc1913b91b3e375426b538372"
+      }
+    },
+    {
+      "id": "gold",
+      "sourceFile": "exec-d1559539-cbba-403b-80cb-1eb688f778e9.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY, not an edit target. Create one transparent square game icon: a compact small pile of FIVE chunky gold coins, two flat stacks and one coin leaning against them, with plain embossed circles and no letters. Match the reference chest's painted fantasy prop style, bold dark silhouette, warm metal highlights and upper-left light. Simple broad shapes readable at 32–40px. Entire pile centered, about 78% of square, even transparent margin, no chest, no scenery, no ground or separate shadow, no text, no frame. Genuine transparent background.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/gold.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 86697,
+        "sha256": "7cdd0a9c5ba31e16b0b883e89227ce09716d1289f0dea00f6e843bb106705b32"
+      }
+    },
+    {
+      "id": "mine",
+      "sourceFile": "exec-70d17d77-b206-4714-890f-a82162767ff1.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: a dark iron spherical minesweeper mine with SIX broad conical spikes distributed around it. Unmistakable round spiked mine silhouette, metallic slate-gray body, small warm highlight. No fuse, no explosive diagram.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/mine.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 87402,
+        "sha256": "6afc20ca21084b52290ddec2971fdbfb84166983122da93f859521e15b93d529"
+      }
+    },
+    {
+      "id": "flag",
+      "sourceFile": "exec-552ad743-9549-43d3-998f-e03fd6786b9b.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one small red triangular marker flag on a thick short wooden pole, with a simple dark iron foot/base. Strong readable red cloth silhouette. Three-quarter view, compact overall footprint.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/flag.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 53933,
+        "sha256": "0a7d0d095e27a027760277b338efd071439d341a305e1d62bb1ad2cbdb2b5d03"
+      }
+    },
+    {
+      "id": "wall",
+      "sourceFile": "exec-39136c95-0564-42b1-9a72-e0582a9297a3.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one short compact block of dungeon wall built from SIX large irregular gray stone blocks in two staggered courses, showing front and narrow right side. Clear mortar gaps, chunky bevels, tiny muted moss accent. No doorway, no ground, no props.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/wall.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 99455,
+        "sha256": "7090b648bc9b4a74a3c1721832c5b9706dedf6bafbcd02f68f35b0151120d6c8"
+      }
+    },
+    {
+      "id": "key_gold",
+      "sourceFile": "exec-0ab68723-14ea-44b7-9405-ed4020801c7c.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one simple chunky golden dungeon key, large circular bow, thick short shaft and two square teeth. Diagonal from lower-left to upper-right, very clear silhouette, brass finish. No gemstones or symbols.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/key_gold.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 64758,
+        "sha256": "335b7efde3b81ac307de7a9db2bb29df8c20158f5d7975185ad731a40af117f2"
+      }
+    },
+    {
+      "id": "sword",
+      "sourceFile": "exec-9e8fde9c-7c8f-495b-ad88-22c7b04f35db.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one compact fantasy short sword with a broad polished steel blade, short straight brass crossguard and brown wrapped grip. Diagonal from lower-left hilt to upper-right tip. Entire sword visible. Strong broad shapes, no decorative runes.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/sword.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 57882,
+        "sha256": "05d49d3262a8b9bead39addf49806909b7d525876ef4e3ef6b0c0ce5bf3b08bb"
+      }
+    },
+    {
+      "id": "stairs",
+      "sourceFile": "exec-5e581d21-4d4c-4f1f-9871-c17b6369e61b.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: a compact square stone dungeon stairwell opening, with four broad steps descending away from the viewer into a dark opening, a thick gray stone rim around the sides. Elevated three-quarter view so the downward direction is unmistakable. No archway, no door, no ground extending beyond the stairwell.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/stairs.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 95479,
+        "sha256": "001c894ceed4019babdd200808aca05ef84a6bdd1ad372a3030dd2db9a3fa3a1"
+      }
+    },
+    {
+      "id": "enemy_slime",
+      "sourceFile": "exec-e159406a-375d-4966-b6c4-dc8c4bc5bdd1.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one small teal-green slime monster, plump low dome with two large cream-colored eyes and dark pupils, a simple displeased mouth and a small lumpy skirt at the bottom. Painterly glossy gelatin, clear dark outline, rounded silhouette, no arms or weapons. It must look distinct from a mine, treasure and wall. Friendly fantasy monster, not a character from an existing franchise.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/enemy_slime.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 96454,
+        "sha256": "76ce16c185389c2b721095b1105aa9947ded2d35107a4f7265d51ff1a4e3558b"
+      }
+    },
+    {
+      "id": "enemy_defeated",
+      "sourceFile": "exec-7dfa8b91-279d-426d-88cd-5ba6f4ba61b0.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied teal-green slime game icon. Create its defeated state: flatten its body into a low collapsed blob with two closed eyelids and a small slack mouth. Keep the same teal-green color, glossy painted surface, clean dark outline, upper-left lighting, viewpoint and square framing. No injuries, blood, weapons, stars or extra objects. Must be unmistakably inactive and distinct from the upright enemy when reduced to 32px. Genuine transparent background and transparent margin around the entire shape.",
+      "referenceId": "enemy_slime",
+      "export": {
+        "path": "assets/v2/images/enemy_defeated.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 61535,
+        "sha256": "c19879fb6f3096dbe785f30e3c37056dbf86af9773b66da7ea6337c72f9169f8"
+      }
+    },
+    {
+      "id": "menu_background",
+      "sourceFile": "exec-6ddcff18-6975-4a26-b540-1c9975a4f40c.png",
+      "prompt": "Use case: stylized-concept. Reference image is painterly STYLE ONLY. Create a quiet fantasy dungeon background for an 800x600 game menu. Wide 4:3 composition. A stone chamber with a thick arched wall far behind, a few shadowed masonry blocks along the edges, soft warm lamp glow coming from outside the frame, muted blue-gray stone and restrained warm reflections. The central 65 percent must be calm, low-detail and low contrast to hold readable menu text and buttons. No chest, characters, treasure, UI panels, written text or logos. This is background scenery, painted to match the reference game props without competing with them.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/menu_background.jpg",
+        "width": 960,
+        "height": 720,
+        "alpha": false,
+        "bytes": 115267,
+        "sha256": "8fa62aa01c3379d3faf40dd7518dbc6e68516651de9fabf7a8f6beae648d6309"
+      }
+    },
+    {
+      "id": "enemy_bat",
+      "sourceFile": "exec-870ee1f2-030a-40c3-b4c4-b840dfe77be5.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one small purple cave bat monster with two large pointed ears, two wide simple leathery wings, two cream eyes and a tiny body. Wings swept upward into a compact silhouette, no separate scenery or hanging perch. Gentle three-quarter front view, broad readable shapes.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/enemy_bat.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 90518,
+        "sha256": "ed30114cb477a37777716b8718c78a9db19ca24c1f6eca2056552c58d1030d3a"
+      }
+    },
+    {
+      "id": "enemy_goblin",
+      "sourceFile": "exec-6de6c0dd-a49d-45e4-8a5c-356a7f038c34.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one squat green goblin dungeon creature in a brown tunic, large pointed ears, broad expressive face, a small blunt wooden club held beside its body. Whole body, standing compact stance, readable silhouette at 32px, no violence or scenery. Original fantasy creature.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/enemy_goblin.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 107175,
+        "sha256": "85cde47879b5452f3a55a9b3423cbfc5f14346c03b2fdf6e9e241144d0cab920"
+      }
+    },
+    {
+      "id": "enemy_boss",
+      "sourceFile": "exec-10da8fcd-3f0e-4c70-b4f4-719a19151ca1.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one stout dark slate armored dungeon guardian with large broad shoulders, a hornless closed helmet, two small amber glowing eye slits and a heavy round shield held close to its body. Whole body, compact imposing stance. A generic original guardian monster, no insignia, no named franchise, no scenery.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/enemy_boss.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 125454,
+        "sha256": "5c1bf45f092e3f3e05fb7ebf7133e930896f1cdbef19516f441b7f8b29fdb33e"
+      }
+    },
+    {
+      "id": "key_iron",
+      "sourceFile": "exec-a2ab687b-9c43-41a0-87c3-02299742d6b0.png",
+      "prompt": "Use case: precise-object-edit. Edit target is the provided gold key icon. Create an IRON key variant. Keep the same overall scale, diagonal orientation, thick shaft, two square teeth, painted style and transparent padding. Change the material to dark charcoal-gray iron with cool silver highlights, and change the large bow to a SQUARE ring so this is distinguishable by shape as well as color. No text, no extra items. Genuine transparent background.",
+      "referenceId": "key_gold",
+      "export": {
+        "path": "assets/v2/images/key_iron.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 60038,
+        "sha256": "c753826a6d8bd430a36de18fab3c0fc1a8cccacb39eca9bd1b6d2f163817f3a5"
+      }
+    },
+    {
+      "id": "key_silver",
+      "sourceFile": "exec-5701260a-1ea5-4fd7-b78b-5b7503cff2c6.png",
+      "prompt": "Use case: precise-object-edit. Edit target is the provided gold key icon. Create a SILVER key variant. Keep overall scale, diagonal orientation, thick shaft, two square teeth, painted style and transparent padding. Change the material to bright cool silver, and change the large bow to a TRIANGULAR ring so this is distinguishable by shape as well as color. No text, no extra items. Genuine transparent background.",
+      "referenceId": "key_gold",
+      "export": {
+        "path": "assets/v2/images/key_silver.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 60075,
+        "sha256": "4bc1ecb497c03dcaf20f3f20ccec2bd958faeae3eea3016e4aca4a06a8f1ef52"
+      }
+    },
+    {
+      "id": "potion_red",
+      "sourceFile": "exec-4b890a6e-e44c-4fd2-b0c2-7b4d1bc51ae2.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one squat ROUND clear glass potion bottle filled with ruby-red liquid, broad short neck, brown cork, small plain brass neck band. A strong round bottle silhouette with no label. Slight three-quarter view.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/potion_red.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 82655,
+        "sha256": "371bf6b13909681339964b1376e40a3754101bfb3a17995c8a3cae2f4b62f0d1"
+      }
+    },
+    {
+      "id": "potion_blue",
+      "sourceFile": "exec-c6fdc3b4-0153-4159-9d37-edc222cf7ffa.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one squat SQUARE clear glass potion flask filled with sapphire-blue liquid, broad short neck, brown cork, small plain brass neck band. A strong square bottle silhouette with gently beveled corners and no label. Slight three-quarter view.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/potion_blue.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 98427,
+        "sha256": "9276c796bba4769a10b5ba114d86a04ea7094e85c6060101d098b33f07285cee"
+      }
+    },
+    {
+      "id": "potion_yellow",
+      "sourceFile": "exec-c0a52944-760e-47d2-b4f2-171fb4629aa2.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one squat TRIANGULAR clear glass potion flask filled with golden-yellow liquid, broad short neck, brown cork, small plain brass neck band. A strong triangular bottle silhouette with rounded corners and no label. Slight three-quarter view.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/potion_yellow.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 83538,
+        "sha256": "acec260d15b324c33b1fdcdf0d0505d2b270386832bc94f4f9489e891f55f3f3"
+      }
+    },
+    {
+      "id": "shield",
+      "sourceFile": "exec-715461af-c064-4c00-ae76-9ea044b71d02.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one small rounded kite shield with brown wooden planks, a thick dark iron rim, a large plain central steel boss and a narrow brass reinforcement band. Whole shield, gentle three-quarter angle, no coat of arms or symbols.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/shield.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 93064,
+        "sha256": "82d5244521e0cb1445b1222419fa71ff9e82d289e428db8cb83a39c5bc3dc9a3"
+      }
+    },
+    {
+      "id": "pickaxe",
+      "sourceFile": "exec-7570cc91-19cf-4c2c-bfbb-74e03c92a817.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one short sturdy mining pickaxe, thick brown wooden handle and a broad dark iron curved pick head. Diagonal compact composition, entire tool visible, strong plain silhouette and no extra stones or sparks.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/pickaxe.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 68181,
+        "sha256": "380a19d90ba824c7e036d5cbd997b48b2acfba58a1a7468695373b51f30dc05a"
+      }
+    },
+    {
+      "id": "chicken",
+      "sourceFile": "exec-0e4b0b7a-e41a-4c06-9cc0-8213a3b487a9.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one plump white farm hen with a bright red comb and wattle, short golden beak, two simple yellow feet, a small raised tail. Whole bird, calm three-quarter side view, rounded compact silhouette, no nest, eggs, ground or scenery.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/chicken.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 88982,
+        "sha256": "d4fbb6a8a121e6c6740cbe699463d8f4481d8a28223215883d41c627d357dcbe"
+      }
+    },
+    {
+      "id": "fire",
+      "sourceFile": "exec-2e85af22-2b28-4965-84c3-5c059195c749.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one compact magical orange and yellow flame, a few large interlocking flame shapes and a warm yellow core. No logs, no smoke, no scattered sparks, no environmental background.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/fire.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 79136,
+        "sha256": "4cbbbd4dc785ca7b96ad96637b93119d18b44afb44b1ee85126a2c4f2088f074"
+      }
+    },
+    {
+      "id": "tree",
+      "sourceFile": "exec-e43ec7bf-bc48-4eb7-b3e1-d1c2113248c1.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one small sturdy oak tree with a short warm brown trunk and a compact rounded canopy of chunky forest-green leaf masses. Show the complete tree from roots to crown, slightly three-quarter view. No grass, no earth tile, no ground plane.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/tree.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 110369,
+        "sha256": "b428fba645e66e0069ac66510c0135f21fde376dc8937c17f7f7c65e536c4902"
+      }
+    },
+    {
+      "id": "water",
+      "sourceFile": "exec-11535ec6-c15f-45e9-a37d-88a2a6259301.png",
+      "prompt": "Use case: stylized-concept. Reference image is STYLE ONLY. Create ONE square game-board icon on genuinely transparent alpha. Match the reference's painted fantasy prop style, bold clean dark contours, chunky simple shapes and soft upper-left light. Readable when reduced to 32–40px. Entire subject centered with even transparent padding, fills about 78% of the square. No scene, ground plane, cast shadow, letters, border, grid or extra objects. Subject: one compact shallow pool of clear blue water, an irregular rounded silhouette with a dark blue outline and two or three broad turquoise ripple strokes, slightly viewed from above. The water itself is the whole object. No stones, shoreline, land, splash or surrounding environment.",
+      "referenceId": "chest_closed",
+      "export": {
+        "path": "assets/v2/images/water.png",
+        "width": 256,
+        "height": 256,
+        "alpha": true,
+        "bytes": 80736,
+        "sha256": "67ace2930aee635f14aea53988d624f2367a5e8bea1aba9b27f1b825e0607895"
+      }
+    }
+  ]
+}

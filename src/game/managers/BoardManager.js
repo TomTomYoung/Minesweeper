@@ -22,8 +22,8 @@ class BoardManager {
             boardY + boardHeight / 2,
             boardWidth + 10,
             boardHeight + 10,
-            0xbdbdbd
-        ).setStrokeStyle(3, 0x7b7b7b);
+            0xb39e79
+        ).setStrokeStyle(3, 0x6f6551);
         this.boardContainer.add(boardBg);
 
         // Create Board Object

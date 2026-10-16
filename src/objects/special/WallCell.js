@@ -25,7 +25,7 @@ class WallCell extends Cell {
 
     renderReveal(value) {
         this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.WALL);
-        if (this.icon.setTexture) this.icon.setTexture('wall');
+        if (this.icon.setTexture) this.setIconTexture('wall');
         this.icon.setVisible(true);
     }
 

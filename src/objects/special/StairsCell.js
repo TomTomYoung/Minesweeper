@@ -16,6 +16,7 @@ class StairsCell extends Cell {
     setUnlocked(unlocked) {
         if (this.unlocked === unlocked) return;
         this.unlocked = unlocked;
+        this.setStatusBadge(unlocked ? 'ui_check' : 'ui_lock');
         if (unlocked && this.revealed) {
             this.showActiveEffect();
         } else if (this.pulseEffect) {
@@ -38,8 +39,9 @@ class StairsCell extends Cell {
 
     renderReveal(value) {
         this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.STAIRS);
-        if (this.icon.setTexture) this.icon.setTexture('stairs');
+        if (this.icon.setTexture) this.setIconTexture('stairs');
         this.icon.setVisible(true);
+        this.setStatusBadge(this.unlocked ? 'ui_check' : 'ui_lock');
     }
 
     // 階段発見エフェクト

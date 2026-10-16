@@ -4,6 +4,10 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
+        this.cameras.main.setBackgroundColor('#e4ddcd');
+        this.audio = this.game.audio;
+        if (this.audio) this.audio.playBgm('bgm_explore');
+        this.stairsWereUnlocked = false;
         this.cameraZoom = 1;
         this.cameraPanX = 0;
         this.cameraPanY = 0;
@@ -132,11 +136,30 @@ class GameScene extends Phaser.Scene {
 
     handleResult(result) {
         this.gameFlowController.processResult(result);
-        this.boardManager.updateBoardUI(
-            this.gameSession.config, this.gameSession.boardModel,
-            this.gameSession.ruleSet.evaluateStairs(this.gameSession)
-        );
+        const progression = this.gameSession.ruleSet.evaluateStairs(this.gameSession);
+        this.boardManager.updateBoardUI(this.gameSession.config, this.gameSession.boardModel, progression);
+        if (progression.canAdvance && !this.stairsWereUnlocked && !this.gameSession.isGameOver) {
+            this.audio?.playSfx('stairs_unlock');
+        }
+        this.stairsWereUnlocked = progression.canAdvance;
         this.updateUI();
+    }
+
+    playCellFeedback(result, input) {
+        if (input.blocked || result.events?.includes('GENERATION_FAILED')) return;
+        const cell = this.boardManager.board.cells[input.row][input.col];
+        const model = this.gameSession.boardModel.getCell(input.row, input.col);
+        const events = result.events || [];
+        if (input.rightClick) {
+            if (result.success) this.audio?.playSfx('flag_toggle');
+            return;
+        }
+        if (events.includes('GAME_OVER')) AssetPresentation.burst(cell, 0xe39b57);
+        else if (events.includes('ENEMY_DEFEATED')) AssetPresentation.burst(cell, 0x87d7ba);
+        else if (events.includes('ITEM_KEY') || events.includes('ITEM_SWORD') || result.scoreEvents?.length) {
+            this.audio?.playSfx('chest_open');
+            AssetPresentation.burst(cell);
+        } else if (!input.wasRevealed && model.isRevealed) this.audio?.playSfx('cell_open');
     }
 
     updateUI() {

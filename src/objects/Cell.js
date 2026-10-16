@@ -39,49 +39,13 @@ class Cell extends Phaser.GameObjects.Container {
             fontWeight: 'bold'
         }).setOrigin(0.5);
 
-        // // アイコン（地雷、旗など）
-        // this.icon = this.scene.add.sprite(this.size / 2, this.size / 2, 'mine')
-        //     .setScale(Math.min(1, this.size / 40)) // アイコンのサイズを調整
-        //     .setVisible(false);
-
-        // // アイコン（地雷、旗など）
-        // this.icon = this.scene.add.sprite(this.size / 2, this.size / 2, 'mine')
-        //     .setVisible(false);
-
-        // // 画像が読み込まれた後にサイズを調整
-        // this.scene.textures.once(`textureready-${this.icon.texture.key}`, () => {
-        //     const frame = this.icon.frame;
-        //     const imageWidth = frame.width;
-        //     const imageHeight = frame.height;
-
-        //     // セルの80%のサイズになるよう調整（正方形でない画像にも対応）
-        //     const scaleX = (this.size * 0.8) / imageWidth;
-        //     const scaleY = (this.size * 0.8) / imageHeight;
-
-        //     // 縦横比を維持するため、小さいほうのスケールを使用
-        //     const scale = Math.min(scaleX, scaleY);
-
-        //     this.icon.setScale(scale);
-        // });            
-
-        // アイコン（地雷、旗など）
-        // アイコン（地雷、旗など）
-        const iconKey = 'dummy';
-        if (this.scene.textures.exists(iconKey)) {
-            this.icon = this.scene.add.sprite(this.size / 2, this.size / 2, iconKey)
-                .setVisible(false);
-        } else {
-            // テクスチャがない場合のフォールバック（矩形など）
-            console.warn(`Texture '${iconKey}' not found. Using fallback.`);
-            this.icon = this.scene.add.rectangle(this.size / 2, this.size / 2, this.size * 0.6, this.size * 0.6, 0xff0000)
-                .setVisible(false);
-        }
-
-        // サイズを調整
-        this.icon.setDisplaySize(this.size * 0.8, this.size * 0.8);
+        this.tile = this.scene.add.image(this.size / 2, this.size / 2, 'tile_hidden');
+        AssetPresentation.fit(this.tile, this.size);
+        this.icon = this.scene.add.sprite(this.size / 2, this.size / 2, 'dummy').setVisible(false);
+        AssetPresentation.fit(this.icon, this.size * 0.92);
 
         // 要素を追加
-        this.add([this.background, this.text, this.icon]);
+        this.add([this.background, this.tile, this.text, this.icon]);
     }
 
     // イベントリスナーを設定
@@ -89,11 +53,6 @@ class Cell extends Phaser.GameObjects.Container {
         // 左クリック
         this.on('pointerdown', (pointer) => {
             if (pointer.rightButtonDown() || pointer.middleButtonDown()) return; // 右クリック・ホイールクリックの場合は処理しない
-
-            // クリック効果音を再生
-            if (this.scene.audio) {
-                this.scene.audio.playSfx('click');
-            }
 
             // カスタムイベントを発火
             this.emit('cellClicked', this);
@@ -106,11 +65,6 @@ class Cell extends Phaser.GameObjects.Container {
                 // コンテキストメニューを抑制
                 //pointer.event.preventDefault();
 
-                // クリック効果音を再生
-                if (this.scene.audio) {
-                    this.scene.audio.playSfx('click');
-                }
-
                 // カスタムイベントを発火
                 this.emit('cellRightClicked', this);
             }
@@ -122,6 +76,7 @@ class Cell extends Phaser.GameObjects.Container {
         if (this.revealed || this.flagged) return;
 
         this.revealed = true;
+        if (this.tile) this.tile.setVisible(false);
 
         // Call a method that subclasses can override
         this.renderReveal(value);
@@ -134,11 +89,25 @@ class Cell extends Phaser.GameObjects.Container {
         this.flagged = !this.flagged;
 
         if (this.flagged) {
-            this.icon.setTexture('flag');
+            this.setIconTexture('flag');
             this.icon.setVisible(true);
         } else {
             this.icon.setVisible(false);
         }
+    }
+
+    setIconTexture(key) {
+        this.icon.setTexture(key);
+        AssetPresentation.fit(this.icon, this.size * 0.92);
+    }
+
+    setStatusBadge(key) {
+        if (!this.statusBadge) {
+            this.statusBadge = this.scene.add.image(this.size * 0.8, this.size * 0.8, key);
+            this.add(this.statusBadge);
+        }
+        this.statusBadge.setTexture(key).setVisible(this.revealed);
+        AssetPresentation.fit(this.statusBadge, this.size * 0.38);
     }
 
     // セルのタイプを設定
@@ -152,7 +121,7 @@ class Cell extends Phaser.GameObjects.Container {
         if (this.flagged !== flagged) {
             this.flagged = flagged;
             this.icon.setVisible(flagged);
-            if (flagged && this.icon.setTexture) this.icon.setTexture('flag');
+            if (flagged && this.icon.setTexture) this.setIconTexture('flag');
         }
         if (state.viewType) this.setType(state.viewType);
         if (state.isRevealed && !this.revealed) this.reveal(state.neighborMines);

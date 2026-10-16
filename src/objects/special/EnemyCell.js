@@ -15,14 +15,16 @@ class EnemyCell extends Cell {
 
     renderStateUpdate(state) {
         if (state.state === 2) {
-            this.icon.setAlpha(0.3);
+            this.setIconTexture('enemy_defeated');
+            this.icon.setAlpha(0.8);
+            this.setStatusBadge('ui_check');
             this.background.setFillStyle(0xbad5ba);
         }
     }
 
     renderReveal(value) {
-        this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.MINE);
-        if (this.icon.setTexture) this.icon.setTexture(this.scene.textures.exists('enemy') ? 'enemy' : 'mine');
+        this.background.setFillStyle(0xc5dbd0);
+        if (this.icon.setTexture) this.setIconTexture(this.scene.textures.exists('enemy') ? 'enemy' : 'mine');
         this.icon.setVisible(true);
     }
 }
