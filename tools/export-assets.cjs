@@ -18,7 +18,7 @@ const labels = {
  enemy_bat: ['コウモリ', 'enemy_bat.png'], enemy_goblin: ['ゴブリン', 'enemy_goblin.png'], enemy_boss: ['ボス', 'enemy_boss.png'],
  key_iron: ['鉄の鍵', 'key_iron.png'], key_silver: ['銀の鍵', 'key_silver.png'],
  potion_red: ['赤い薬', 'potion_red.png'], potion_blue: ['青い薬', 'potion_blue.png'], potion_yellow: ['黄色い薬', 'potion_yellow.png'],
- shield: ['盾', 'shield.png'], pickaxe: ['つるはし', null], chicken: ['鶏', 'chicken.png'],
+ shield: ['盾', 'shield.png'], pickaxe: ['つるはし', null, 'pickaxe'], chicken: ['鶏', 'chicken.png'],
  fire: ['炎', 'fire.png'], tree: ['木', 'tree.png'], water: ['水', 'water.png']
 };
 const soundLabels = { ui_click:'ボタン', cell_open:'セル公開', flag_toggle:'旗', chest_open:'宝箱', pickup:'取得', enemy_defeat:'撃破', stairs_unlock:'階段解放', next_floor:'次の階', explosion:'地雷・敗北', victory:'通常勝利', bgm_menu:'メニューBGM', bgm_explore:'探索BGM' };

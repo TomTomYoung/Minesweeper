@@ -29,6 +29,15 @@ class RpgSimpleRuleSet {
     }
 }
 
+class RpgLayeredRuleSet {
+    shouldCheckClassicWin() { return false; }
+
+    evaluateStairs(session) {
+        return session.hasKey ? { canAdvance: true, reason: null }
+            : { canAdvance: false, reason: 'KEY_REQUIRED' };
+    }
+}
+
 /** Resolves legacy mode names to explicit model/generator/rule-set definitions. */
 class GameModeRegistry {
     static resolve(mode) {
@@ -45,6 +54,12 @@ class GameModeRegistry {
                 boardModel: BoardModel,
                 boardGenerator: BoardGenerator,
                 ruleSet: new RpgSimpleRuleSet()
+            },
+            [GameModeId.RPG_LAYERED]: {
+                id: GameModeId.RPG_LAYERED,
+                boardModel: LayeredBoardModel,
+                boardGenerator: LayeredBoardGenerator,
+                ruleSet: new RpgLayeredRuleSet()
             }
         };
         const definition = definitions[normalizedMode];
@@ -65,3 +80,4 @@ class GameModeRegistry {
         throw new RangeError(`Unknown game mode: ${mode}`);
     }
 }
+

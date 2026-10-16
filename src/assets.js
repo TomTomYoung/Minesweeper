@@ -175,8 +175,8 @@ const GAME_ASSETS = {
       "label": "つるはし",
       "path": "assets/v2/images/pickaxe.png",
       "legacy": null,
-      "key": null,
-      "active": false
+      "key": "pickaxe",
+      "active": true
     },
     {
       "id": "chicken",

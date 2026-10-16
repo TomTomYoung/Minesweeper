@@ -4,24 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>マインスイーパー (Phaser 3)</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: Arial, sans-serif;
-        }
-
-        #game-container {
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-            border: 2px solid black;
-        }
-    </style>
+    <title>マインスイーパー | RPG シンプルモード</title>
+    <link rel="stylesheet" href="src/ui/help.css">
 
     <!-- 右クリックメニューを抑制 -->
     <script>
@@ -35,7 +19,33 @@
 </head>
 
 <body>
-    <div id="game-container"></div>
+    <main class="game-shell">
+        <nav class="mode-nav" aria-label="モード選択">
+            <a href="index.html">モード一覧</a><a href="normal.html">通常</a>
+            <a href="rpg.html" aria-current="page">RPG シンプル</a><a href="layered.html" >RPG 多層</a>
+        </nav>
+        <div class="game-columns">
+            <div id="game-container"></div>
+            <aside class="cell-help" aria-label="シンプルモードのセルと操作">
+                <h1>RPG シンプルモード</h1>
+                <p class="goal">この階の<strong>鍵を取得し、全敵を撃破</strong>して階段から次の階へ進みます。</p>
+                <h2>左右クリックの基本</h2>
+                <p><b>左クリック</b>：セルを開く／表示されたセルを操作。<br><b>右クリック</b>：未開放セルに旗を立てる／外す。公開済みセルには作用しません。</p>
+                <p>旗は最初の左クリック後から使用でき、残り本数まで立てられます。旗のあるセルは左クリック・自動開放の対象になりません。</p>
+                <h2>セルの役割と左クリック</h2>
+                <dl>
+                    <dt>空白</dt><dd>周囲8マスに地雷がないセルです。開くと周囲も連鎖して開きます。</dd>
+                    <dt>数字</dt><dd>周囲8マスの地雷数です。再クリックすると、周囲の旗数が数字と一致する場合に、旗のない未開放セルをまとめて開きます（壁を除く）。旗の位置を間違えると地雷も開きます。</dd>
+                    <dt>地雷</dt><dd>開くとゲームオーバーになる危険なセルです。</dd>
+                    <dt>宝箱</dt><dd>金貨・鍵・剣が入っています。発見後、もう一度クリックして中身を取得します。鍵は階段に必要です。剣は取得時に50点入り、敵の撃破には不要です。</dd>
+                    <dt>敵</dt><dd>次の階へ進むために全て倒す相手です。直接クリックすれば撃破します。自動開放で姿が見えただけの敵は、別途クリックして倒してください。</dd>
+                    <dt>壁</dt><dd>空白セルの連鎖開放をそこで止める障害物です。壁自体は安全で、その下に地雷やアイテムはありません。<strong>開いても壁のままです。</strong><br>未開放なら壁を表示し、表示済みなら同じ塊に属する上下左右の未開放の壁を表示します。一括公開設定では同じ塊をまとめて表示します。旗のある壁は開きません。</dd>
+                    <dt>階段</dt><dd>次の階への出口です。発見後、鍵取得と全敵撃破を済ませて再クリックすると進めます。</dd>
+                </dl>
+                <h2>階を進むと</h2><p>鍵と剣は持ち越しません。階得点はリセットされ、総得点は累計として残ります。探索はエンドレスです。</p>
+            </aside>
+        </div>
+    </main>
 
     <!-- モジュール -->
     <script src="src/config.js"></script>
@@ -49,6 +59,7 @@
     <script src="src/objects/special/WallCell.js"></script>
     <script src="src/objects/special/TreasureCell.js"></script>
     <script src="src/objects/special/StairsCell.js"></script>
+    <script src="src/objects/LayeredCellView.js"></script>
     <script src="src/objects/Board.js"></script>
 
     <!-- UI Components -->
@@ -89,6 +100,9 @@
     <script src="src/logic/generator/strategies/ItemPlacementStrategy.js"></script>
     <script src="src/logic/BoardGenerator.js"></script>
     <script src="src/logic/BoardModel.js"></script>
+    <script src="src/logic/layered/LayeredCell.js"></script>
+    <script src="src/logic/layered/LayeredBoardModel.js"></script>
+    <script src="src/logic/layered/LayeredBoardGenerator.js"></script>
     <script src="src/logic/modes/GameModeRegistry.js"></script>
     <script src="src/logic/GameSession.js"></script>
 
@@ -130,7 +144,7 @@
 
     <!-- モード設定 -->
     <script>
-        window.initialGameMode = 'RPG';
+        window.initialGameMode = 'RPG_SIMPLE';
     </script>
 
     <!-- メインファイル -->

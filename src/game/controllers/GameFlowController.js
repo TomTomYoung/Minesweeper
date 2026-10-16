@@ -16,7 +16,7 @@ class GameFlowController {
             });
             return;
         }
-        if (events.includes('GAME_OVER')) return this.gameOver(false);
+        if (events.includes('GAME_OVER')) return this.gameOver(false, events.includes('SWORD_REQUIRED') ? '剣を持たずに敵に触れました。ゲームオーバー！' : null);
         if (events.includes('NEXT_LEVEL')) this.goToNextLevel();
 
         const messages = [];
@@ -26,8 +26,12 @@ class GameFlowController {
             }
         }
         if (events.includes('ITEM_KEY')) messages.push('この階の鍵を獲得しました');
-        if (events.includes('ITEM_SWORD')) messages.push('剣を獲得！ +50点');
-        if (events.includes('ITEM_KEY') || events.includes('ITEM_SWORD') || result.scoreEvents?.some(e => e.type === 'TREASURE_GOLD')) {
+        if (events.includes('ITEM_SWORD')) messages.push(this.session.mode === 'RPG_LAYERED'
+            ? `剣を獲得！ 残り${this.session.inventory.swords}本` : '剣を獲得！ +50点');
+        if (events.includes('ITEM_PICKAXE')) messages.push(`つるはしを獲得！ 残り${this.session.inventory.pickaxes}本`);
+        if (events.includes('PICKAXE_REQUIRED')) messages.push('壁を壊すにはつるはしが必要です');
+        if (events.includes('WALL_REMOVED')) messages.push('壁を破壊しました。下のセルは未開放です');
+        if (events.includes('ITEM_KEY') || events.includes('ITEM_SWORD') || events.includes('ITEM_PICKAXE') || result.scoreEvents?.some(e => e.type === 'TREASURE_GOLD')) {
             this.scene.audio?.playSfx('pickup');
         }
         const defeated = events.filter(event => event === 'ENEMY_DEFEATED').length;
@@ -44,13 +48,13 @@ class GameFlowController {
         if (this.session.getWinState().isWin) return this.gameOver(true);
     }
 
-    gameOver(isWin) {
+    gameOver(isWin, reason = null) {
         if (this.hasShownGameOver) return { isWin, isGameOver: true };
         this.hasShownGameOver = true;
         this.scene.audio?.playSfx(isWin ? 'victory' : 'explosion');
         this.destroy();
         this.eventBus.emitShowMessage({
-            text: isWin ? '勝利！おめでとうございます！' : 'ゲームオーバー！',
+            text: reason || (isWin ? '勝利！おめでとうございます！' : 'ゲームオーバー！'),
             color: isWin ? '#00aa00' : '#ff0000'
         });
         return { isWin, isGameOver: true };

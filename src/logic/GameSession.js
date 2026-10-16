@@ -44,6 +44,7 @@ class GameSession {
         this.isFirstClick = true;
         this.enemiesDefeated = 0;
         this.totalEnemies = config.enemies || 0;
+        this.inventory = { swords: 0, pickaxes: 0 };
 
         this.boardModel = null;
         this.boardData = null;
@@ -84,6 +85,7 @@ class GameSession {
         // Item flags
         this.hasKey = false;
         this.hasSword = false;
+        this.inventory = { swords: 0, pickaxes: 0 };
 
         return this.boardData;
     }
@@ -114,7 +116,8 @@ class GameSession {
         }
 
         const result = this.boardModel.advanceState(row, col, {
-            autoRevealWallCluster: this.config.autoRevealWallCluster
+            autoRevealWallCluster: this.config.autoRevealWallCluster,
+            inventory: this.inventory
         });
 
         if (result.events.includes('STAIRS_INTERACTED')) {
@@ -164,9 +167,15 @@ class GameSession {
         if (result.events.includes('ITEM_SWORD')) {
             this.hasSword = true;
             // Optionally add some bonus points or handle later
-            this.scoreManager.addPoints(50);
+            if (this.mode !== GameModeId.RPG_LAYERED) this.scoreManager.addPoints(50);
             console.log("Got Sword!");
         }
+
+        for (const reward of result.itemRewards || []) {
+            const key = reward.type === 'sword' ? 'swords' : 'pickaxes';
+            this.inventory[key] += reward.amount;
+        }
+        if (this.mode === GameModeId.RPG_LAYERED) this.hasSword = this.inventory.swords > 0;
 
         for (const event of result.events) {
             if (event !== 'ENEMY_DEFEATED') continue;
@@ -224,6 +233,7 @@ class GameSession {
         this.scoreManager.reset();
         this.hasKey = false;
         this.hasSword = false;
+        this.inventory = { swords: 0, pickaxes: 0 };
         // Keep input locked until the scene creates the next session.
         this.isGameOver = true;
         return true;

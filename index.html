@@ -13,7 +13,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
         }
 
@@ -24,7 +24,9 @@
 
         .mode-container {
             display: flex;
-            gap: 40px;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .mode-card {
@@ -89,11 +91,16 @@
         </a>
 
         <a href="rpg.html" class="mode-card" style="border-color: #9C27B0;">
-            <div class="mode-title" style="color: #9C27B0;">RPGモード</div>
+            <div class="mode-title" style="color: #9C27B0;">RPG シンプル</div>
             <div class="mode-desc">
                 お宝を集め、階段を探して<br>深層を目指すエンドレスモード
             </div>
             <div class="btn rpg">冒険へ</div>
+        </a>
+        <a href="layered.html" class="mode-card" style="border-color:#335d4b">
+            <div class="mode-title" style="color:#335d4b">RPG 多層</div>
+            <div class="mode-desc">壁・敵の下に別のセルが重なる<br>剣とつるはしで探索するモード</div>
+            <div class="btn" style="background:#335d4b">多層の冒険へ</div>
         </a>
     </div>
 

@@ -27,7 +27,7 @@ test('BootScene only preloads image assets that exist', () => {
 
     assert.deepEqual(
         loadedImages.map(({ key }) => key),
-        ['treasure', 'treasure_open', 'gold', 'mine', 'flag', 'wall', 'key', 'sword', 'stairs', 'enemy', 'enemy_defeated', 'menu_background']
+        ['treasure', 'treasure_open', 'gold', 'mine', 'flag', 'wall', 'key', 'sword', 'stairs', 'enemy', 'enemy_defeated', 'menu_background', 'pickaxe']
     );
     for (const { assetPath } of loadedImages) {
         assert.equal(fs.existsSync(path.join(projectRoot, assetPath)), true, `${assetPath} must exist`);

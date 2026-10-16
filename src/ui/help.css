@@ -1,0 +1,38 @@
+* { box-sizing: border-box; }
+body {
+    margin: 0; padding: 24px; min-height: 100vh; background: #e4ddcd;
+    color: #263f35; font-family: Arial, 'Noto Sans JP', sans-serif;
+}
+.game-shell { max-width: 1192px; margin: 0 auto; }
+.mode-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.mode-nav a {
+    color: #335d4b; background: #f8f3e9; border: 1px solid #b8b49d;
+    padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 14px;
+}
+.mode-nav a[aria-current='page'] { color: white; background: #335d4b; border-color: #335d4b; }
+.game-columns { display: grid; grid-template-columns: minmax(0, 800px) minmax(280px, 360px); gap: 24px; align-items: start; }
+#game-container { width: 100%; aspect-ratio: 4 / 3; overflow: hidden; box-shadow: 0 2px 14px #263f352b; }
+#game-container canvas { display: block; }
+.cell-help { background: #fbf7ee; border: 1px solid #c6bda5; border-radius: 8px; padding: 20px; }
+.cell-help h1 { margin: 0 0 10px; font-size: 21px; }
+.cell-help h2 { margin: 22px 0 8px; font-size: 16px; }
+.cell-help p { margin: 0 0 10px; font-size: 14px; line-height: 1.7; }
+.cell-help dl { margin: 0; }
+.cell-help dt { margin-top: 16px; font-size: 15px; font-weight: bold; }
+.cell-help dd { margin: 5px 0 0; font-size: 13px; line-height: 1.7; }
+.cell-help strong { color: #7c3828; }
+.cell-help .goal { padding: 12px; border-radius: 5px; background: #e6eadc; }
+@media (max-width: 1030px) {
+    body { padding: 14px; }
+    .game-shell { max-width: 800px; }
+    .game-columns { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+    .cell-help dl { display: grid; grid-template-columns: 110px 1fr; gap: 12px; }
+    .cell-help dt, .cell-help dd { margin: 0; }
+}
+@media (max-width: 480px) {
+    body { padding: 8px; }
+    .cell-help { padding: 16px; }
+    .cell-help dl { display: block; }
+    .cell-help dt { margin-top: 14px; }
+    .mode-nav a { padding: 8px 10px; }
+}

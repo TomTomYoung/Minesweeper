@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マインスイーパー | RPG 多層モード</title>
+    <link rel="stylesheet" href="src/ui/help.css">
+
+    <!-- 右クリックメニューを抑制 -->
+    <script>
+        document.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+            return false;
+        }, false);
+    </script>
+    <!-- Phaser 3 CDNを読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+</head>
+
+<body>
+    <main class="game-shell">
+        <nav class="mode-nav" aria-label="モード選択">
+            <a href="index.html">モード一覧</a><a href="normal.html">通常</a>
+            <a href="rpg.html" >RPG シンプル</a><a href="layered.html" aria-current="page">RPG 多層</a>
+        </nav>
+        <div class="game-columns">
+            <div id="game-container"></div>
+            <aside class="cell-help" aria-label="多層モードのセルと操作">
+                <h1>RPG 多層モード</h1>
+                <p class="goal">壁・敵の<strong>覆い</strong>と、その下の<strong>地雷・数字・宝箱・階段</strong>が重なるモードです。この階の鍵を取得し、階段から次の階へ進みます。</p>
+                <h2>左右クリックの基本</h2>
+                <p><b>左クリック</b>：一番上のセルを操作。<br><b>右クリック</b>：未開放セルに旗を立てる／外す。公開済みセルには作用しません。</p>
+                <p>旗は最初の左クリック後から残り本数まで使用できます。旗のあるセルは左クリック・自動開放の対象になりません。</p>
+                <h2>セルの役割と左クリック</h2>
+                <dl>
+                    <dt>壁</dt><dd>下のセルを覆う障害物です。つるはし1本で壁1マスを壊します。つるはしがなければ壁の姿だけが見えます。</dd>
+                    <dt>敵</dt><dd>下のセルを覆う危険な相手です。剣1本を消費して撃破します。<strong>剣なしで直接クリックするとゲームオーバーです。</strong></dd>
+                    <dt>除去後のセル</dt><dd>壁・敵を取り除いた直後、下のセルは未開放です。次のクリックで開きます。<strong>下に地雷がある場合もあります。</strong></dd>
+                    <dt>空白</dt><dd>周囲8マスに地雷がないセルです。自動開放は下の地雷配置を見て進み、壁・敵があっても止まりません。覆いは表示されるだけで、除去も道具消費も起きません。地雷の上の覆いは自動では開きません。</dd>
+                    <dt>数字</dt><dd>覆いの下も含めた周囲8マスの地雷数です。再クリックで旗数が一致すると周囲を開きます。覆いがあれば姿の表示だけです。旗を間違えると露出した地雷を開く危険があります。</dd>
+                    <dt>地雷</dt><dd>覆いがない状態で開くとゲームオーバーです。覆いを取り除く操作だけでは爆発しません。</dd>
+                    <dt>宝箱</dt><dd>発見後、再クリックで金貨・鍵・剣・つるはしを取得します。装備の宝箱には本数が表示されます。この階の全ての敵・壁に必要な道具を用意してあり、装備の宝箱には覆いが付きません。</dd>
+                    <dt>階段</dt><dd>この階の鍵を持ってクリックすると次の階へ進みます。敵の全滅は不要です。覆いがある場合は先に除去してください。</dd>
+                </dl>
+                <h2>階を進むと</h2><p>鍵・剣・つるはしは持ち越しません。階得点はリセットされ、総得点は累計として残ります。探索はエンドレスです。</p>
+            </aside>
+        </div>
+    </main>
+
+    <!-- モジュール -->
+    <script src="src/config.js"></script>
+    <script src="src/assets.js"></script>
+    <script src="src/system/AssetPresentation.js"></script>
+
+    <!-- ゲームオブジェクト -->
+    <script src="src/objects/Cell.js"></script>
+    <script src="src/objects/special/MineCell.js"></script>
+    <script src="src/objects/special/EnemyCell.js"></script>
+    <script src="src/objects/special/WallCell.js"></script>
+    <script src="src/objects/special/TreasureCell.js"></script>
+    <script src="src/objects/special/StairsCell.js"></script>
+    <script src="src/objects/LayeredCellView.js"></script>
+    <script src="src/objects/Board.js"></script>
+
+    <!-- UI Components -->
+    <!-- UI Core -->
+    <script src="src/ui/events/UIEventBus.js"></script>
+    <script src="src/ui/state/UIState.js"></script>
+    <script src="src/ui/layout/UILayout.js"></script>
+
+    <!-- UI Components -->
+    <script src="src/ui/components/InfoPanel.js"></script>
+    <script src="src/ui/components/ControlPanel.js"></script>
+    <script src="src/ui/components/MessagePanel.js"></script>
+
+    <!-- UI Widgets -->
+    <script src="src/ui/widgets/ZoomSlider.js"></script>
+    <script src="src/ui/widgets/ScrollBarV.js"></script>
+    <script src="src/ui/widgets/ScrollBarH.js"></script>
+
+    <!-- UI Controllers -->
+    <script src="src/ui/controllers/ZoomController.js"></script>
+    <script src="src/ui/controllers/ScrollController.js"></script>
+
+
+    <!-- ロジック -->
+    <!-- Cell Logic -->
+    <script src="src/logic/cells/BaseLogicCell.js"></script>
+    <script src="src/logic/cells/EmptyLogicCell.js"></script>
+    <script src="src/logic/cells/NumberLogicCell.js"></script>
+    <script src="src/logic/cells/MineLogicCell.js"></script>
+    <script src="src/logic/cells/EnemyLogicCell.js"></script>
+    <script src="src/logic/cells/TreasureLogicCell.js"></script>
+    <script src="src/logic/cells/StairsLogicCell.js"></script>
+    <script src="src/logic/cells/WallLogicCell.js"></script>
+
+    <script src="src/logic/generator/strategies/MinePlacementStrategy.js"></script>
+    <script src="src/logic/generator/strategies/EnemyPlacementStrategy.js"></script>
+    <script src="src/logic/generator/strategies/WallPlacementStrategy.js"></script>
+    <script src="src/logic/generator/strategies/ItemPlacementStrategy.js"></script>
+    <script src="src/logic/BoardGenerator.js"></script>
+    <script src="src/logic/BoardModel.js"></script>
+    <script src="src/logic/layered/LayeredCell.js"></script>
+    <script src="src/logic/layered/LayeredBoardModel.js"></script>
+    <script src="src/logic/layered/LayeredBoardGenerator.js"></script>
+    <script src="src/logic/modes/GameModeRegistry.js"></script>
+    <script src="src/logic/GameSession.js"></script>
+
+    <!-- システム -->
+    <script src="src/system/AudioManager.js"></script>
+    <script src="src/system/SaveManager.js"></script>
+
+    <!-- シーン -->
+    <script src="src/scenes/BootScene.js"></script>
+    <script src="src/scenes/MenuScene.js"></script>
+
+    <!-- Menu Modules -->
+    <script src="src/menu/layout/MenuLayout.js"></script>
+    <script src="src/menu/components/MenuButton.js"></script>
+    <script src="src/menu/components/ModeSelector.js"></script>
+    <script src="src/menu/components/DifficultySelector.js"></script>
+    <script src="src/menu/components/GenericConfigPanel.js"></script>
+    <script src="src/menu/controllers/MenuController.js"></script>
+
+    <!-- Game Logic & Modules -->
+    <script src="src/logic/CameraController.js"></script>
+
+    <script src="src/game/events/GameEventBus.js"></script>
+    <script src="src/game/managers/ScoreManager.js"></script>
+    <script src="src/game/managers/BoardManager.js"></script>
+    <script src="src/game/controllers/InputController.js"></script>
+    <script src="src/game/controllers/ScrollController.js"></script>
+    <script src="src/game/controllers/GameFlowController.js"></script>
+    <script src="src/game/debug/GameDebugger.js"></script>
+
+    <script src="src/scenes/GameScene.js"></script>
+    <script src="src/ui/UIScene.js"></script>
+
+    <!-- ユーティリティ -->
+    <script src="src/utils/GameConfig.js"></script>
+
+    <!-- RexUI 1.60.0 / Phaser 3.60.0: pin the compatible upstream commit. -->
+    <script src="https://cdn.jsdelivr.net/gh/rexrainbow/phaser3-rex-notes@0112498f036d7ed0761c173d9ce665d67e728cdd/dist/rexuiplugin.min.js"></script>
+
+    <!-- モード設定 -->
+    <script>
+        window.initialGameMode = 'RPG_LAYERED';
+    </script>
+
+    <!-- メインファイル -->
+    <script src="main.js"></script>
+</body>
+
+</html>

@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 
 const { projectRoot } = require('./helpers/load-scripts');
 
-for (const entrypoint of ['normal.html', 'rpg.html']) {
+for (const entrypoint of ['normal.html', 'rpg.html', 'layered.html']) {
     test(`${entrypoint} pins the Phaser-compatible RexUI build before starting the game`, () => {
         const html = fs.readFileSync(`${projectRoot}/${entrypoint}`, 'utf8');
         const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(match => match[1]);

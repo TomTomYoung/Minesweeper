@@ -158,6 +158,21 @@ class GameConfig {
         if ((config.totalWalls === 0) !== (config.wallClusters === 0) || config.totalWalls < config.wallClusters) {
             return '壁を置かない場合は総数とクラスター数を0にしてください。置く場合は各クラスターに1マス以上必要です';
         }
+        if (mode === 'RPG_LAYERED') {
+            const requiredTreasures = 1 + Number(config.enemies > 0) + Number(config.totalWalls > 0);
+            if (config.treasures < requiredTreasures || config.stairs < 1) {
+                return `多層では鍵・装備用に宝箱${requiredTreasures}個以上と階段1個以上が必要です`;
+            }
+            const capacity = config.rows * config.cols - 9;
+            const futureMines = Math.max(config.mines, Math.floor(config.rows * config.cols * 0.3));
+            if (futureMines + config.treasures + config.stairs > capacity) {
+                return '地雷増加に備え、地雷・宝箱・階段の数を減らしてください';
+            }
+            if (config.totalWalls + config.enemies + requiredTreasures - 1 > capacity) {
+                return '初手と装備の置き場を確保するため、壁・敵を減らしてください';
+            }
+            return null;
+        }
         const total = config.mines + config.totalWalls + config.treasures + config.stairs + config.enemies;
         if (total > config.rows * config.cols - 9) return '地雷・壁・お宝・階段・敵の合計が多すぎます';
         if (mode === 'RPG' || mode === 'RPG_SIMPLE') {

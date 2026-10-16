@@ -16,6 +16,9 @@ class MenuController {
         const base = difficulty === 'custom'
             ? { ...gameConfig.getConfig('easy'), ...customConfig }
             : gameConfig.getConfig(difficulty);
+        if (this.currentMode === GameConfig.MODES.RPG_LAYERED && difficulty !== 'custom') {
+            base.treasures = Math.max(4, base.treasures);
+        }
         // Validate the effective mode configuration, not unused RPG fields in CLASSIC.
         const config = GameConfig.applyMode(base, this.currentMode);
         const error = GameConfig.validate(config, this.currentMode);

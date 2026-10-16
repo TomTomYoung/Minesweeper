@@ -1,4 +1,4 @@
-﻿// Board.js - ゲームボードを管理するクラス
+// Board.js - ゲームボードを管理するクラス
 class Board extends Phaser.GameObjects.Container {
     constructor(scene, x, y, rows, cols, cellSize) {
         super(scene, x, y);
@@ -88,7 +88,8 @@ class Board extends Phaser.GameObjects.Container {
             'enemy': EnemyCell,
             'treasure': TreasureCell,
             'stairs': StairsCell,
-            'normal': Cell
+            'normal': Cell,
+            'layered': LayeredCellView
         };
         const ExpectedClass = ViewCellClasses[cellData.viewType] || Cell;
         if (cell.constructor !== ExpectedClass) return true;
@@ -116,7 +117,8 @@ class Board extends Phaser.GameObjects.Container {
             'enemy': EnemyCell,
             'treasure': TreasureCell,
             'stairs': StairsCell,
-            'normal': Cell
+            'normal': Cell,
+            'layered': LayeredCellView
         };
         const ViewClass = ViewCellClasses[cellData.viewType] || Cell;
         let newCell = new ViewClass(this.scene, x, y, this.cellSize, row, col);

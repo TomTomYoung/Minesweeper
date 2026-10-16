@@ -78,7 +78,7 @@ test('global subscriptions remain single after repeated shutdown and preserve ot
 
 test('UI can request initial statistics after missing the first emission', () => {
     const game = loadGame(), events = new Emitter();
-    const scene = { game: { gameData: {}, events }, gameSession: { flagsLeft: 40, timer: 0, score: 0, totalScore: 0, level: 1, mode: 'CLASSIC' } };
+    const scene = { game: { gameData: {}, events }, gameSession: { flagsLeft: 40, timer: 0, score: 0, totalScore: 0, level: 1, mode: 'CLASSIC', inventory: {swords:0,pickaxes:0} } };
     scene.eventBus = new (game.get('GameEventBus'))({ ...scene, events: new Emitter() });
     scene.eventBus.onRequestUIUpdate(() => game.get('GameScene').prototype.updateUI.call(scene));
     game.get('GameScene').prototype.updateUI.call(scene);
