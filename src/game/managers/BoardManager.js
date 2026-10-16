@@ -43,9 +43,9 @@ class BoardManager {
         if (!this.board) return;
         for (let i = 0; i < config.rows; i++) {
             for (let j = 0; j < config.cols; j++) {
-                this.board.updateCellUI(i, j, boardModel.getCell(i, j));
+                this.board.updateCellUI(i, j, boardModel.getViewState(i, j));
                 const view = this.board.cells[i][j];
-                if (view instanceof StairsCell && progression) view.setUnlocked(progression.canAdvance);
+                if (view.setUnlocked && progression) view.setUnlocked(progression.canAdvance);
             }
         }
     }

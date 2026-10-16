@@ -24,8 +24,10 @@ class MenuScene extends Phaser.Scene {
         if (window.initialGameMode) {
             // Fixed Mode
             const subPos = this.layout.getSubtitlePosition(width);
-            const modeName = window.initialGameMode === GameConfig.MODES.RPG ? 'RPGモード' : '通常モード';
-            const modeDesc = window.initialGameMode === GameConfig.MODES.RPG ? 'この階の鍵を見つけ、敵を倒して次の階へ' : '地雷を避けて、すべての安全なマスを開く';
+            const layered = window.initialGameMode === GameConfig.MODES.RPG_LAYERED;
+            const rpg = layered || ['RPG', 'RPG_SIMPLE'].includes(window.initialGameMode);
+            const modeName = layered ? 'RPG 多層モード' : rpg ? 'RPG シンプルモード' : '通常モード';
+            const modeDesc = layered ? '剣とつるはしで覆いを除き、鍵を探して次の階へ' : rpg ? 'この階の鍵を見つけ、敵を倒して次の階へ' : '地雷を避けて、すべての安全なマスを開く';
 
             this.add.text(subPos.x, subPos.y, `${modeName}\n${modeDesc}`, {
                 fontSize: '20px', fontFamily: 'Arial', color: '#555', align: 'center'
@@ -68,7 +70,7 @@ class MenuScene extends Phaser.Scene {
                 { key: 'stairs', label: '階段の数:', min: 1, max: 5, default: 1 },
                 { key: 'enemies', label: '敵の数:', min: 0, max: 30, default: 2 }
             ],
-            toggles: [
+            toggles: this.controller.currentMode === GameConfig.MODES.RPG_LAYERED ? [] : [
                 { key: 'autoRevealWallCluster', label: '壁クラスターを自動公開', default: false }
             ]
         };

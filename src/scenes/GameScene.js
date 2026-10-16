@@ -29,7 +29,7 @@ class GameScene extends Phaser.Scene {
         this.updateUI();
         this.time.delayedCall(0, () => {
             this.eventBus.emitShowMessage({
-                text: this.gameSession.mode === 'RPG_SIMPLE' ? `${this.gameSession.level}階 スタート！` : '',
+                text: this.gameSession.mode !== 'CLASSIC' ? `${this.gameSession.level}階 スタート！` : '',
                 color: '#0000aa', duration: 1500
             });
         });
@@ -130,7 +130,7 @@ class GameScene extends Phaser.Scene {
     syncBoardData() {
         if (this.boardData !== this.gameSession.boardData) {
             this.boardData = this.gameSession.boardData;
-            this.boardManager.reconstructBoard(this.boardData);
+            this.boardManager.reconstructBoard(this.gameSession.boardModel.getViewData());
         }
     }
 
@@ -156,7 +156,7 @@ class GameScene extends Phaser.Scene {
         }
         if (events.includes('GAME_OVER')) AssetPresentation.burst(cell, 0xe39b57);
         else if (events.includes('ENEMY_DEFEATED')) AssetPresentation.burst(cell, 0x87d7ba);
-        else if (events.includes('ITEM_KEY') || events.includes('ITEM_SWORD') || result.scoreEvents?.length) {
+        else if (events.includes('ITEM_KEY') || events.includes('ITEM_SWORD') || events.includes('ITEM_PICKAXE') || result.scoreEvents?.length) {
             this.audio?.playSfx('chest_open');
             AssetPresentation.burst(cell);
         } else if (!input.wasRevealed && model.isRevealed) this.audio?.playSfx('cell_open');
@@ -172,6 +172,7 @@ class GameScene extends Phaser.Scene {
             score: session.score, totalScore: session.totalScore,
             mode: session.mode, level: session.level,
             hasKey: session.hasKey, hasSword: session.hasSword,
+            swords: session.inventory.swords, pickaxes: session.inventory.pickaxes,
             enemiesDefeated: session.enemiesDefeated, totalEnemies: session.totalEnemies
         });
     }

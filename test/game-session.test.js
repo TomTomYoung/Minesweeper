@@ -18,6 +18,9 @@ const scripts = [
     'src/logic/generator/strategies/WallPlacementStrategy.js',
     'src/logic/BoardGenerator.js',
     'src/logic/BoardModel.js',
+    'src/logic/layered/LayeredCell.js',
+    'src/logic/layered/LayeredBoardModel.js',
+    'src/logic/layered/LayeredBoardGenerator.js',
     'src/logic/modes/GameModeRegistry.js',
     'src/game/managers/ScoreManager.js',
     'src/logic/GameSession.js'
@@ -117,6 +120,7 @@ test('legacy mode names resolve to explicit mode definitions', () => {
 });
 
 test('unimplemented and unknown modes fail explicitly', () => {
-    assert.throws(() => createSession('RPG_LAYERED'), /not implemented/);
+    assert.throws(() => createSession('EXPERIMENTAL'), /not implemented/);
     assert.throws(() => createSession('UNKNOWN'), /Unknown game mode/);
 });
+

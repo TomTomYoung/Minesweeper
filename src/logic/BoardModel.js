@@ -52,6 +52,17 @@ class BoardModel {
         return null;
     }
 
+    getViewState(row, col) {
+        const cell = this.getCell(row, col);
+        return { viewType: cell.viewType, isRevealed: cell.isRevealed,
+            isFlagged: cell.isFlagged, state: cell.state, neighborMines: cell.neighborMines,
+            wallClusterId: cell.wallClusterId, treasureContent: cell.treasureContent };
+    }
+
+    getViewData() {
+        return this.board.map((row, r) => row.map((cell, c) => this.getViewState(r, c)));
+    }
+
     /**
      * 旗の切り替え
      * @param {number} row 

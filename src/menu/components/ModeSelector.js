@@ -11,7 +11,7 @@ class ModeSelector extends Phaser.GameObjects.Container {
 
     createVisuals() {
         // Label
-        this.scene.add.text(this.x - 100, this.y, 'モード:', {
+        this.scene.add.text(this.x - 170, this.y, 'モード:', {
             fontSize: '18px',
             fontFamily: 'Arial',
             color: '#333'
@@ -24,12 +24,13 @@ class ModeSelector extends Phaser.GameObjects.Container {
         // Actually, let's keep it simple: Add buttons to coordinates relative to this container (0,0)
 
         // RPG Mode Button
-        this.btnRPG = this.createModeButton(0, 0, 'RPGモード', GameConfig.MODES.RPG);
+        this.btnRPG = this.createModeButton(-100, 0, 'RPG シンプル', GameConfig.MODES.RPG);
 
         // Standard Mode Button
-        this.btnStandard = this.createModeButton(140, 0, '通常モード', GameConfig.MODES.STANDARD);
+        this.btnStandard = this.createModeButton(180, 0, '通常モード', GameConfig.MODES.STANDARD);
 
-        this.add([this.btnRPG, this.btnStandard]);
+        this.btnLayered = this.createModeButton(40, 0, 'RPG 多層', GameConfig.MODES.RPG_LAYERED);
+        this.add([this.btnRPG, this.btnLayered, this.btnStandard]);
 
         this.updateUI();
     }
@@ -76,7 +77,7 @@ class ModeSelector extends Phaser.GameObjects.Container {
         const activeColor = 0xFF9800;
         const inactiveColor = 0x9E9E9E;
 
-        [this.btnRPG, this.btnStandard].forEach(btn => {
+        [this.btnRPG, this.btnLayered, this.btnStandard].forEach(btn => {
             if (btn.mode === this.currentMode) {
                 btn.bg.setFillStyle(activeColor);
             } else {
@@ -85,3 +86,4 @@ class ModeSelector extends Phaser.GameObjects.Container {
         });
     }
 }
+
