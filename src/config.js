@@ -15,12 +15,12 @@ const GAME_CONFIG = {
 
     // セル関連
     CELL_COLORS: {
-        DEFAULT: 0xc0c0c0,
-        REVEALED: 0xe0e0e0,
-        MINE: 0xff0000,
-        WALL: 0x6b6b6b,
-        TREASURE: 0xffd700,
-        STAIRS: 0x9370db
+        DEFAULT: 0xa3b0a7,
+        REVEALED: 0xeee8d9,
+        MINE: 0xe5bfb0,
+        WALL: 0xc3c7bf,
+        TREASURE: 0xe7d3a6,
+        STAIRS: 0xc2d8d5
     },
 
     // 数字の色

@@ -1,5 +1,15 @@
 # Minesweeper 引き継ぎ資料
 
+## 2026-10-16 素材v2刷新後の現在地
+
+新しい画像26点（ゲーム使用12点・保管14点）、効果音10点、BGM2点を制作しました。旧 `assets/images/` の33ファイルは変更せず保持します。宝箱開閉・敵撃破状態・階段ロック、HUD、音のオン／オフ・音量をゲームへ接続しました。ゲームルールは前回確定したままです。
+
+[ASSET_PRODUCTION.md](./ASSET_PRODUCTION.md) に全素材、採用プロンプトと再出力方法、検証範囲を記録しています。入口の「新しい素材を見る」から `asset-review.html` で新旧比較と試聴ができます。`npm test` は43件成功、画像25点の透過と寸法、音12点のデコードを確認済みです。
+
+実ブラウザでの描画・入力・音声再生は未検証です。次担当者は制作記録末尾の実機確認項目を実施してください。今回の環境ではChromiumをsandbox有効で起動できません。下記の音声未統合・37件という記述は安定化修正時点の履歴であり、今回の更新が優先します。
+
+---
+
 調査日: 2026-10-16 JST
 調査対象: main
 基準コミット: 3fad1bc760dc326ecfd584ee2e8f3b9b1ff4cc2f
@@ -8,10 +18,11 @@
 
 ## 読む順番
 
-1. STABILIZATION-2026-10-16.md
-2. SPECIFICATION.md
-3. PROGRESS.md（冒頭が最新）
-4. HANDOFF.md（冒頭が最新）
+1. ASSET_PRODUCTION.md
+2. STABILIZATION-2026-10-16.md
+3. SPECIFICATION.md
+4. PROGRESS.md（冒頭が最新）
+5. HANDOFF.md（冒頭が最新）
 
 ## 文書の位置づけ
 

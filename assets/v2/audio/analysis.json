@@ -1,0 +1,78 @@
+{
+  "method": "deterministic additive synthesis, seed 20261016",
+  "sampleRate": 22050,
+  "sounds": [
+    {
+      "key": "ui_click",
+      "seconds": 0.14,
+      "peak": 0.65,
+      "rms": 0.127
+    },
+    {
+      "key": "cell_open",
+      "seconds": 0.18,
+      "peak": 0.65,
+      "rms": 0.126
+    },
+    {
+      "key": "flag_toggle",
+      "seconds": 0.24,
+      "peak": 0.65,
+      "rms": 0.147
+    },
+    {
+      "key": "chest_open",
+      "seconds": 0.46,
+      "peak": 0.65,
+      "rms": 0.153
+    },
+    {
+      "key": "pickup",
+      "seconds": 0.61,
+      "peak": 0.65,
+      "rms": 0.139
+    },
+    {
+      "key": "stairs_unlock",
+      "seconds": 0.95,
+      "peak": 0.65,
+      "rms": 0.144
+    },
+    {
+      "key": "next_floor",
+      "seconds": 1.26,
+      "peak": 0.65,
+      "rms": 0.144
+    },
+    {
+      "key": "victory",
+      "seconds": 1.43,
+      "peak": 0.65,
+      "rms": 0.167
+    },
+    {
+      "key": "enemy_defeat",
+      "seconds": 0.28,
+      "peak": 0.601,
+      "rms": 0.126
+    },
+    {
+      "key": "explosion",
+      "seconds": 0.85,
+      "peak": 0.65,
+      "rms": 0.061
+    },
+    {
+      "key": "bgm_menu",
+      "seconds": 20.0,
+      "peak": 0.38,
+      "rms": 0.074
+    },
+    {
+      "key": "bgm_explore",
+      "seconds": 22.857,
+      "peak": 0.38,
+      "rms": 0.074
+    }
+  ]
+}

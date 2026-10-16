@@ -11,7 +11,7 @@ class ControlPanel extends Phaser.GameObjects.Container {
 
     createElements() {
         // Background
-        const bg = this.scene.add.rectangle(0, 0, this.width, this.height, 0xf0f0f0)
+        const bg = this.scene.add.rectangle(0, 0, this.width, this.height, 0xeee7d9)
             .setStrokeStyle(1, 0xdddddd);
         this.add(bg);
 
@@ -24,6 +24,7 @@ class ControlPanel extends Phaser.GameObjects.Container {
 
         this.createNewGameButton(leftBase + 80, 0);
         this.createMenuButton(leftBase + 210, 0);
+        this.add(AssetPresentation.audioControls(this.scene, leftBase + 430, 0));
 
 
     }
@@ -33,7 +34,7 @@ class ControlPanel extends Phaser.GameObjects.Container {
 
         const bg = this.scene.add.rectangle(0, 0, 120, 35, 0x4CAF50, 1)
             .setInteractive()
-            .on('pointerdown', () => this.scene.restartGame())
+            .on('pointerdown', () => { this.scene.game.audio?.playSfx('ui_click'); this.scene.restartGame(); })
             .on('pointerover', () => bg.setFillStyle(0x45a049))
             .on('pointerout', () => bg.setFillStyle(0x4CAF50));
 
@@ -52,7 +53,7 @@ class ControlPanel extends Phaser.GameObjects.Container {
 
         const bg = this.scene.add.rectangle(0, 0, 120, 35, 0x2196F3, 1)
             .setInteractive()
-            .on('pointerdown', () => this.scene.returnToMenu())
+            .on('pointerdown', () => { this.scene.game.audio?.playSfx('ui_click'); this.scene.returnToMenu(); })
             .on('pointerover', () => bg.setFillStyle(0x1976D2))
             .on('pointerout', () => bg.setFillStyle(0x2196F3));
 
@@ -73,3 +74,4 @@ class ControlPanel extends Phaser.GameObjects.Container {
         // Based on previous code, it seems ControlPanel doesn't show score.
     }
 }
+

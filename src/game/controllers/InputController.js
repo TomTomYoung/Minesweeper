@@ -21,11 +21,15 @@ class InputController {
         const timer = setTimeout(() => {
             this.pending.delete(timer);
             if (this.disposed) return;
+            const before = this.session.boardModel.getCell(row, col);
+            const feedback = { row, col, rightClick, wasRevealed:before.isRevealed,
+                blocked:this.session.isGameOver || this.session.isTransitioning || before.isFlagged && !rightClick };
             const result = rightClick
                 ? this.session.handleCellRightClick(row, col)
                 : this.session.handleCellClick(row, col);
             this.scene.syncBoardData();
             this.scene.handleResult(result);
+            if (this.scene.playCellFeedback) this.scene.playCellFeedback(result, feedback);
         }, 0);
         this.pending.add(timer);
     }

@@ -11,6 +11,10 @@ class MenuScene extends Phaser.Scene {
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
 
+        AssetPresentation.menuBackground(this);
+        this.audio = this.game.audio;
+        if (this.audio) this.audio.playBgm('bgm_menu');
+
         // Title
         const titlePos = this.layout.getTitlePosition(width);
         this.add.text(titlePos.x, titlePos.y, 'マインスイーパー', GAME_CONFIG.TEXT_STYLES.TITLE)
@@ -21,7 +25,7 @@ class MenuScene extends Phaser.Scene {
             // Fixed Mode
             const subPos = this.layout.getSubtitlePosition(width);
             const modeName = window.initialGameMode === GameConfig.MODES.RPG ? 'RPGモード' : '通常モード';
-            const modeDesc = window.initialGameMode === GameConfig.MODES.RPG ? 'お宝と階段セル付き' : '地雷除去のみ';
+            const modeDesc = window.initialGameMode === GameConfig.MODES.RPG ? 'この階の鍵を見つけ、敵を倒して次の階へ' : '地雷を避けて、すべての安全なマスを開く';
 
             this.add.text(subPos.x, subPos.y, `${modeName}\n${modeDesc}`, {
                 fontSize: '20px', fontFamily: 'Arial', color: '#555', align: 'center'
@@ -81,6 +85,8 @@ class MenuScene extends Phaser.Scene {
                 customPanel.setVisible(false);
             }
         ).setDepth(100);
+
+        AssetPresentation.audioControls(this, 420, height - 35);
 
         // Custom Button
         const customBtnPos = this.layout.getCustomButtonPosition(width);

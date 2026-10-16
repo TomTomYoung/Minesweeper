@@ -41,7 +41,7 @@ class MenuButton extends Phaser.GameObjects.Container {
             .setInteractive();
 
         // Hover Effects
-        bg.on('pointerdown', callback);
+        bg.on('pointerdown', () => { this.scene.game.audio?.playSfx('ui_click'); callback(); });
         bg.on('pointerover', () => bg.setFillStyle(this.lightenColor(this.baseColor, 20)));
         bg.on('pointerout', () => bg.setFillStyle(this.baseColor));
 
@@ -69,3 +69,4 @@ class MenuButton extends Phaser.GameObjects.Container {
         return (lightenValue(r) << 16) + (lightenValue(g) << 8) + lightenValue(b);
     }
 }
+

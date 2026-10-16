@@ -27,7 +27,11 @@ class GameFlowController {
         }
         if (events.includes('ITEM_KEY')) messages.push('この階の鍵を獲得しました');
         if (events.includes('ITEM_SWORD')) messages.push('剣を獲得！ +50点');
+        if (events.includes('ITEM_KEY') || events.includes('ITEM_SWORD') || result.scoreEvents?.some(e => e.type === 'TREASURE_GOLD')) {
+            this.scene.audio?.playSfx('pickup');
+        }
         const defeated = events.filter(event => event === 'ENEMY_DEFEATED').length;
+        if (defeated) this.scene.audio?.playSfx('enemy_defeat');
         if (defeated) messages.push(`敵を${defeated}体撃破！ +${defeated * 50}点`);
         if (result.progression && !result.progression.canAdvance) {
             messages.push(result.progression.reason === 'KEY_REQUIRED'
@@ -43,6 +47,7 @@ class GameFlowController {
     gameOver(isWin) {
         if (this.hasShownGameOver) return { isWin, isGameOver: true };
         this.hasShownGameOver = true;
+        this.scene.audio?.playSfx(isWin ? 'victory' : 'explosion');
         this.destroy();
         this.eventBus.emitShowMessage({
             text: isWin ? '勝利！おめでとうございます！' : 'ゲームオーバー！',
@@ -53,6 +58,7 @@ class GameFlowController {
 
     goToNextLevel() {
         if (this.transitionTimer || !this.session.isTransitioning) return;
+        this.scene.audio?.playSfx('next_floor');
         this.eventBus.emitShowMessage({
             text: '階段を見つけました！次の階へ…', color: '#9370db', duration: 1500
         });

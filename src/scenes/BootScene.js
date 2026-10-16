@@ -13,6 +13,8 @@ class BootScene extends Phaser.Scene {
     }
 
     create() {
+        AssetPresentation.createTextures(this);
+        this.game.audio = new AudioManager(this);
         console.log('BootScene started');
         if (this.game.plugins.plugins.some(p => p.key === 'rexUI')) {
             console.log('RexUI plugin found in plugin manager');
@@ -59,20 +61,9 @@ class BootScene extends Phaser.Scene {
 
     // ゲームで使用するアセットをロード
     loadAssets() {
-        // 画像
-        this.load.image('dummy', 'assets/images/dummy.png');
-        this.load.image('mine', 'assets/images/mine.png');
-        this.load.image('flag', 'assets/images/flag.png');
-        this.load.image('wall', 'assets/images/wall.png');
-        this.load.image('treasure', 'assets/images/treasure.png');
-        this.load.image('stairs', 'assets/images/stairs.png');
-        this.load.image('enemy', 'assets/images/enemy.png');
-        this.load.image('key', 'assets/images/key.png');
-        this.load.image('sword', 'assets/images/sword.png');
-
-        // 音声素材はまだ同梱していないため、正式採用するまで読み込まない。
-        // 呼び出し側はサウンドが登録済みかを確認してから再生する。
-
-        // テクスチャアトラスやスプライトシートがあれば追加
+        for (const asset of GAME_ASSETS.images) {
+            if (asset.active) this.load.image(asset.key, asset.path);
+        }
+        for (const asset of GAME_ASSETS.audio) this.load.audio(asset.key, asset.path);
     }
 }

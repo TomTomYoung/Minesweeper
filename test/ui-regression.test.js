@@ -3,7 +3,8 @@ const assert = require('node:assert/strict');
 const { loadGame, config, Emitter } = require('./helpers/game-context');
 
 function icon() {
-    return { visible: false, texture: null, alpha: 1,
+    return { visible: false, texture: null, alpha: 1, width:256, height:256,
+        setScale(value) { this.scale = value; return this; },
         setVisible(value) { this.visible = value; return this; },
         setTexture(value) { this.texture = value; return this; },
         setAlpha(value) { this.alpha = value; return this; }
@@ -11,10 +12,10 @@ function icon() {
 }
 function view(game, type = 'Cell') {
     const cell = Object.create(game.get(type).prototype);
-    Object.assign(cell, { revealed: false, flagged: false, cellState: 0, icon: icon(),
+    Object.assign(cell, { revealed: false, flagged: false, cellState: 0, size:40, icon: icon(), add() {},
         background: { setFillStyle() { return this; }, setStrokeStyle() { return this; } },
         text: { setText() { return this; }, setColor() { return this; }, setVisible() { return this; } },
-        scene: { textures: { exists() { return true; } } }, showWallEffect() {}
+        scene: { textures: { exists() { return true; } }, add: { image:icon } }, showWallEffect() {}
     });
     return cell;
 }
@@ -28,12 +29,16 @@ test('board synchronization updates collected treasure contents and defeated ene
     assert.equal(cell.icon.texture, 'treasure');
     state.state = 2;
     Board.prototype.updateCellUI.call(board, 0, 0, state);
-    assert.equal(cell.icon.texture, 'key');
-    assert.equal(cell.icon.alpha, 0.6);
+    assert.equal(cell.icon.texture, 'treasure_open');
+    assert.equal(cell.statusBadge.texture, 'key');
+    assert.equal(cell.statusBadge.visible, true);
+    assert.equal(cell.icon.alpha, 0.75);
     assert.equal(cell.cellState, 2);
     const enemy = view(game, 'EnemyCell');
     enemy.updateState({ isRevealed: true, state: 2, viewType: 'enemy' });
-    assert.equal(enemy.icon.alpha, 0.3);
+    assert.equal(enemy.icon.alpha, 0.8);
+    assert.equal(enemy.icon.texture, 'enemy_defeated');
+    assert.equal(enemy.statusBadge.texture, 'ui_check');
 });
 
 test('walls display flags and final reveal replaces a flag with the underlying cell', () => {

@@ -1,0 +1,36 @@
+:root { color-scheme:light; --ink:#263c35; --paper:#f4efe4; --line:#c9c2ae; --surface:#e9e2d1; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font-family:system-ui,sans-serif; line-height:1.6; }
+header,main { max-width:1200px; margin:auto; padding:32px; }
+header { border-bottom:1px solid var(--line); }
+h1 { font-size:clamp(28px,5vw,46px); margin:0; letter-spacing:.04em; }
+h2 { margin:0 0 8px; }
+p { margin:8px 0 20px; }
+a { color:#2b6f5c; text-underline-offset:4px; }
+.eyebrow { font-size:12px; letter-spacing:.2em; margin-top:32px; }
+nav { display:flex; gap:24px; flex-wrap:wrap; }
+.controls { display:flex; align-items:center; gap:24px; flex-wrap:wrap; margin-bottom:24px; }
+select { margin-left:8px; padding:8px; font:inherit; background:#fffaf0; color:var(--ink); border:1px solid var(--line); border-radius:6px; }
+.gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(245px,1fr)); gap:20px; }
+.card { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#fcf9f0; }
+.card h2 { font-size:17px; padding:16px 16px 0; }
+.state { margin:4px 16px 12px; color:#5f6d62; font-size:12px; }
+.samples { background:var(--surface); display:flex; justify-content:space-evenly; align-items:end; min-height:168px; gap:8px; padding:16px 8px 10px; }
+body[data-surface="dark"] { --surface:#263c35; }
+body[data-surface="dark"] .samples { color:#fff3d6; }
+body[data-surface="checker"] .samples { background-color:#f1eee5; background-image:conic-gradient(#d3d1c8 25%,transparent 0 50%,#d3d1c8 0 75%,transparent 0); background-size:16px 16px; }
+figure { margin:0; text-align:center; flex:none; }
+figure img { display:block; object-fit:contain; margin:auto; }
+figcaption { font-size:11px; margin-top:6px; }
+.legacy { display:flex; align-items:center; gap:12px; padding:12px 16px; border-top:1px solid var(--line); font-size:12px; min-height:72px; }
+.legacy img { width:48px; height:48px; object-fit:contain; }
+.legacy span { flex:1; }
+.marks,#sounds { margin-top:48px; }
+.mark-list { display:flex; gap:24px; flex-wrap:wrap; }
+.mark-list canvas { width:48px; height:48px; }
+.audio-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; }
+.audio-card { padding:16px; border:1px solid var(--line); border-radius:12px; }
+.audio-card label { display:block; margin-bottom:8px; }
+audio { width:100%; }
+footer { margin-top:48px; padding:24px 0; border-top:1px solid var(--line); font-size:13px; }
+@media(max-width:600px) { header,main { padding:24px 16px; } .controls { gap:12px; } }

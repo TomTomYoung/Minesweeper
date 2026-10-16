@@ -6,16 +6,16 @@ class TreasureCell extends Cell {
 
     renderReveal() {
         this.background.setFillStyle(GAME_CONFIG.CELL_COLORS.TREASURE);
-        if (this.icon.setTexture) this.icon.setTexture('treasure');
+        this.setIconTexture('treasure');
         this.icon.setVisible(true);
     }
 
     renderStateUpdate(state) {
         if (state.state !== 2) return;
-        const texture = { gold: 'treasure', key: 'key', sword: 'sword' }[state.treasureContent];
-        if (texture && this.icon.setTexture) this.icon.setTexture(texture);
-        this.icon.setVisible(true);
-        this.icon.setAlpha(0.6);
-        this.background.setFillStyle(0xe0e0e0);
+        this.setIconTexture('treasure_open');
+        this.icon.setVisible(true).setAlpha(0.75);
+        this.background.setFillStyle(0xeee8d9);
+        const texture = { gold:'gold', key:'key', sword:'sword' }[state.treasureContent];
+        if (texture) this.setStatusBadge(texture);
     }
 }
