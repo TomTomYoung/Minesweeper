@@ -1,39 +1,26 @@
 class UIEventBus {
     constructor(scene) {
-        this.scene = scene;
         this.gameEvents = scene.game.events;
+        this.subscriptions = [];
     }
 
-    // --- Listen (From Game) ---
-    onUpdateUI(callback, context) {
-        this.gameEvents.on('updateUI', callback, context);
+    listen(event, callback, context) {
+        this.gameEvents.on(event, callback, context);
+        this.subscriptions.push({ event, callback, context });
     }
 
-    onUpdateScroll(callback, context) {
-        this.gameEvents.on('updateScroll', callback, context);
-    }
+    onUpdateUI(callback, context) { this.listen('updateUI', callback, context); }
+    onUpdateScroll(callback, context) { this.listen('updateScroll', callback, context); }
+    onShowMessage(callback, context) { this.listen('showMessage', callback, context); }
+    onZoomChanged(callback, context) { this.listen('zoomChanged', callback, context); }
+    emitScrollRequest(axis, value) { this.gameEvents.emit('scrollRequest', { axis, value }); }
+    emitZoomUpdate(zoom) { this.gameEvents.emit('zoomUpdate', zoom); }
+    emitRequestUIUpdate() { this.gameEvents.emit('requestUIUpdate'); }
 
-    onShowMessage(callback, context) {
-        this.gameEvents.on('showMessage', callback, context);
-    }
-
-    // --- Emit (To Game) ---
-    emitScrollRequest(axis, value) {
-        this.gameEvents.emit('scrollRequest', { axis, value });
-    }
-
-    emitZoomUpdate(zoomValue) {
-        this.gameEvents.emit('zoomUpdate', zoomValue);
-    }
-
-    emitRequestUIUpdate() {
-        this.gameEvents.emit('requestUIUpdate');
-    }
-
-    // Cleanup
     destroy() {
-        this.gameEvents.off('updateUI', undefined, undefined);
-        this.gameEvents.off('updateScroll', undefined, undefined);
-        this.gameEvents.off('showMessage', undefined, undefined);
+        for (const { event, callback, context } of this.subscriptions) {
+            this.gameEvents.off(event, callback, context);
+        }
+        this.subscriptions = [];
     }
 }

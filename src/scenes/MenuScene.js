@@ -61,14 +61,15 @@ class MenuScene extends Phaser.Scene {
                 { key: 'wallClusters', label: '壁クラスター:', min: 0, max: 20, default: 3 },
                 { key: 'totalWalls', label: '壁の総数:', min: 0, max: 100, default: 15 },
                 { key: 'treasures', label: 'お宝の数:', min: 0, max: 20, default: 3 },
-                { key: 'stairs', label: '階段の数:', min: 1, max: 5, default: 1 }
+                { key: 'stairs', label: '階段の数:', min: 1, max: 5, default: 1 },
+                { key: 'enemies', label: '敵の数:', min: 0, max: 30, default: 2 }
             ],
             toggles: [
                 { key: 'autoRevealWallCluster', label: '壁クラスターを自動公開', default: false }
             ]
         };
 
-        const customPanel = new GenericConfigPanel(this, panelPos.x, panelPos.y, 550, 400, configSchema,
+        const customPanel = new GenericConfigPanel(this, panelPos.x, panelPos.y - 30, 620, 460, configSchema,
             (config) => {
                 config.treasurePoints = 100; // Inject fixed value
                 const result = this.controller.startGame('custom', config);

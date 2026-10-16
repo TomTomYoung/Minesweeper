@@ -50,54 +50,9 @@ class Board extends Phaser.GameObjects.Container {
 
     // セルの種類を更新（壁、地雷、お宝、階段など）
     updateCellTypes(boardData) {
-        // セルの種類を適切に設定
-        for (let i = 0; i < this.rows; i++) {
-            for (let j = 0; j < this.cols; j++) {
-                const cellData = boardData[i][j];
-                const currentCell = this.cells[i][j];
-
-                // 現在のセルを削除
-                const cellIndex = this.getAll().indexOf(currentCell);
-                if (cellIndex !== -1) {
-                    this.removeAt(cellIndex, true);
-                }
-
-                // セルの位置
-                const x = j * this.cellSize;
-                const y = i * this.cellSize;
-
-                // 新しいセルを作成（タイプに応じて）
-                const ViewCellClasses = {
-                    'wall': WallCell,
-                    'mine': MineCell,
-                    'enemy': EnemyCell,
-                    'treasure': TreasureCell,
-                    'stairs': StairsCell,
-                    'normal': Cell
-                };
-                const ViewClass = ViewCellClasses[cellData.viewType] || Cell;
-                let newCell = new ViewClass(this.scene, x, y, this.cellSize, i, j);
-
-                if (cellData.viewType === 'wall' && cellData.wallClusterId) {
-                    newCell.setClusterId(cellData.wallClusterId);
-                }
-
-                // セルをボードに追加
-                this.add(newCell);
-                this.cells[i][j] = newCell;
-
-                // セルのイベントをボードに伝播
-                newCell.on('cellClicked', this.handleCellClick, this);
-                newCell.on('cellRightClicked', this.handleCellRightClick, this);
-
-                // セルの状態を更新
-                if (cellData.isRevealed) {
-                    newCell.reveal(cellData.neighborMines);
-                }
-
-                if (cellData.isFlagged) {
-                    newCell.toggleFlag();
-                }
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.cols; col++) {
+                this.replaceCell(row, col, boardData[row][col]);
             }
         }
     }
@@ -118,21 +73,10 @@ class Board extends Phaser.GameObjects.Container {
     updateCellUI(row, col, cellData) {
         const cell = this.cells[row][col];
         if (!cell) return;
-
-        // セルの状態を更新
-        if (cellData.isRevealed && !cell.revealed) {
-            // もし特殊セルなら置き換える
-            if (this.shouldReplaceCell(cellData, cell)) {
-                this.replaceCell(row, col, cellData);
-            } else {
-                // 通常の更新
-                cell.reveal(cellData.neighborMines);
-            }
-        }
-
-        // 旗の状態を更新
-        if (cellData.isFlagged !== cell.flagged) {
-            cell.toggleFlag();
+        if (this.shouldReplaceCell(cellData, cell)) {
+            this.replaceCell(row, col, cellData);
+        } else {
+            cell.updateState(cellData);
         }
     }
 
@@ -190,13 +134,7 @@ class Board extends Phaser.GameObjects.Container {
         newCell.on('cellRightClicked', this.handleCellRightClick, this);
 
         // セルの状態を更新
-        if (cellData.isRevealed) {
-            newCell.reveal(cellData.neighborMines);
-        }
-
-        if (cellData.isFlagged) {
-            newCell.toggleFlag();
-        }
+        newCell.updateState(cellData);
     }
     // 階段セルをアクティブに
     activateStairs() {
@@ -229,3 +167,4 @@ class Board extends Phaser.GameObjects.Container {
         this.createBoard();
     }
 }
+

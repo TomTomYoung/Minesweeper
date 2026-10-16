@@ -186,9 +186,10 @@ class GenericConfigPanel extends Phaser.GameObjects.Container {
 
     showError(msg) {
         const errorText = this.scene.add.text(0, this.height / 2 - 80, msg, {
-            color: '#ff0000', fontSize: '14px', align: 'center'
+            color: '#ff0000', fontSize: '14px', align: 'center', wordWrap: { width: this.width - 30 }
         }).setOrigin(0.5);
         this.add(errorText);
         this.scene.time.delayedCall(3000, () => errorText.destroy());
     }
 }
+

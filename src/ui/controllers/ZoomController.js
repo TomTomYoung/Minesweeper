@@ -12,6 +12,15 @@ class ZoomController {
 
         // イベントリスナーの設定を行います
         this.setupBinding();
+        this.eventBus.onZoomChanged(zoom => {
+            this.state.setUpdatingFromGame(true);
+            try {
+                this.state.setZoom(zoom);
+                this.zoomSlider.setValue((zoom - 0.5) / 1.5);
+            } finally {
+                this.state.setUpdatingFromGame(false);
+            }
+        });
     }
 
     /**
@@ -38,3 +47,4 @@ class ZoomController {
 
     // Can add method to sync from game if needed (though zoom usually flows UI -> Game)
 }
+

@@ -41,8 +41,4 @@ class WallCell extends Cell {
         });
     }
 
-    // 旗は立てられないようオーバーライド
-    toggleFlag() {
-        return false; // 壁には旗を立てられない
-    }
 }

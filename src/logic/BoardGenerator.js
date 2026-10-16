@@ -7,6 +7,31 @@ class BoardGenerator {
      * @returns {Array<Array<BaseLogicCell>>} generated board
      */
     static generate(config, firstClick) {
+        // Retry complete boards, never reduce counts or return partial placement.
+        const safeZone = this.getSafeZone(config.rows, config.cols, firstClick.row, firstClick.col);
+        const count = ['mines', 'treasures', 'stairs', 'enemies', 'totalWalls']
+            .reduce((sum, key) => sum + (config[key] || 0), 0);
+        if (count > config.rows * config.cols - safeZone.size) {
+            throw new RangeError(`Cannot place ${config.mines} mines and other cells outside the safe zone`);
+        }
+        const clusters = config.wallClusters || 0;
+        const walls = config.totalWalls || 0;
+        if ((walls === 0) !== (clusters === 0) || walls < clusters) {
+            throw new RangeError('Wall configuration requires at least one wall per cluster');
+        }
+        let lastError;
+        for (let attempt = 0; attempt < 32; attempt++) {
+            try {
+                return this.generateAttempt(config, firstClick);
+            } catch (error) {
+                if (!(error instanceof RangeError)) throw error;
+                lastError = error;
+            }
+        }
+        throw lastError;
+    }
+
+    static generateAttempt(config, firstClick) {
         const board = this.initBoardData(config.rows, config.cols);
 
         const safeZone = this.getSafeZone(config.rows, config.cols, firstClick.row, firstClick.col);
@@ -93,3 +118,4 @@ class BoardGenerator {
         return count;
     }
 }
+

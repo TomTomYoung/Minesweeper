@@ -98,8 +98,10 @@ class BoardModel {
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
                 this.board[i][j].isRevealed = true;
-                this.board[i][j].state = 1;
+                this.board[i][j].isFlagged = false;
+                this.board[i][j].state = Math.max(1, this.board[i][j].state);
             }
         }
     }
 }
+

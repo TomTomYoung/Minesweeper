@@ -148,30 +148,16 @@ class Cell extends Phaser.GameObjects.Container {
 
     // セルの状態を更新
     updateState(state) {
-        // 旗の状態を更新
-        if (this.flagged !== state.isFlagged) {
-            this.flagged = state.isFlagged;
-            this.icon.setVisible(this.flagged);
-            if (this.flagged) {
-                if (this.icon.setTexture) this.icon.setTexture('flag');
-            }
+        const flagged = !!state.isFlagged && !state.isRevealed;
+        if (this.flagged !== flagged) {
+            this.flagged = flagged;
+            this.icon.setVisible(flagged);
+            if (flagged && this.icon.setTexture) this.icon.setTexture('flag');
         }
-
-        // 開示状態を更新
-        if (!this.revealed && state.isRevealed) {
-            // タイプを設定
-            if (state.viewType) {
-                this.setType(state.viewType);
-            }
-
-            // 開示
-            this.reveal(state.neighborMines);
-        }
-
-        // 状態(state)の更新
+        if (state.viewType) this.setType(state.viewType);
+        if (state.isRevealed && !this.revealed) this.reveal(state.neighborMines);
         if (state.state !== undefined && this.cellState !== state.state) {
             this.cellState = state.state;
-
             this.renderStateUpdate(state);
         }
     }
